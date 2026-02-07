@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Tilemap编辑器</title>
+    <link rel="stylesheet" th:href="@{/static/css/tilemap-editor.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="tilemap-editor">
+            <header class="editor-header">
+                <h1>Tilemap编辑器</h1>
+                <p>选择图块并在网格上点击放置，支持导出为PNG图片</p>
+            </header>
+
+            <div class="editor-container">
+                <!-- 工具栏 -->
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <button id="btn-clear" class="btn-tool">清空画布</button>
+                        <button id="btn-undo" class="btn-tool">撤销</button>
+                        <button id="btn-redo" class="btn-tool">重做</button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <label for="grid-size">网格尺寸:</label>
+                        <select id="grid-size" class="tool-select">
+                            <option value="8">8x8</option>
+                            <option value="16" selected>16x16</option>
+                            <option value="24">24x24</option>
+                            <option value="32">32x32</option>
+                        </select>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <button id="btn-export" class="btn-primary">导出为PNG</button>
+                        <button id="btn-load-example" class="btn-secondary">加载示例</button>
+                    </div>
+                </div>
+
+                <div class="editor-main">
+                    <!-- 图块选择器 -->
+                    <div class="tile-palette">
+                        <h3>图块选择</h3>
+                        <div class="tile-grid" id="tile-selector">
+                            <!-- 动态生成图块 -->
+                            <div th:each="tile, iterStat : ${tileImages}"
+                                 class="tile-item"
+                                 th:data-tile-index="${iterStat.index}"
+                                 th:data-tile-name="${tileNames[iterStat.index]}">
+                                <img th:src="@{'/static/images/tiles/' + ${tile}}"
+                                     th:alt="${tileNames[iterStat.index]}"
+                                     class="tile-preview">
+                                <span th:text="${tileNames[iterStat.index]}">图块名称</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 编辑区域 -->
+                    <div class="editor-area">
+                        <div class="editor-controls">
+                            <div class="current-tile">
+                                <span>当前图块: </span>
+                                <img id="current-tile-preview" src="" alt="当前选择">
+                                <span id="current-tile-name">未选择</span>
+                            </div>
+                            <div class="grid-info">
+                                网格: <span id="grid-dimensions">16x16</span>
+                                已放置: <span id="placed-tiles">0</span> 个图块
+                            </div>
+                        </div>
+
+                        <!-- 画布容器 -->
+                        <div class="canvas-container">
+                            <canvas id="tilemap-canvas" width="512" height="512"></canvas>
+                            <div class="canvas-grid" id="canvas-grid-overlay"></div>
+                        </div>
+
+                        <div class="editor-hints">
+                            <p>提示: 点击网格放置图块 | 右键点击清除图块 | 使用滚轮缩放</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导出链接（隐藏） -->
+        <a id="download-link" style="display: none;"></a>
+    </div>
+
+    <script th:src="@{/static/js/tilemap-editor.js}"></script>
+</body>
+</html>
+

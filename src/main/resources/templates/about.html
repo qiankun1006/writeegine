@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">关于</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h1>关于 WriteMyself</h1>
+
+        <section>
+            <h2>项目简介</h2>
+            <p>WriteMyself 是一个基于 Spring Boot 和 Thymeleaf 构建的前后端不分离 Web 应用示例项目。</p>
+
+            <!-- Thymeleaf 条件判断示例 -->
+            <div th:if="${title != null}">
+                <p th:text="'页面标题: ' + ${title}">页面标题</p>
+            </div>
+            <div th:unless="${title != null}">
+                <p>页面标题未设置</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>技术栈</h2>
+            <ul>
+                <li>Spring Boot 4.0.1</li>
+                <li>Thymeleaf 模板引擎</li>
+                <li>Thymeleaf 布局方言</li>
+                <li>HTML5 / CSS3 / JavaScript</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Thymeleaf 更多语法示例</h2>
+            <p th:text="'当前日期: ' + ${#dates.format(#dates.createNow(), 'yyyy年MM月dd日')}">日期示例</p>
+            <p th:text="'字符串处理: ' + ${#strings.toUpperCase('hello thymeleaf')}">字符串示例</p>
+
+            <!-- 链接示例 -->
+            <p>返回 <a th:href="@{/}">首页</a></p>
+
+            <!-- 属性设置示例 -->
+            <input type="text" th:value="${title}" th:placeholder="页面标题" />
+        </section>
+    </div>
+</body>
+</html>
+
