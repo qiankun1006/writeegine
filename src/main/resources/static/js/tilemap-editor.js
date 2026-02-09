@@ -65,6 +65,8 @@ class TilemapEditor {
         // 获取所有图块项DOM元素
         const tileElements = document.querySelectorAll('.tile-item'); // 返回NodeList
 
+        console.log(`找到 ${tileElements.length} 个图块项`);
+
         // 清空图片数组
         this.tileImages = [];
 
@@ -76,10 +78,14 @@ class TilemapEditor {
             // 获取该图块的图片源路径
             const imgSrc = tileEl.querySelector('img').src; // 从HTML的img标签获取src
 
+            console.log(`加载图块 ${index}: ${imgSrc}`);
+
             // 定义图片加载完成的回调函数
             img.onload = () => {
                 // 将加载完的图片对象存储到数组中
                 this.tileImages[index] = img;
+
+                console.log(`图块 ${index} 加载完成`);
 
                 // 当第一个图片加载完成时，重新渲染画布
                 if (index === 0) {
@@ -87,11 +93,16 @@ class TilemapEditor {
                 }
             };
 
+            img.onerror = () => {
+                console.error(`图块 ${index} 加载失败: ${imgSrc}`);
+            };
+
             // 触发图片加载(设置src属性)
             img.src = imgSrc;
 
             // ===== 配置图块项的点击事件(选择图块) =====
             tileEl.addEventListener('click', () => {
+                console.log(`点击了图块 ${index}`);
                 // 调用selectTile方法选中该图块
                 this.selectTile(index); // 更新当前选中的图块
 
@@ -115,6 +126,9 @@ class TilemapEditor {
         // 根据索引查找对应的图块DOM元素
         const tileEl = document.querySelector(`.tile-item[data-tile-index="${index}"]`);
 
+        // 调试日志
+        console.log(`选中图块索引: ${index}, 找到元素: ${tileEl ? '是' : '否'}`);
+
         // 如果找到该图块元素
         if (tileEl) {
             // 获取图块的名称
@@ -123,11 +137,28 @@ class TilemapEditor {
             // 获取图块的图片源路径
             const imgSrc = tileEl.querySelector('img').src;
 
+            // 调试日志
+            console.log(`图块名称: ${tileName}, 图片: ${imgSrc}`);
+
+            // 获取预览元素和名称元素
+            const previewEl = document.getElementById('current-tile-preview');
+            const nameEl = document.getElementById('current-tile-name');
+
+            // 调试日志
+            console.log(`预览元素: ${previewEl ? '存在' : '不存在'}, 名称元素: ${nameEl ? '存在' : '不存在'}`);
+
             // 更新当前选中图块的预览图
-            document.getElementById('current-tile-preview').src = imgSrc;
+            if (previewEl) {
+                previewEl.src = imgSrc;
+                previewEl.alt = tileName;
+            }
 
             // 更新当前选中图块的名称文字显示
-            document.getElementById('current-tile-name').textContent = tileName;
+            if (nameEl) {
+                nameEl.textContent = tileName;
+            }
+        } else {
+            console.error(`未找到索引为 ${index} 的图块元素`);
         }
     }
 
