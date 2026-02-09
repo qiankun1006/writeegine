@@ -1,313 +1,316 @@
-/* ===== 编辑器主容器样式 ===== */
-/* 编辑器最外层容器 - 整个应用的包装 */
-.tilemap-editor {
-    padding: 1rem; /* 为内部内容提供内边距 */
+/* ===== Tilemap编辑器主容器 ===== */
+.tilemap-editor-wrapper {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    height: calc(100vh - 200px);
+    background: #f5f5f5;
 }
 
-/* ===== 编辑器标题区域样式 ===== */
-/* 标题区域容器 - 放置应用名称和说明文字 */
-.editor-header {
-    margin-bottom: 2rem; /* 为下方内容留出充足间距 */
-    text-align: center; /* 标题内容居中对齐 */
+/* ===== 左侧面板 - 图块选择 ===== */
+.tile-selector-panel {
+    width: 150px;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    overflow-y: auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* 标题h1元素样式 - 应用名称 */
-.editor-header h1 {
-    color: #2c3e50; /* 深灰色，便于阅读 */
-    margin-bottom: 0.5rem; /* 标题和说明文字间距 */
+.tile-selector-panel h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #333;
 }
 
-/* 标题说明文字样式 */
-.editor-header p {
-    color: #7f8c8d; /* 浅灰色，降低视觉权重 */
+.tile-selector-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
 }
 
-/* ===== 编辑器主容器和工具栏样式 ===== */
-/* 编辑器容器 - 包含工具栏和编辑区域的白色卡片 */
-.editor-container {
-    background: #fff; /* 白色背景 */
-    border-radius: 8px; /* 圆角使界面更柔和 */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* 浅阴影提升视觉层级 */
-    overflow: hidden; /* 隐藏超出边界的内容 */
+.tile-selector-item {
+    cursor: pointer;
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    text-align: center;
+    background: white;
 }
 
-/* 工具栏样式 - 放置编辑工具的横向栏 */
-.toolbar {
-    background: #34495e; /* 深蓝灰色背景与编辑区区分 */
-    padding: 1rem; /* 工具栏内边距 */
-    display: flex; /* 使用Flexbox布局 */
-    flex-wrap: wrap; /* 当空间不足时，工具组折行 */
-    gap: 1.5rem; /* 工具栏组之间的间距 */
-    align-items: center; /* 所有元素垂直居中对齐 */
+.tile-selector-item:hover {
+    border-color: #999;
+    background: #f9f9f9;
 }
 
-/* 工具栏分组样式 - 相关工具的分组容器 */
-.toolbar-group {
-    display: flex; /* 组内元素水平排列 */
-    align-items: center; /* 组内元素垂直居中 */
-    gap: 0.5rem; /* 组内相邻元素之间的间距 */
+.tile-selector-item.selected {
+    border-color: #4a90e2;
+    background: #e8f2ff;
 }
 
-/* ===== 按钮基础样式 ===== */
-/* 通用按钮基础样式 - 应用于所有按钮类型 */
-.btn-tool, .btn-primary, .btn-secondary {
-    padding: 0.5rem 1rem; /* 上下0.5rem，左右1rem内边距 */
-    border: none; /* 移除浏览器默认边框 */
-    border-radius: 4px; /* 轻微圆角 */
-    cursor: pointer; /* 鼠标悬停时显示手指图标 */
-    font-weight: 500; /* 中等粗细字体，提升可读性 */
-    transition: all 0.2s; /* 平滑过渡所有属性变化 */
+.tile-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 4px;
+    display: block;
 }
 
-/* ===== 普通工具按钮样式 ===== */
-/* 普通工具按钮默认状态 - 浅色背景 */
-.btn-tool {
-    background: #ecf0f1; /* 浅灰色背景 */
-    color: #2c3e50; /* 深灰色文字 */
+.tile-name {
+    font-size: 12px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #333;
+    font-weight: 500;
 }
 
-/* 普通工具按钮悬停状态 */
-.btn-tool:hover {
-    background: #d5dbdb; /* 悬停时背景变深 */
+/* ===== 中间面板 - 当前选中显示 ===== */
+.current-tile-display {
+    width: 130px;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* ===== 主要操作按钮样式 ===== */
-/* 主要操作按钮默认状态 - 蓝色背景强调 */
-.btn-primary {
-    background: #3498db; /* 蓝色背景用于主要操作 */
-    color: white; /* 白色文字 */
+.current-tile-display h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #333;
 }
 
-/* 主要操作按钮悬停状态 */
-.btn-primary:hover {
-    background: #2980b9; /* 悬停时变为更深的蓝色 */
+.current-tile-preview {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9f9f9;
+    margin: 10px 0;
 }
 
-/* ===== 次要操作按钮样式 ===== */
-/* 次要操作按钮默认状态 - 灰色背景 */
-.btn-secondary {
-    background: #95a5a6; /* 中等灰色背景 */
-    color: white; /* 白色文字 */
+#current-tile-image {
+    max-width: 90px;
+    max-height: 90px;
 }
 
-/* 次要操作按钮悬停状态 */
-.btn-secondary:hover {
-    background: #7f8c8d; /* 悬停时变为更深的灰色 */
-}
-
-/* ===== 选择框样式 ===== */
-/* 网格尺寸选择下拉菜单样式 */
-.tool-select {
-    padding: 0.4rem; /* 内边距 */
-    border: 1px solid #bdc3c7; /* 灰色边框 */
-    border-radius: 4px; /* 轻微圆角保持一致 */
-    background: white; /* 白色背景 */
-}
-
-/* ===== 编辑器主区域布局 ===== */
-/* 编辑器主区域 - 分为图块选择器(左)和编辑区(右) */
-.editor-main {
-    display: flex; /* 水平并排布局 */
-    min-height: 600px; /* 最小高度保证编辑空间充足 */
-}
-
-/* ===== 图块选择面板样式 ===== */
-/* 图块调色板 - 左侧图块选择器面板 */
-.tile-palette {
-    width: 250px; /* 固定宽度250像素 */
-    background: #f8f9fa; /* 浅灰色背景，区分编辑区 */
-    border-right: 1px solid #dee2e6; /* 右侧灰色分隔线 */
-    padding: 1rem; /* 内边距 */
-    overflow-y: auto; /* 内容超出时垂直滚动 */
-}
-
-/* 图块调色板标题样式 */
-.tile-palette h3 {
-    margin-bottom: 1rem; /* 标题底部间距 */
-    color: #2c3e50; /* 深灰色文字 */
-}
-
-/* 图块网格布局 - 2列并排显示图块 */
-.tile-grid {
-    display: grid; /* 使用CSS Grid布局 */
-    grid-template-columns: repeat(2, 1fr); /* 2列等宽布局 */
-    gap: 0.75rem; /* 行列间距 */
-}
-
-/* ===== 图块项样式 ===== */
-/* 单个图块项容器 - 可选择的图块卡片 */
-.tile-item {
-    background: white; /* 白色背景 */
-    border: 2px solid #dee2e6; /* 灰色边框 */
-    border-radius: 6px; /* 圆角使界面更友好 */
-    padding: 0.5rem; /* 内边距 */
-    text-align: center; /* 图块内容居中 */
-    cursor: pointer; /* 手指指针表示可点击 */
-    transition: all 0.2s; /* 平滑过渡所有属性变化 */
-}
-
-/* 图块项悬停效果 */
-.tile-item:hover {
-    border-color: #3498db; /* 边框变为蓝色 */
-    transform: translateY(-2px); /* 上移2像素产生浮起效果 */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 添加阴影增加深度感 */
-}
-
-/* 图块项被选中状态 */
-.tile-item.selected {
-    border-color: #2ecc71; /* 边框变为绿色表示选中 */
-    background: #f0f9f4; /* 浅绿色背景 */
-}
-
-/* 图块预览图片样式 */
-.tile-preview {
-    width: 48px; /* 固定宽度48像素 */
-    height: 48px; /* 固定高度48像素 */
-    object-fit: contain; /* 完整显示图片内容不变形 */
-    margin-bottom: 0.5rem; /* 图片和文字间距 */
-}
-
-/* 图块名称文字样式 */
-.tile-item span {
-    display: block; /* 块级元素另起一行 */
-    font-size: 0.85rem; /* 较小字体 */
-    color: #34495e; /* 深灰色文字 */
-}
-
-/* ===== 编辑区域样式 ===== */
-/* 编辑区域主容器 - 画布和控制面板所在的右侧区域 */
-.editor-area {
-    flex: 1; /* 占据剩余所有空间 */
-    padding: 1rem; /* 内边距 */
-    display: flex; /* Flexbox布局 */
-    flex-direction: column; /* 垂直排列(从上到下) */
-}
-
-/* 编辑器控制面板 - 显示当前选择和状态信息 */
-.editor-controls {
-    display: flex; /* 水平布局 */
-    justify-content: space-between; /* 左右两端对齐 */
-    align-items: center; /* 垂直居中对齐 */
-    margin-bottom: 1rem; /* 下方间距 */
-    padding: 0.75rem; /* 内边距 */
-    background: #f8f9fa; /* 浅灰色背景 */
-    border-radius: 6px; /* 圆角 */
-}
-
-/* 当前选择的图块显示区域 */
-.current-tile {
-    display: flex; /* 水平布局 */
-    align-items: center; /* 垂直居中 */
-    gap: 0.75rem; /* 元素间距 */
-}
-
-/* 当前选择图块的预览图容器 */
-#current-tile-preview {
-    width: 32px; /* 宽度32像素 */
-    height: 32px; /* 高度32像素 */
-    border: 1px solid #bdc3c7; /* 灰色边框 */
-    border-radius: 4px; /* 轻微圆角 */
-}
-
-/* 当前选择的图块名称文字 */
 #current-tile-name {
-    font-weight: 500; /* 中等粗细 */
-    color: #2c3e50; /* 深灰色文字 */
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 10px 0;
+    font-size: 12px;
 }
 
-/* 网格信息显示(网格尺寸、已放置数量等) */
-.grid-info {
-    color: #7f8c8d; /* 浅灰色文字 */
-    font-size: 0.9rem; /* 较小字体 */
+.tile-info-tip {
+    font-size: 11px;
+    color: #999;
+    margin-top: 10px;
 }
 
-/* ===== Canvas画布容器样式 ===== */
-/* Canvas容器 - 包裹画布和网格叠加层 */
+/* ===== 右侧编辑面板 ===== */
+.editor-panel {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== 工具栏 ===== */
+.toolbar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.toolbar-group label {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #4a90e2;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #3a7bc8;
+}
+
+.btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #d0d0d0;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #c0392b;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.grid-size-select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+/* ===== Canvas容器 ===== */
 .canvas-container {
-    position: relative; /* 相对定位，用于绝对定位子元素 */
-    flex: 1; /* 占据剩余空间 */
-    border: 1px solid #dee2e6; /* 灰色边框 */
-    border-radius: 6px; /* 圆角 */
-    overflow: hidden; /* 隐藏超出边界的内容 */
-    background: #f8f9fa; /* 浅灰色背景 */
+    flex: 1;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    margin: 10px 0;
 }
 
-/* Canvas画布样式 - 绘制图块的2D画布 */
 #tilemap-canvas {
-    display: block; /* 块级元素显示 */
-    width: 100%; /* 占满容器宽度 */
-    height: 100%; /* 占满容器高度 */
-    cursor: crosshair; /* 十字光标表示可点击绘制 */
+    border: 1px solid #999;
+    background: white;
+    cursor: crosshair;
 }
 
-/* ===== 网格单元格样式 ===== */
-/* 网格单元格 - 编辑网格中的每个单元格 */
-.grid-cell {
-    transition: background-color 0.15s ease; /* 平滑过渡背景颜色变化 */
+/* ===== 编辑信息栏 ===== */
+.editor-info {
+    display: flex;
+    gap: 20px;
+    padding: 10px 0;
+    font-size: 12px;
+    color: #666;
 }
 
-/* 网格单元格悬停效果 - 鼠标移入时显示提示 */
-.grid-cell:hover {
-    background-color: rgba(52, 152, 219, 0.1); /* 半透明蓝色表示可放置 */
+.editor-info span {
+    padding: 5px 10px;
 }
 
-/* ===== Canvas网格叠加层样式 ===== */
-/* 网格叠加层 - 显示编辑网格并接收点击事件 */
-.canvas-grid {
-    position: absolute; /* 绝对定位覆盖canvas */
-    top: 0; /* 顶部对齐canvas */
-    left: 0; /* 左侧对齐canvas */
-    width: 100%; /* 占满容器宽度 */
-    height: 100%; /* 占满容器高度 */
-    pointer-events: auto; /* 接收鼠标点击事件 */
-}
-
-/* ===== 编辑器提示文字样式 ===== */
-/* 编辑器提示信息 - 使用说明提示 */
+/* ===== 提示信息 ===== */
 .editor-hints {
-    margin-top: 1rem; /* 上方间距 */
-    padding: 0.75rem; /* 内边距 */
-    background: #fff3cd; /* 浅黄色背景吸引注意 */
-    border: 1px solid #ffeaa7; /* 黄色边框 */
-    border-radius: 6px; /* 圆角 */
-    color: #856404; /* 深橙色文字 */
-    font-size: 0.9rem; /* 较小字体 */
+    padding: 8px 12px;
+    background: #f0f7ff;
+    border-left: 3px solid #4a90e2;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
 }
 
-/* ===== 响应式设计 - 平板设备 ===== */
-/* 平板设备(最大宽度992px)的响应式样式调整 */
-@media (max-width: 992px) {
-    /* 编辑器主区域改为竖排布局 */
-    .editor-main {
-        flex-direction: column; /* 从横排改为竖排 */
+.editor-hints p {
+    margin: 0;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 1024px) {
+    .tilemap-editor-wrapper {
+        flex-direction: column;
+        height: auto;
     }
 
-    /* 图块调色板改为占满宽度并在顶部 */
-    .tile-palette {
-        width: 100%; /* 占满宽度 */
-        border-right: none; /* 移除右边框 */
-        border-bottom: 1px solid #dee2e6; /* 改为下边框分隔 */
+    .tile-selector-panel,
+    .current-tile-display {
+        width: 100%;
     }
 
-    /* 图块网格改为4列布局(平板宽度下显示更多) */
-    .tile-grid {
-        grid-template-columns: repeat(4, 1fr); /* 平板上显示4列 */
+    .tile-selector-list {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
-/* ===== 响应式设计 - 手机设备 ===== */
-/* 手机设备(最大宽度576px)的响应式样式调整 */
-@media (max-width: 576px) {
-    /* 工具栏改为竖排(移动设备空间有限) */
+@media (max-width: 768px) {
     .toolbar {
-        flex-direction: column; /* 从横排改为竖排 */
-        align-items: flex-start; /* 工具左对齐 */
-        gap: 1rem; /* 增加行间距 */
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    /* 图块网格改为3列布局(手机屏幕宽度) */
-    .tile-grid {
-        grid-template-columns: repeat(3, 1fr); /* 手机上显示3列 */
+    .toolbar-group {
+        flex-direction: column;
+        align-items: flex-start;
     }
+
+    .tile-selector-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ===== 滚动条样式 ===== */
+.tile-selector-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tile-selector-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.tile-selector-panel::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.tile-selector-panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.canvas-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.canvas-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.canvas-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.canvas-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 

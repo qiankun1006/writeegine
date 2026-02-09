@@ -3,26 +3,51 @@ package com.example.writemyself.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+/**
+ * Tilemap编辑器控制器
+ * 处理Tilemap编辑器的页面路由和数据传递
+ */
 @Controller
 public class TilemapEditorController {
 
+    /**
+     * 处理Tilemap编辑器页面请求
+     *
+     * @param model Spring MVC模型对象，用于向模板传递数据
+     * @return tilemap-editor模板名称
+     */
     @GetMapping("/tilemap-editor")
     public String tilemapEditor(Model model) {
-        // 图块配置信息
-        String[] tileImages = {
-            "brown.png", "stone-wall.png", "stone.png",
-            "green.png", "stone2.png", "green2.png", "obstacle.png"
-        };
+        // 定义可用的图块图片列表（文件名）
+        List<String> tileImages = new ArrayList<>(Arrays.asList(
+            "brown.png",           // 棕色地块
+            "green.png",           // 绿色地块
+            "green2.png",          // 绿色地块2
+            "obstacle.png",        // 障碍物
+            "stone-wall.png",      // 石墙
+            "stone.png",           // 石头
+            "stone2.png"           // 石头2
+        ));
 
-        String[] tileNames = {
-            "棕色地块", "石墙", "石头",
-            "绿色地块", "石头2", "绿色地块2", "障碍物"
-        };
+        // 定义对应的图块显示名称（中文）
+        List<String> tileNames = new ArrayList<>(Arrays.asList(
+            "棕色地块",
+            "绿色地块",
+            "绿色地块2",
+            "障碍物",
+            "石墙",
+            "石头",
+            "石头2"
+        ));
 
-        model.addAttribute("title", "Tilemap编辑器");
+        // 将数据传递给模板
         model.addAttribute("tileImages", tileImages);
         model.addAttribute("tileNames", tileNames);
+        model.addAttribute("title", "Tilemap编辑器");
         model.addAttribute("defaultGridSize", 16);
 
         return "tilemap-editor";
