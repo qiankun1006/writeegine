@@ -1,27 +1,16 @@
 /**
- * Tilemap编辑器 - 简化版
- * 这个文件会被直接加载，不会被Thymeleaf过滤
+ * Tilemap编辑器
+ *
+ * 提供地块编辑器的核心功能：
+ * - 加载地块图片
+ * - 点击画布放置地块
+ * - 撤销/重做功能
+ * - 导出为PNG
  */
-
-console.log('✅ tilemap-editor-simple.js 已加载');
-
-// 诊断面板更新函数
-function updateDiagnostic(text) {
-    const panel = document.getElementById('diagnostic-content');
-    if (panel) {
-        panel.innerHTML += text + '<br>';
-        panel.scrollTop = panel.scrollHeight;
-    }
-}
-
-// 立即更新
-updateDiagnostic('✅ 脚本执行中...');
 
 // TilemapEditor 类
 class TilemapEditor {
     constructor() {
-        console.log('🚀 TilemapEditor 构造函数被调用');
-        updateDiagnostic('🚀 开始初始化编辑器');
         this.init();
     }
 
@@ -31,7 +20,6 @@ class TilemapEditor {
         this.setupEventListeners();
         this.loadTiles();
         this.render();
-        updateDiagnostic('✅ 编辑器初始化完成');
     }
 
     initDOM() {
@@ -61,8 +49,6 @@ class TilemapEditor {
 
     loadTiles() {
         const tileItems = document.querySelectorAll('.tile-selector-item');
-        updateDiagnostic(`📊 找到 ${tileItems.length} 个图块项`);
-
         this.tiles = new Array(tileItems.length);
         let loadedCount = 0;
         const totalTiles = tileItems.length;
@@ -83,16 +69,10 @@ class TilemapEditor {
                 this.tiles[index].image = img;
                 this.tiles[index].loaded = true;
                 loadedCount++;
-                updateDiagnostic(`  ✅ 图块 ${index} 加载成功`);
 
                 if (loadedCount === totalTiles) {
-                    updateDiagnostic('🎉 所有图块加载完成！');
                     this.selectTile(0);
                 }
-            };
-
-            img.onerror = () => {
-                updateDiagnostic(`  ❌ 图块 ${index} 加载失败`);
             };
 
             img.src = imgSrc;
@@ -110,14 +90,10 @@ class TilemapEditor {
     }
 
     setupEventListeners() {
-        updateDiagnostic('📍 开始设置事件监听器');
-
         const tileItems = document.querySelectorAll('.tile-selector-item');
-        updateDiagnostic(`  为 ${tileItems.length} 个图块项绑定点击事件`);
 
         tileItems.forEach((item, index) => {
             item.addEventListener('click', (e) => {
-                updateDiagnostic(`🖱️ 图块 ${index} 被点击！`);
                 this.selectTile(index);
             });
         });
@@ -135,15 +111,12 @@ class TilemapEditor {
         this.gridSizeSelect.addEventListener('change', (e) => {
             this.changeGridSize(parseInt(e.target.value));
         });
-
-        updateDiagnostic('✅ 事件监听器设置完成');
     }
 
     selectTile(index) {
         if (index < 0 || index >= this.tiles.length) return;
 
         this.selectedTileIndex = index;
-        updateDiagnostic(`  ✅ 已选中图块 ${index}`);
 
         const tileItems = document.querySelectorAll('.tile-selector-item');
         tileItems.forEach((item, i) => {
@@ -360,13 +333,10 @@ class TilemapEditor {
 
 // 页面加载完成后初始化编辑器
 document.addEventListener('DOMContentLoaded', () => {
-    updateDiagnostic('✅ DOMContentLoaded 触发');
     try {
         window.editor = new TilemapEditor();
-        updateDiagnostic('✅ 编辑器实例已创建！');
     } catch (error) {
-        updateDiagnostic(`❌ 错误: ${error.message}`);
-        console.error('错误:', error);
+        console.error('编辑器初始化失败:', error);
     }
 });
 
