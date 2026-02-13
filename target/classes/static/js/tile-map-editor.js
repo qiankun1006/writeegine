@@ -1,146 +1,23 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
-<head>
-    <title>Tilemap编辑器</title>
-    <link rel="stylesheet" th:href="@{/static/css/tilemap-editor.css}">
-</head>
-<body>
-    <div layout:fragment="content">
-        <div class="tilemap-editor-wrapper">
-            <!-- 左侧：图块选择面板 -->
-            <div class="tile-selector-panel">
-                <h3>图块选择</h3>
-                <div class="tile-selector-list" id="tile-selector">
-                    <!-- 动态生成图块项 -->
-                    <div th:each="tile, iterStat : ${tileImages}"
-                         class="tile-selector-item"
-                         th:attr="data-tile-index=${iterStat.index}, data-tile-name=${tileNames[iterStat.index]}">
-                        <img th:src="@{'/static/images/tiles/' + ${tile}}"
-                             th:alt="${tileNames[iterStat.index]}"
-                             class="tile-thumbnail">
-                        <span class="tile-name" th:text="${tileNames[iterStat.index]}"></span>
-                    </div>
-                </div>
-            </div>
+/**
+ * Tilemap编辑器
+ */
 
-            <!-- 中间：当前选中显示 -->
-            <div class="current-tile-display">
-                <h3>当前选中</h3>
-                <div class="current-tile-preview">
-                    <img id="current-tile-image" src="" alt="未选择">
-                </div>
-                <div class="current-tile-name" id="current-tile-name">未选择</div>
-                <div class="tile-info-tip">点击左侧图块选择</div>
-            </div>
+// ========== 立即执行的诊断代码 ==========
+console.log('✅✅✅ [LOADED] tile-map-editor.js 文件已被成功加载！');
+console.log('⏰ 当前时间:', new Date().toLocaleTimeString());
+console.log('🌐 页面URL:', window.location.href);
 
-            <!-- 右侧：编辑区域 -->
-            <div class="editor-panel">
-                <!-- 工具栏 -->
-                <div class="toolbar">
-                    <div class="toolbar-group">
-                        <button id="btn-clear" class="btn btn-danger">清空画布</button>
-                        <button id="btn-undo" class="btn btn-secondary">撤销</button>
-                        <button id="btn-redo" class="btn btn-secondary">重做</button>
-                    </div>
-                    <div class="toolbar-group">
-                        <label for="grid-size-select">网格尺寸:</label>
-                        <select id="grid-size-select" class="grid-size-select">
-                            <option value="8">8x8</option>
-                            <option value="16" selected>16x16</option>
-                            <option value="24">24x24</option>
-                            <option value="32">32x32</option>
-                        </select>
-                    </div>
-                    <div class="toolbar-group">
-                        <button id="btn-export" class="btn btn-primary">导出为PNG</button>
-                    </div>
-                </div>
+// 检查DOM元素
+setTimeout(() => {
+    const tileItems = document.querySelectorAll('.tile-selector-item');
+    console.log(`📊 找到 ${tileItems.length} 个图块项`);
 
-                <!-- Canvas绘制区 -->
-                <div class="canvas-container">
-                    <canvas id="tilemap-canvas" width="512" height="512"></canvas>
-                </div>
-
-                <!-- 信息栏 -->
-                <div class="editor-info">
-                    <span>网格: <span id="grid-info">16x16</span></span>
-                    <span>已放置: <span id="placed-count">0</span> 个图块</span>
-                </div>
-
-                <!-- 提示 -->
-                <div class="editor-hints">
-                    <p>提示: 点击或拖动放置图块 | 按钮操作: 撤销、重做、清空</p>
-                </div>
-
-                <!-- 测试按钮 -->
-                <button onclick="alert('✅ 页面和JavaScript都正常工作！'); console.log('✅ 测试按钮被点击了');">
-                    🧪 测试按钮（点击验证JS是否工作）
-                </button>
-            </div>
-        </div>
-
-        <!-- 隐藏下载链接 -->
-        <a id="download-link" style="display: none;"></a>
-
-        <!-- 诊断面板 -->
-        <div id="diagnostic-panel" style="
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #333;
-            color: #0f0;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            max-width: 400px;
-            z-index: 9999;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 2px solid #0f0;
-        ">
-            <div><strong>🔍 诊断信息</strong></div>
-            <div id="diagnostic-content">加载中...</div>
-        </div>
-    </div>
-
-    <!-- TilemapEditor脚本内联 -->
-    <script>
-// 全局诊断函数
-window.addDiagnostic = function(text) {
-    const panel = document.getElementById('diagnostic-content');
-    if (panel) {
-        panel.innerHTML += text + '<br>';
-        panel.scrollTop = panel.scrollHeight;
+    if (tileItems.length === 0) {
+        console.warn('⚠️ 没有找到图块项，可能Thymeleaf模板没有正确渲染');
     }
-};
+}, 100);
 
-// 立即尝试更新诊断
-window.addDiagnostic('脚本已加载');
-
-// 确保在DOM完全加载后执行
-document.addEventListener('DOMContentLoaded', function() {
-    window.addDiagnostic('=== DOMContentLoaded 触发 ===');
-
-    // 诊断：检查HTML中的图块项是否存在
-    const diagnosticTiles = document.querySelectorAll('.tile-selector-item');
-    window.addDiagnostic(`📊 找到 ${diagnosticTiles.length} 个图块项`);
-
-    if (diagnosticTiles.length > 0) {
-        diagnosticTiles.forEach((item, i) => {
-            const name = item.dataset.tileName;
-            window.addDiagnostic(`  [${i}] ${name}`);
-        });
-        window.addDiagnostic('✅ 图块项正常');
-    } else {
-        window.addDiagnostic('❌ 没有找到任何图块项！');
-        window.addDiagnostic('💡 Thymeleaf未渲染');
-    }
-});
-
-// TilemapEditor 类定义
+// ========== TilemapEditor 类 ==========
 class TilemapEditor {
     constructor() {
         console.log('🚀 TilemapEditor 构造函数被调用');
@@ -237,28 +114,33 @@ class TilemapEditor {
     }
 
     setupEventListeners() {
-        window.addDiagnostic('📍 开始设置事件监听器');
+        console.log('📍 开始设置事件监听器');
 
+        // 图块选择事件
         const tileItems = document.querySelectorAll('.tile-selector-item');
-        window.addDiagnostic(`  为 ${tileItems.length} 个图块项绑定点击事件`);
+        console.log(`  为 ${tileItems.length} 个图块项绑定点击事件`);
 
         tileItems.forEach((item, index) => {
             item.addEventListener('click', (e) => {
-                window.addDiagnostic(`🖱️ 图块 ${index} 被点击！`);
+                console.log(`🖱️ 图块 ${index} 被点击！`);
+                console.log(`  目标元素:`, e.target);
                 this.selectTile(index);
             });
         });
 
+        // Canvas事件
         this.canvas.addEventListener('mousedown', (e) => this.onCanvasMouseDown(e));
         this.canvas.addEventListener('mousemove', (e) => this.onCanvasMouseMove(e));
         this.canvas.addEventListener('mouseup', () => this.onCanvasMouseUp());
         this.canvas.addEventListener('mouseleave', () => this.onCanvasMouseUp());
 
+        // 工具栏按钮
         this.btnClear.addEventListener('click', () => this.clearCanvas());
         this.btnUndo.addEventListener('click', () => this.undo());
         this.btnRedo.addEventListener('click', () => this.redo());
         this.btnExport.addEventListener('click', () => this.exportToPNG());
 
+        // 网格尺寸选择
         this.gridSizeSelect.addEventListener('change', (e) => {
             this.changeGridSize(parseInt(e.target.value));
         });
@@ -277,6 +159,7 @@ class TilemapEditor {
         this.selectedTileIndex = index;
         console.log(`  ✅ 已选中图块 ${index}: ${this.tiles[index].name}`);
 
+        // 更新UI高亮
         const tileItems = document.querySelectorAll('.tile-selector-item');
         tileItems.forEach((item, i) => {
             if (i === index) {
@@ -286,6 +169,7 @@ class TilemapEditor {
             }
         });
 
+        // 更新显示区域
         const tile = this.tiles[index];
         if (tile && tile.image) {
             this.currentTileImage.src = tile.src;
@@ -305,6 +189,7 @@ class TilemapEditor {
 
     onCanvasMouseMove(e) {
         if (!this.isMouseDown) return;
+
         const coords = this.getGridCoordinates(e);
         if (coords) {
             if (coords.x !== this.lastPlacedX || coords.y !== this.lastPlacedY) {
@@ -325,6 +210,7 @@ class TilemapEditor {
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+
         const cellSize = this.canvas.width / this.gridSize;
         const gridX = Math.floor(x / cellSize);
         const gridY = Math.floor(y / cellSize);
@@ -332,11 +218,13 @@ class TilemapEditor {
         if (gridX < 0 || gridX >= this.gridSize || gridY < 0 || gridY >= this.gridSize) {
             return null;
         }
+
         return { x: gridX, y: gridY };
     }
 
     placeTile(x, y) {
         if (!this.isValidCoordinate(x, y)) return;
+
         this.gridData[y][x] = this.selectedTileIndex;
         this.updatePlacedCount();
         this.saveHistory();
@@ -364,10 +252,12 @@ class TilemapEditor {
         const state = JSON.parse(JSON.stringify(this.gridData));
         this.history.push(state);
         this.historyIndex = this.history.length - 1;
+
         if (this.history.length > 50) {
             this.history.shift();
             this.historyIndex--;
         }
+
         this.updateButtonStates();
     }
 
@@ -410,12 +300,14 @@ class TilemapEditor {
 
     changeGridSize(newSize) {
         if (newSize === this.gridSize) return;
+
         if (this.placedCount.textContent !== '0') {
             if (!confirm('改变网格尺寸会清空当前画布，继续吗？')) {
                 this.gridSizeSelect.value = this.gridSize;
                 return;
             }
         }
+
         this.gridSize = newSize;
         this.createEmptyGrid();
         this.history = [];
@@ -429,20 +321,25 @@ class TilemapEditor {
     render() {
         this.ctx.fillStyle = '#fff';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
         const cellSize = this.canvas.width / this.gridSize;
+
         this.ctx.strokeStyle = '#e0e0e0';
         this.ctx.lineWidth = 0.5;
         for (let i = 0; i <= this.gridSize; i++) {
             const pos = i * cellSize;
+
             this.ctx.beginPath();
             this.ctx.moveTo(0, pos);
             this.ctx.lineTo(this.canvas.width, pos);
             this.ctx.stroke();
+
             this.ctx.beginPath();
             this.ctx.moveTo(pos, 0);
             this.ctx.lineTo(pos, this.canvas.height);
             this.ctx.stroke();
         }
+
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 const tileIndex = this.gridData[y][x];
@@ -456,8 +353,10 @@ class TilemapEditor {
     drawTile(gridX, gridY, tileIndex, cellSize) {
         const tile = this.tiles[tileIndex];
         if (!tile || !tile.image) return;
+
         const x = gridX * cellSize;
         const y = gridY * cellSize;
+
         this.ctx.drawImage(tile.image, x, y, cellSize, cellSize);
     }
 
@@ -466,7 +365,9 @@ class TilemapEditor {
         const cellSize = 16;
         exportCanvas.width = this.gridSize * cellSize;
         exportCanvas.height = this.gridSize * cellSize;
+
         const exportCtx = exportCanvas.getContext('2d');
+
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 const tileIndex = this.gridData[y][x];
@@ -478,6 +379,7 @@ class TilemapEditor {
                 }
             }
         }
+
         const imageData = exportCanvas.toDataURL('image/png');
         this.downloadImage(imageData);
     }
@@ -490,49 +392,18 @@ class TilemapEditor {
     }
 }
 
-// 页面加载完成后初始化编辑器
+// ========== 页面加载完成后初始化编辑器 ==========
 console.log('📍 监听 DOMContentLoaded 事件...');
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('✅ DOMContentLoaded 事件触发，开始创建 TilemapEditor 实例...');
     try {
         window.editor = new TilemapEditor();
-        console.log('✅ TilemapEditor 实例已创建');
+        console.log('✅ TilemapEditor 实例已创建，保存到 window.editor');
     } catch (error) {
         console.error('❌ 创建 TilemapEditor 失败:', error);
+        console.error('错误信息:', error.message);
+        console.error('堆栈:', error.stack);
     }
 });
-</script>
-
-<!-- TilemapEditor脚本在body末尾（fragment之外） - 这个会执行！ -->
-<script>
-console.log('✅ Body末尾脚本执行！');
-
-// 立即更新诊断面板
-const panel = document.getElementById('diagnostic-content');
-if (panel) {
-    panel.innerHTML = '✅ Body脚本执行成功！<br>';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ DOMContentLoaded 在Body脚本中触发');
-    if (panel) {
-        panel.innerHTML += '✅ DOMContentLoaded触发<br>';
-    }
-
-    // 现在创建编辑器
-    if (typeof TilemapEditor !== 'undefined') {
-        try {
-            window.editor = new TilemapEditor();
-            if (panel) panel.innerHTML += '✅ 编辑器已创建<br>';
-        } catch(e) {
-            console.error('错误:', e);
-            if (panel) panel.innerHTML += `❌ 错误: ${e.message}<br>`;
-        }
-    } else {
-        if (panel) panel.innerHTML += '❌ TilemapEditor 类未定义<br>';
-    }
-});
-</script>
-</body>
-</html>
 
