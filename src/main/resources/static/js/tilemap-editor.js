@@ -331,10 +331,69 @@ class TilemapEditor {
     }
 }
 
-// 页面加载完成后初始化编辑器
+// 可拖动布局分隔符管理器
+class ResizableLayoutManager {
+    constructor() {
+        this.divider = document.getElementById('resizable-divider');
+        if (!this.divider) return;
+
+        this.wrapper = document.querySelector('.tilemap-editor-wrapper');
+        this.leftPanel = document.querySelector('.tile-selector-panel');
+        this.rightPanel = document.querySelector('.editor-panel');
+
+        this.isDragging = false;
+        this.minLeftWidth = 120;      // 左侧最小宽度
+        this.minRightWidth = 300;     // 右侧最小宽度
+        this.startX = 0;
+        this.startLeftWidth = 0;
+
+        this.initEventListeners();
+    }
+
+    initEventListeners() {
+        this.divider.addEventListener('mousedown', (e) => this.startDrag(e));
+        document.addEventListener('mousemove', (e) => this.onDrag(e));
+        document.addEventListener('mouseup', () => this.stopDrag());
+    }
+
+    startDrag(e) {
+        e.preventDefault();
+        this.isDragging = true;
+        this.divider.classList.add('active');
+        this.startX = e.clientX;
+        this.startLeftWidth = this.leftPanel.offsetWidth;
+    }
+
+    onDrag(e) {
+        if (!this.isDragging) return;
+
+        const deltaX = e.clientX - this.startX;
+        const newLeftWidth = this.startLeftWidth + deltaX;
+
+        // 计算右侧宽度
+        const dividerWidth = this.divider.offsetWidth;
+        const availableWidth = this.wrapper.offsetWidth;
+        const newRightWidth = availableWidth - newLeftWidth - dividerWidth;
+
+        // 验证最小宽度限制
+        if (newLeftWidth >= this.minLeftWidth &&
+            newRightWidth >= this.minRightWidth) {
+            this.leftPanel.style.width = newLeftWidth + 'px';
+            this.rightPanel.style.flex = '0 0 ' + newRightWidth + 'px';
+        }
+    }
+
+    stopDrag() {
+        this.isDragging = false;
+        this.divider.classList.remove('active');
+    }
+}
+
+// 页面加载完成后初始化编辑器和布局管理器
 document.addEventListener('DOMContentLoaded', () => {
     try {
         window.editor = new TilemapEditor();
+        window.resizableLayout = new ResizableLayoutManager();
     } catch (error) {
         console.error('编辑器初始化失败:', error);
     }

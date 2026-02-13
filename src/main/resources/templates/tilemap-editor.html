@@ -25,15 +25,8 @@
                 </div>
             </div>
 
-            <!-- 中间：当前选中显示 -->
-            <div class="current-tile-display">
-                <h3>当前选中</h3>
-                <div class="current-tile-preview">
-                    <img id="current-tile-image" src="" alt="未选择">
-                </div>
-                <div class="current-tile-name" id="current-tile-name">未选择</div>
-                <div class="tile-info-tip">点击左侧图块选择</div>
-            </div>
+            <!-- 可拖动分隔符 -->
+            <div class="resizable-divider" id="resizable-divider"></div>
 
             <!-- 右侧：编辑区域 -->
             <div class="editor-panel">
@@ -61,6 +54,16 @@
                 <!-- Canvas绘制区 -->
                 <div class="canvas-container">
                     <canvas id="tilemap-canvas" width="512" height="512"></canvas>
+
+                    <!-- 当前选中显示（浮动在右上角） -->
+                    <div class="current-tile-display">
+                        <h3>当前选中</h3>
+                        <div class="current-tile-preview">
+                            <img id="current-tile-image" src="" alt="未选择">
+                        </div>
+                        <div class="current-tile-name" id="current-tile-name">未选择</div>
+                        <div class="tile-info-tip">点击左侧图块选择</div>
+                    </div>
                 </div>
 
                 <!-- 信息栏 -->
