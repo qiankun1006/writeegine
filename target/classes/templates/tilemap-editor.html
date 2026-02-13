@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
@@ -30,32 +30,9 @@
 
             <!-- 右侧：编辑区域 -->
             <div class="editor-panel">
-                <!-- 工具栏 -->
-                <div class="toolbar">
-                    <div class="toolbar-group">
-                        <button id="btn-clear" class="btn btn-danger">清空画布</button>
-                        <button id="btn-undo" class="btn btn-secondary">撤销</button>
-                        <button id="btn-redo" class="btn btn-secondary">重做</button>
-                    </div>
-                    <div class="toolbar-group">
-                        <label for="grid-size-select">网格尺寸:</label>
-                        <select id="grid-size-select" class="grid-size-select">
-                            <option value="8">8x8</option>
-                            <option value="16" selected>16x16</option>
-                            <option value="24">24x24</option>
-                            <option value="32">32x32</option>
-                        </select>
-                    </div>
-                    <div class="toolbar-group">
-                        <button id="btn-export" class="btn btn-primary">导出为PNG</button>
-                    </div>
-                </div>
-
-                <!-- Canvas绘制区 -->
-                <div class="canvas-container">
-                    <canvas id="tilemap-canvas" width="512" height="512"></canvas>
-
-                    <!-- 当前选中显示（浮动在右上角） -->
+                <!-- 编辑面板头部 -->
+                <div class="editor-header">
+                    <!-- 当前选中显示（重定位，不再浮动） -->
                     <div class="current-tile-display">
                         <h3>当前选中</h3>
                         <div class="current-tile-preview">
@@ -64,17 +41,46 @@
                         <div class="current-tile-name" id="current-tile-name">未选择</div>
                         <div class="tile-info-tip">点击左侧图块选择</div>
                     </div>
+
+                    <!-- 工具栏 -->
+                    <div class="toolbar">
+                        <div class="toolbar-group">
+                            <button id="btn-clear" class="btn btn-danger">清空画布</button>
+                            <button id="btn-undo" class="btn btn-secondary">撤销</button>
+                            <button id="btn-redo" class="btn btn-secondary">重做</button>
+                        </div>
+                        <div class="toolbar-group">
+                            <label for="grid-size-select">网格尺寸:</label>
+                            <select id="grid-size-select" class="grid-size-select">
+                                <option value="8">8x8</option>
+                                <option value="16" selected>16x16</option>
+                                <option value="24">24x24</option>
+                                <option value="32">32x32</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-group">
+                            <button id="btn-export" class="btn btn-primary">导出为PNG</button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 信息栏 -->
-                <div class="editor-info">
-                    <span>网格: <span id="grid-info">16x16</span></span>
-                    <span>已放置: <span id="placed-count">0</span> 个图块</span>
+                <!-- Canvas绘制区（最大化） -->
+                <div class="canvas-container">
+                    <canvas id="tilemap-canvas" width="512" height="512"></canvas>
                 </div>
 
-                <!-- 提示 -->
-                <div class="editor-hints">
-                    <p>提示: 点击或拖动放置图块 | 按钮操作: 撤销、重做、清空</p>
+                <!-- 编辑面板底部 -->
+                <div class="editor-footer">
+                    <!-- 信息栏 -->
+                    <div class="editor-info">
+                        <span>网格: <strong><span id="grid-info">16x16</span></strong></span>
+                        <span>已放置: <strong><span id="placed-count">0</span></strong> 个图块</span>
+                    </div>
+
+                    <!-- 提示 -->
+                    <div class="editor-hints">
+                        <p>💡 <strong>提示:</strong> 点击或拖动放置图块 | 撤销/重做/清空画布</p>
+                    </div>
                 </div>
 
             </div>

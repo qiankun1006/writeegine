@@ -239,24 +239,48 @@ class TilemapEditor {
     }
 
     clearCanvas() {
-        if (confirm('确定要清空画布吗？')) {
-            this.createEmptyGrid();
-            this.history = [];
-            this.historyIndex = -1;
-            this.updatePlacedCount();
-            this.updateButtonStates();
-            this.render();
-        }
+        Dialog.confirm({
+            title: '清空画布',
+            message: '确定要清空画布吗？',
+            detail: '这将清除所有已放置的图块',
+            iconType: 'warning',
+            onConfirm: () => {
+                this.createEmptyGrid();
+                this.history = [];
+                this.historyIndex = -1;
+                this.updatePlacedCount();
+                this.updateButtonStates();
+                this.render();
+                Dialog.alert({
+                    title: '成功',
+                    message: '画布已清空',
+                    iconType: 'success'
+                });
+            }
+        });
     }
 
     changeGridSize(newSize) {
         if (newSize === this.gridSize) return;
         if (this.placedCount.textContent !== '0') {
-            if (!confirm('改变网格尺寸会清空当前画布，继续吗？')) {
-                this.gridSizeSelect.value = this.gridSize;
-                return;
-            }
+            Dialog.confirm({
+                title: '改变网格尺寸',
+                message: '改变网格尺寸会清空当前画布',
+                detail: '您确定要继续吗？',
+                iconType: 'warning',
+                onConfirm: () => {
+                    this.applyGridSizeChange(newSize);
+                },
+                onCancel: () => {
+                    this.gridSizeSelect.value = this.gridSize;
+                }
+            });
+        } else {
+            this.applyGridSizeChange(newSize);
         }
+    }
+
+    applyGridSizeChange(newSize) {
         this.gridSize = newSize;
         this.createEmptyGrid();
         this.history = [];
@@ -386,6 +410,200 @@ class ResizableLayoutManager {
     stopDrag() {
         this.isDragging = false;
         this.divider.classList.remove('active');
+    }
+}
+
+/**
+ * 自定义对话框组件
+ * 提供现代的模态对话框功能，带有游戏引擎风格
+ */
+class Dialog {
+    constructor(options = {}) {
+        this.title = options.title || '对话框';
+        this.message = options.message || '';
+        this.detail = options.detail || '';
+        this.buttons = options.buttons || [
+            { text: '确定', type: 'primary', callback: () => this.close() }
+        ];
+        this.iconType = options.iconType || 'info'; // 'info', 'warning', 'danger', 'success'
+        this.onClose = options.onClose || null;
+        this.isOpen = false;
+    }
+
+    /**
+     * 创建对话框的 DOM 结构
+     */
+    createDOM() {
+        // 创建覆盖层
+        this.overlay = document.createElement('div');
+        this.overlay.className = 'dialog-overlay';
+
+        // 创建对话框容器
+        this.box = document.createElement('div');
+        this.box.className = 'dialog-box';
+
+        // 创建对话框头部
+        const header = document.createElement('div');
+        header.className = 'dialog-header';
+
+        const title = document.createElement('h2');
+        title.className = 'dialog-title';
+        title.textContent = this.title;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'dialog-close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.onclick = () => this.close();
+
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+
+        // 创建对话框内容
+        const content = document.createElement('div');
+        content.className = 'dialog-content';
+
+        // 添加图标
+        if (this.iconType) {
+            const icon = document.createElement('div');
+            icon.className = `dialog-icon ${this.iconType}`;
+
+            const iconMap = {
+                'info': 'ℹ️',
+                'warning': '⚠️',
+                'danger': '❌',
+                'success': '✅'
+            };
+            icon.textContent = iconMap[this.iconType] || 'ℹ️';
+            content.appendChild(icon);
+        }
+
+        // 添加消息
+        if (this.message) {
+            const message = document.createElement('p');
+            message.className = 'dialog-message';
+            message.textContent = this.message;
+            content.appendChild(message);
+        }
+
+        // 添加详情
+        if (this.detail) {
+            const detail = document.createElement('p');
+            detail.className = 'dialog-detail';
+            detail.textContent = this.detail;
+            content.appendChild(detail);
+        }
+
+        // 创建按钮容器
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'dialog-buttons';
+
+        this.buttons.forEach(btnConfig => {
+            const btn = document.createElement('button');
+            btn.className = `btn btn-${btnConfig.type || 'secondary'}`;
+            btn.textContent = btnConfig.text;
+            btn.onclick = () => {
+                if (btnConfig.callback) {
+                    btnConfig.callback();
+                }
+                this.close();
+            };
+            buttonsContainer.appendChild(btn);
+        });
+
+        // 组装对话框
+        this.box.appendChild(header);
+        this.box.appendChild(content);
+        this.box.appendChild(buttonsContainer);
+
+        // 覆盖层点击关闭
+        this.overlay.onclick = (e) => {
+            if (e.target === this.overlay) {
+                this.close();
+            }
+        };
+
+        this.overlay.appendChild(this.box);
+    }
+
+    /**
+     * 显示对话框
+     */
+    show() {
+        if (!this.isOpen) {
+            this.createDOM();
+            document.body.appendChild(this.overlay);
+            this.isOpen = true;
+        }
+    }
+
+    /**
+     * 关闭对话框
+     */
+    close() {
+        if (this.isOpen) {
+            if (this.overlay && this.overlay.parentNode) {
+                this.overlay.parentNode.removeChild(this.overlay);
+            }
+            this.isOpen = false;
+            if (this.onClose) {
+                this.onClose();
+            }
+        }
+    }
+
+    /**
+     * 快捷方法：显示确认对话框
+     */
+    static confirm(options) {
+        const defaultOptions = {
+            title: '确认',
+            message: '您确定要进行此操作吗？',
+            iconType: 'warning',
+            buttons: [
+                {
+                    text: '取消',
+                    type: 'secondary',
+                    callback: () => {
+                        if (options.onCancel) options.onCancel();
+                    }
+                },
+                {
+                    text: '确定',
+                    type: 'danger',
+                    callback: () => {
+                        if (options.onConfirm) options.onConfirm();
+                    }
+                }
+            ]
+        };
+
+        const dialog = new Dialog({ ...defaultOptions, ...options });
+        dialog.show();
+        return dialog;
+    }
+
+    /**
+     * 快捷方法：显示提示对话框
+     */
+    static alert(options) {
+        const defaultOptions = {
+            title: '提示',
+            message: '操作成功',
+            iconType: 'success',
+            buttons: [
+                {
+                    text: '关闭',
+                    type: 'primary',
+                    callback: () => {
+                        if (options.onClose) options.onClose();
+                    }
+                }
+            ]
+        };
+
+        const dialog = new Dialog({ ...defaultOptions, ...options });
+        dialog.show();
+        return dialog;
     }
 }
 
