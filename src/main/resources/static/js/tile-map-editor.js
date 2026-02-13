@@ -1,59 +1,39 @@
 /**
- * Tilemap编辑器 - 完整重建版本
- * 包含图块选择、放置、撤销/重做、导出等功能
+ * Tilemap编辑器
  */
 
+// ========== 立即执行的诊断代码 ==========
+console.log('✅✅✅ [LOADED] tile-map-editor.js 文件已被成功加载！');
+console.log('⏰ 当前时间:', new Date().toLocaleTimeString());
+console.log('🌐 页面URL:', window.location.href);
+
+// 检查DOM元素
+setTimeout(() => {
+    const tileItems = document.querySelectorAll('.tile-selector-item');
+    console.log(`📊 找到 ${tileItems.length} 个图块项`);
+
+    if (tileItems.length === 0) {
+        console.warn('⚠️ 没有找到图块项，可能Thymeleaf模板没有正确渲染');
+    }
+}, 100);
+
+// ========== TilemapEditor 类 ==========
 class TilemapEditor {
-    /**
-     * 构造函数 - 初始化编辑器
-     */
     constructor() {
-        // DOM元素引用
-        this.canvas = null;
-        this.ctx = null;
-        this.tileSelector = null;
-        this.currentTileImage = null;
-        this.currentTileName = null;
-        this.gridSizeSelect = null;
-        this.btnClear = null;
-        this.btnUndo = null;
-        this.btnRedo = null;
-        this.btnExport = null;
-        this.gridInfo = null;
-        this.placedCount = null;
-
-        // 编辑器数据
-        this.tiles = [];              // 图块元数据数组
-        this.selectedTileIndex = 0;   // 当前选中图块索引
-        this.gridSize = 16;           // 网格尺寸
-        this.gridData = [];           // 画布数据（二维数组）
-        this.history = [];            // 撤销历史
-        this.historyIndex = -1;       // 当前历史指针
-
-        // 鼠标状态
-        this.isMouseDown = false;
-        this.lastPlacedX = -1;
-        this.lastPlacedY = -1;
-
-        // 初始化
+        console.log('🚀 TilemapEditor 构造函数被调用');
         this.init();
     }
 
-    /**
-     * 初始化编辑器
-     */
     init() {
+        console.log('📍 开始初始化编辑器');
         this.initDOM();
-        this.loadTiles();
         this.createEmptyGrid();
         this.setupEventListeners();
-        this.selectTile(0);
+        this.loadTiles();
         this.render();
+        console.log('✅ 编辑器初始化完成');
     }
 
-    /**
-     * 初始化DOM元素引用
-     */
     initDOM() {
         this.canvas = document.getElementById('tilemap-canvas');
         this.ctx = this.canvas.getContext('2d');
@@ -67,62 +47,88 @@ class TilemapEditor {
         this.btnExport = document.getElementById('btn-export');
         this.gridInfo = document.getElementById('grid-info');
         this.placedCount = document.getElementById('placed-count');
+
+        this.tiles = [];
+        this.selectedTileIndex = 0;
+        this.gridSize = 16;
+        this.gridData = [];
+        this.history = [];
+        this.historyIndex = -1;
+        this.isMouseDown = false;
+        this.lastPlacedX = -1;
+        this.lastPlacedY = -1;
+
+        console.log('✅ DOM 元素初始化完成');
     }
 
-    /**
-     * 从DOM加载图块信息
-     */
     loadTiles() {
+        console.log('📍 开始加载图块');
         const tileItems = document.querySelectorAll('.tile-selector-item');
-        this.tiles = [];
+        console.log(`  找到 ${tileItems.length} 个图块项`);
+
+        this.tiles = new Array(tileItems.length);
+        let loadedCount = 0;
+        const totalTiles = tileItems.length;
 
         tileItems.forEach((item, index) => {
             const img = new Image();
             const imgSrc = item.querySelector('img').src;
             const tileName = item.dataset.tileName;
 
+            this.tiles[index] = {
+                image: null,
+                name: tileName,
+                src: imgSrc,
+                loaded: false
+            };
+
             img.onload = () => {
-                this.tiles[index] = {
-                    image: img,
-                    name: tileName,
-                    src: imgSrc
-                };
+                this.tiles[index].image = img;
+                this.tiles[index].loaded = true;
+                loadedCount++;
+                console.log(`  ✅ 图块 ${index} 加载成功 (${loadedCount}/${totalTiles}): ${tileName}`);
+
+                if (loadedCount === totalTiles) {
+                    console.log('🎉 所有图块加载完成！');
+                    this.selectTile(0);
+                }
             };
 
             img.onerror = () => {
-                console.error(`图块 ${index} 加载失败: ${imgSrc}`);
+                console.error(`  ❌ 图块 ${index} 加载失败: ${imgSrc}`);
             };
 
             img.src = imgSrc;
         });
     }
 
-    /**
-     * 创建空白网格数据
-     */
     createEmptyGrid() {
         this.gridData = [];
         for (let y = 0; y < this.gridSize; y++) {
             this.gridData[y] = [];
             for (let x = 0; x < this.gridSize; x++) {
-                this.gridData[y][x] = -1; // -1表示空格子
+                this.gridData[y][x] = -1;
             }
         }
+        console.log('✅ 空白网格创建完成');
     }
 
-    /**
-     * 设置事件监听
-     */
     setupEventListeners() {
-        // 图块选择
+        console.log('📍 开始设置事件监听器');
+
+        // 图块选择事件
         const tileItems = document.querySelectorAll('.tile-selector-item');
+        console.log(`  为 ${tileItems.length} 个图块项绑定点击事件`);
+
         tileItems.forEach((item, index) => {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                console.log(`🖱️ 图块 ${index} 被点击！`);
+                console.log(`  目标元素:`, e.target);
                 this.selectTile(index);
             });
         });
 
-        // Canvas鼠标事件
+        // Canvas事件
         this.canvas.addEventListener('mousedown', (e) => this.onCanvasMouseDown(e));
         this.canvas.addEventListener('mousemove', (e) => this.onCanvasMouseMove(e));
         this.canvas.addEventListener('mouseup', () => this.onCanvasMouseUp());
@@ -138,16 +144,20 @@ class TilemapEditor {
         this.gridSizeSelect.addEventListener('change', (e) => {
             this.changeGridSize(parseInt(e.target.value));
         });
+
+        console.log('✅ 事件监听器设置完成');
     }
 
-    /**
-     * 选中指定的图块
-     * @param {number} index - 图块索引
-     */
     selectTile(index) {
-        if (index < 0 || index >= this.tiles.length) return;
+        console.log(`📍 selectTile(${index}) 被调用`);
+
+        if (index < 0 || index >= this.tiles.length) {
+            console.error(`❌ 索引越界: ${index}/${this.tiles.length}`);
+            return;
+        }
 
         this.selectedTileIndex = index;
+        console.log(`  ✅ 已选中图块 ${index}: ${this.tiles[index].name}`);
 
         // 更新UI高亮
         const tileItems = document.querySelectorAll('.tile-selector-item');
@@ -167,10 +177,6 @@ class TilemapEditor {
         }
     }
 
-    /**
-     * Canvas鼠标按下事件
-     * @param {MouseEvent} e - 鼠标事件
-     */
     onCanvasMouseDown(e) {
         this.isMouseDown = true;
         const coords = this.getGridCoordinates(e);
@@ -181,25 +187,17 @@ class TilemapEditor {
         }
     }
 
-    /**
-     * Canvas鼠标移动事件
-     * @param {MouseEvent} e - 鼠标事件
-     */
     onCanvasMouseMove(e) {
         if (!this.isMouseDown) return;
 
         const coords = this.getGridCoordinates(e);
         if (coords) {
-            // 如果位置改变了，放置图块
             if (coords.x !== this.lastPlacedX || coords.y !== this.lastPlacedY) {
                 this.placeTile(coords.x, coords.y);
             }
         }
     }
 
-    /**
-     * Canvas鼠标释放事件
-     */
     onCanvasMouseUp() {
         if (this.isMouseDown) {
             this.isMouseDown = false;
@@ -208,11 +206,6 @@ class TilemapEditor {
         }
     }
 
-    /**
-     * 获取鼠标位置对应的网格坐标
-     * @param {MouseEvent} e - 鼠标事件
-     * @returns {Object|null} - {x, y}或null
-     */
     getGridCoordinates(e) {
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -222,44 +215,26 @@ class TilemapEditor {
         const gridX = Math.floor(x / cellSize);
         const gridY = Math.floor(y / cellSize);
 
-        if (gridX < 0 || gridX >= this.gridSize ||
-            gridY < 0 || gridY >= this.gridSize) {
+        if (gridX < 0 || gridX >= this.gridSize || gridY < 0 || gridY >= this.gridSize) {
             return null;
         }
 
         return { x: gridX, y: gridY };
     }
 
-    /**
-     * 在指定位置放置图块
-     * @param {number} x - 网格X坐标
-     * @param {number} y - 网格Y坐标
-     */
     placeTile(x, y) {
         if (!this.isValidCoordinate(x, y)) return;
 
-        // 设置图块
         this.gridData[y][x] = this.selectedTileIndex;
-
-        // 更新UI
         this.updatePlacedCount();
         this.saveHistory();
         this.render();
     }
 
-    /**
-     * 检查坐标是否有效
-     * @param {number} x - X坐标
-     * @param {number} y - Y坐标
-     * @returns {boolean}
-     */
     isValidCoordinate(x, y) {
         return x >= 0 && x < this.gridSize && y >= 0 && y < this.gridSize;
     }
 
-    /**
-     * 更新已放置图块数量
-     */
     updatePlacedCount() {
         let count = 0;
         for (let y = 0; y < this.gridSize; y++) {
@@ -272,19 +247,12 @@ class TilemapEditor {
         this.placedCount.textContent = count;
     }
 
-    /**
-     * 保存当前状态到历史
-     */
     saveHistory() {
-        // 移除重做记录
         this.history.splice(this.historyIndex + 1);
-
-        // 保存深拷贝
         const state = JSON.parse(JSON.stringify(this.gridData));
         this.history.push(state);
         this.historyIndex = this.history.length - 1;
 
-        // 限制历史长度
         if (this.history.length > 50) {
             this.history.shift();
             this.historyIndex--;
@@ -293,9 +261,6 @@ class TilemapEditor {
         this.updateButtonStates();
     }
 
-    /**
-     * 撤销操作
-     */
     undo() {
         if (this.historyIndex > 0) {
             this.historyIndex--;
@@ -303,9 +268,6 @@ class TilemapEditor {
         }
     }
 
-    /**
-     * 重做操作
-     */
     redo() {
         if (this.historyIndex < this.history.length - 1) {
             this.historyIndex++;
@@ -313,29 +275,18 @@ class TilemapEditor {
         }
     }
 
-    /**
-     * 从历史恢复状态
-     */
     restoreFromHistory() {
-        this.gridData = JSON.parse(JSON.stringify(
-            this.history[this.historyIndex]
-        ));
+        this.gridData = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
         this.updatePlacedCount();
         this.updateButtonStates();
         this.render();
     }
 
-    /**
-     * 更新按钮的启用/禁用状态
-     */
     updateButtonStates() {
         this.btnUndo.disabled = this.historyIndex <= 0;
         this.btnRedo.disabled = this.historyIndex >= this.history.length - 1;
     }
 
-    /**
-     * 清空画布
-     */
     clearCanvas() {
         if (confirm('确定要清空画布吗？')) {
             this.createEmptyGrid();
@@ -347,10 +298,6 @@ class TilemapEditor {
         }
     }
 
-    /**
-     * 改变网格尺寸
-     * @param {number} newSize - 新的网格尺寸
-     */
     changeGridSize(newSize) {
         if (newSize === this.gridSize) return;
 
@@ -371,36 +318,28 @@ class TilemapEditor {
         this.render();
     }
 
-    /**
-     * 绘制渲染
-     */
     render() {
-        // 清空画布
         this.ctx.fillStyle = '#fff';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         const cellSize = this.canvas.width / this.gridSize;
 
-        // 绘制网格线
         this.ctx.strokeStyle = '#e0e0e0';
         this.ctx.lineWidth = 0.5;
         for (let i = 0; i <= this.gridSize; i++) {
             const pos = i * cellSize;
 
-            // 水平线
             this.ctx.beginPath();
             this.ctx.moveTo(0, pos);
             this.ctx.lineTo(this.canvas.width, pos);
             this.ctx.stroke();
 
-            // 竖线
             this.ctx.beginPath();
             this.ctx.moveTo(pos, 0);
             this.ctx.lineTo(pos, this.canvas.height);
             this.ctx.stroke();
         }
 
-        // 绘制已放置的图块
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 const tileIndex = this.gridData[y][x];
@@ -411,13 +350,6 @@ class TilemapEditor {
         }
     }
 
-    /**
-     * 绘制单个图块
-     * @param {number} gridX - 网格X坐标
-     * @param {number} gridY - 网格Y坐标
-     * @param {number} tileIndex - 图块索引
-     * @param {number} cellSize - 格子大小
-     */
     drawTile(gridX, gridY, tileIndex, cellSize) {
         const tile = this.tiles[tileIndex];
         if (!tile || !tile.image) return;
@@ -428,11 +360,7 @@ class TilemapEditor {
         this.ctx.drawImage(tile.image, x, y, cellSize, cellSize);
     }
 
-    /**
-     * 导出为PNG
-     */
     exportToPNG() {
-        // 创建导出用的Canvas
         const exportCanvas = document.createElement('canvas');
         const cellSize = 16;
         exportCanvas.width = this.gridSize * cellSize;
@@ -440,7 +368,6 @@ class TilemapEditor {
 
         const exportCtx = exportCanvas.getContext('2d');
 
-        // 绘制图块
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 const tileIndex = this.gridData[y][x];
@@ -448,24 +375,15 @@ class TilemapEditor {
                     const tile = this.tiles[tileIndex];
                     const sx = x * cellSize;
                     const sy = y * cellSize;
-                    exportCtx.drawImage(
-                        tile.image,
-                        sx, sy,
-                        cellSize, cellSize
-                    );
+                    exportCtx.drawImage(tile.image, sx, sy, cellSize, cellSize);
                 }
             }
         }
 
-        // 转换为图片并下载
         const imageData = exportCanvas.toDataURL('image/png');
         this.downloadImage(imageData);
     }
 
-    /**
-     * 下载图片
-     * @param {string} dataUrl - 图片数据URL
-     */
     downloadImage(dataUrl) {
         const link = document.getElementById('download-link');
         link.href = dataUrl;
@@ -474,8 +392,18 @@ class TilemapEditor {
     }
 }
 
-// 页面加载完成后初始化编辑器
+// ========== 页面加载完成后初始化编辑器 ==========
+console.log('📍 监听 DOMContentLoaded 事件...');
+
 document.addEventListener('DOMContentLoaded', () => {
-    new TilemapEditor();
+    console.log('✅ DOMContentLoaded 事件触发，开始创建 TilemapEditor 实例...');
+    try {
+        window.editor = new TilemapEditor();
+        console.log('✅ TilemapEditor 实例已创建，保存到 window.editor');
+    } catch (error) {
+        console.error('❌ 创建 TilemapEditor 失败:', error);
+        console.error('错误信息:', error.message);
+        console.error('堆栈:', error.stack);
+    }
 });
 
