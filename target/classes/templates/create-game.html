@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>创作游戏</title>
+    <link rel="stylesheet" th:href="@{/static/css/game-creation.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="game-creation-wrapper">
+            <!-- 页面头部 -->
+            <div class="creation-header">
+                <h1>创作游戏</h1>
+                <a href="/" class="back-button">← 返回首页</a>
+            </div>
+
+            <!-- 游戏信息表单 -->
+            <div class="game-info-panel">
+                <div class="info-group">
+                    <label>游戏名称</label>
+                    <input type="text" id="game-name" placeholder="输入游戏名称">
+                </div>
+                <div class="info-group">
+                    <label>游戏描述</label>
+                    <textarea id="game-description" placeholder="输入游戏描述"></textarea>
+                </div>
+            </div>
+
+            <!-- 编辑器选项卡 -->
+            <div class="editor-tabs">
+                <div class="editor-tab-header">
+                    <button class="editor-tab-button active" data-tab="tilemap">
+                        🗺️ 地图编辑
+                    </button>
+                    <button class="editor-tab-button" data-tab="image">
+                        🖼️ 图片编辑
+                    </button>
+                </div>
+
+                <!-- 地图编辑器容器 (Tab 1) -->
+                <div class="editor-tab-content active" id="tilemap-tab">
+                    <div class="editor-container">
+                        <!-- 嵌入 Tilemap 编辑器 -->
+                        <div th:replace="~{tilemap-editor :: content}"></div>
+                    </div>
+                </div>
+
+                <!-- 图片编辑器容器 (Tab 2) -->
+                <div class="editor-tab-content" id="image-tab">
+                    <div class="image-editor-container">
+                        <div class="editor-placeholder">
+                            <p>🖼️ 图片编辑器开发中...</p>
+                            <p class="placeholder-hint">支持的功能：精灵图编辑、贴图库管理等</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button class="btn btn-save">保存游戏</button>
+                <button class="btn btn-publish">发布到广场</button>
+                <button class="btn btn-cancel">取消</button>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/static/js/game-creation.js}"></script>
+</body>
+</html>
+

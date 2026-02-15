@@ -1,0 +1,206 @@
+/* 颜色变量 - 与编辑器主题统一 */
+:root {
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a1f2e;
+    --color-primary: #00d4ff;
+    --color-primary-dark: #0099cc;
+    --text-primary: #e8e9ea;
+    --text-secondary: #a0a1a2;
+}
+
+/* 顶部导航 */
+.homepage-nav {
+    background: rgba(26, 31, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-brand h1 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.nav-brand p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--color-primary);
+}
+
+/* 英雄区 */
+.homepage-hero {
+    text-align: center;
+    padding: 80px 30px;
+    background: linear-gradient(135deg,
+        rgba(0, 212, 255, 0.05) 0%,
+        rgba(0, 212, 255, 0.02) 100%);
+}
+
+.homepage-hero h2 {
+    font-size: 48px;
+    color: var(--color-primary);
+    margin: 0 0 20px 0;
+    font-weight: 700;
+}
+
+.homepage-hero p {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* 菜单网格 */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    max-width: 1400px;
+    margin: 60px auto;
+    padding: 0 30px;
+}
+
+/* 菜单卡片 */
+.menu-card {
+    background: rgba(26, 31, 46, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 12px;
+    padding: 40px 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.menu-card:hover {
+    background: rgba(26, 31, 46, 0.8);
+    border-color: rgba(0, 212, 255, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+}
+
+.card-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.menu-card h3 {
+    font-size: 24px;
+    color: var(--color-primary);
+    margin: 0 0 15px 0;
+    font-weight: 600;
+}
+
+.menu-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 25px 0;
+    line-height: 1.6;
+}
+
+/* 按钮 */
+.card-button {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--color-primary);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.6);
+}
+
+/* 页脚 */
+.homepage-footer {
+    text-align: center;
+    padding: 40px 30px;
+    border-top: 1px solid rgba(0, 212, 255, 0.1);
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .homepage-hero h2 {
+        font-size: 36px;
+    }
+
+    .homepage-hero p {
+        font-size: 16px;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    .menu-card {
+        padding: 30px 20px;
+    }
+
+    .nav-container {
+        flex-direction: column;
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    .nav-links {
+        gap: 15px;
+    }
+}
+

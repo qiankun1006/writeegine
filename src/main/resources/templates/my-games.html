@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>我的游戏</title>
+    <link rel="stylesheet" th:href="@{/static/css/game-management.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="my-games-wrapper">
+            <div class="my-games-header">
+                <h1>我的游戏</h1>
+                <a href="/create-game" class="btn btn-primary">+ 创建新游戏</a>
+            </div>
+
+            <!-- 游戏列表 -->
+            <div class="games-list">
+                <!-- 游戏项将由后端动态渲染 -->
+                <div class="game-item" th:each="game : ${games}">
+                    <div class="game-thumbnail">
+                        <img th:src="${game.thumbnail}" alt="游戏预览">
+                    </div>
+                    <div class="game-details">
+                        <h3 th:text="${game.name}">游戏名称</h3>
+                        <p th:text="${game.description}">游戏描述</p>
+                        <div class="game-stats">
+                            <span>创建于: <span th:text="${#temporals.format(game.createdAt, 'yyyy-MM-dd')}"></span></span>
+                            <span>状态: <span th:text="${game.status}"></span></span>
+                        </div>
+                    </div>
+                    <div class="game-actions">
+                        <a th:href="@{/create-game/{id}(id=${game.id})}" class="btn-edit">编辑</a>
+                        <a th:href="@{/game-plaza/play/{id}(id=${game.id})}" class="btn-play">游玩</a>
+                        <button class="btn-delete">删除</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 空状态提示 -->
+            <div class="empty-state" th:if="${#lists.isEmpty(games)}">
+                <p>还没有创建游戏，<a href="/create-game">现在就开始</a></p>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/static/js/game-management.js}"></script>
+</body>
+</html>
+

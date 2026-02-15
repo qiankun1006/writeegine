@@ -1,42 +1,73 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
-    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">首页</title>
+    <title>WriteMyself - 游戏创作平台</title>
+    <link rel="stylesheet" th:href="@{/static/css/homepage.css}">
 </head>
 <body>
     <div layout:fragment="content">
-        <h1 th:text="${message}">欢迎消息</h1>
-        <p>这是一个使用Spring Boot和Thymeleaf构建的前后端不分离Web应用示例。</p>
+        <!-- 顶部导航 -->
+        <nav class="homepage-nav">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <h1>✨ WriteMyself</h1>
+                    <p>游戏创作平台</p>
+                </div>
+                <div class="nav-links">
+                    <a href="/" class="nav-link active">首页</a>
+                    <a href="/my-games" class="nav-link">我的游戏</a>
+                    <a href="/game-plaza" class="nav-link">游戏广场</a>
+                </div>
+            </div>
+        </nav>
 
-        <section>
-            <h2>功能特性</h2>
-            <ul>
-                <li>服务器端渲染HTML</li>
-                <li>响应式设计</li>
-                <li>静态资源支持</li>
-                <li>易于扩展</li>
-            </ul>
-        </section>
+        <!-- 主体内容 -->
+        <div class="homepage-hero">
+            <h2>欢迎来到游戏创作平台</h2>
+            <p>使用直观的Tilemap编辑器创作属于你的游戏</p>
+        </div>
 
-        <section>
-            <h2>快速开始</h2>
-            <p>编辑 <code>src/main/resources/templates/</code> 中的HTML文件来修改页面内容。</p>
-        </section>
+        <!-- 功能菜单卡片 -->
+        <div class="menu-grid">
+            <!-- 创作游戏卡片 -->
+            <div class="menu-card">
+                <div class="card-icon">🎮</div>
+                <h3>创作游戏</h3>
+                <p>使用强大的Tilemap编辑器，快速创建和编辑游戏地图</p>
+                <a href="/create-game" class="card-button btn-primary">
+                    开始创作 →
+                </a>
+            </div>
 
-        <!-- Thymeleaf语法示例 -->
-        <section>
-            <h2>Thymeleaf示例</h2>
-            <p th:text="'当前时间: ' + ${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm:ss')}">时间示例</p>
-            <p th:if="${message != null}" th:text="'消息长度: ' + ${#strings.length(message)}">消息长度</p>
-            <ul>
-                <li th:each="i : ${#numbers.sequence(1, 3)}">
-                    项目 <span th:text="${i}">1</span>
-                </li>
-            </ul>
-        </section>
+            <!-- 我的游戏卡片 -->
+            <div class="menu-card">
+                <div class="card-icon">📚</div>
+                <h3>我的游戏</h3>
+                <p>查看和管理你创建的所有游戏项目</p>
+                <a href="/my-games" class="card-button btn-secondary">
+                    查看游戏 →
+                </a>
+            </div>
+
+            <!-- 游戏广场卡片 -->
+            <div class="menu-card">
+                <div class="card-icon">🌟</div>
+                <h3>游戏广场</h3>
+                <p>发现和体验社区创意工作者的游戏作品</p>
+                <a href="/game-plaza" class="card-button btn-secondary">
+                    浏览广场 →
+                </a>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="homepage-footer">
+            <p>© 2026 WriteMyself. All rights reserved.</p>
+        </footer>
     </div>
+    <script th:src="@{/static/js/homepage.js}"></script>
 </body>
 </html>
 

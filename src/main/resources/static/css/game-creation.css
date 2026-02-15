@@ -1,0 +1,296 @@
+/* 颜色变量 */
+:root {
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a1f2e;
+    --color-primary: #00d4ff;
+    --color-primary-dark: #0099cc;
+    --text-primary: #e8e9ea;
+    --text-secondary: #a0a1a2;
+}
+
+/* 创作游戏页面 */
+.game-creation-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 30px;
+}
+
+.creation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.creation-header h1 {
+    font-size: 32px;
+    color: var(--color-primary);
+    margin: 0;
+    font-weight: 700;
+}
+
+.back-button {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+}
+
+.back-button:hover {
+    color: var(--color-primary);
+}
+
+/* 游戏信息面板 */
+.game-info-panel {
+    background: rgba(26, 31, 46, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-group label {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.info-group input,
+.info-group textarea {
+    background: rgba(15, 20, 25, 0.5);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 6px;
+    padding: 12px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.info-group input:focus,
+.info-group textarea:focus {
+    outline: none;
+    border-color: rgba(0, 212, 255, 0.5);
+    background: rgba(15, 20, 25, 0.8);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+}
+
+.info-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* 编辑器选项卡样式 */
+.editor-tabs {
+    margin-bottom: 30px;
+    background: rgba(26, 31, 46, 0.4);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+/* 选项卡头部 */
+.editor-tab-header {
+    display: flex;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    background: rgba(15, 20, 25, 0.5);
+}
+
+/* 选项卡按钮 */
+.editor-tab-button {
+    flex: 1;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.editor-tab-button:hover {
+    color: var(--color-primary);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.editor-tab-button.active {
+    color: var(--color-primary);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+/* 活跃标签的下划线 */
+.editor-tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--color-primary);
+}
+
+/* 选项卡内容容器 */
+.editor-tab-content {
+    display: none;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.editor-tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 编辑器容器 */
+.editor-container {
+    min-height: 500px;
+    background: rgba(15, 20, 25, 0.5);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+/* 图片编辑器容器 */
+.image-editor-container {
+    min-height: 500px;
+    background: rgba(15, 20, 25, 0.5);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 编辑器占位符 */
+.editor-placeholder {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.editor-placeholder p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.editor-placeholder .placeholder-hint {
+    font-size: 12px;
+    color: var(--text-tertiary, #6e6f70);
+}
+
+/* 操作按钮 */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding: 20px;
+}
+
+.btn {
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+}
+
+.btn-save:hover {
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-publish {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--color-primary);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.btn-publish:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.6);
+}
+
+.btn-cancel {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 212, 255, 0.2);
+    color: var(--text-primary);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .game-info-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .creation-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .editor-tab-header {
+        flex-direction: column;
+    }
+
+    .editor-tab-button {
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    }
+
+    .editor-tab-button.active::after {
+        bottom: auto;
+        top: 0;
+        height: 3px;
+        width: 100%;
+    }
+
+    .editor-container,
+    .image-editor-container {
+        min-height: 400px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+

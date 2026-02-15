@@ -5,24 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title}">WriteMyself</title>
+    <!-- 全局主题CSS -->
+    <link rel="stylesheet" th:href="@{/static/css/theme.css}">
+    <!-- 旧样式（向后兼容） -->
     <link rel="stylesheet" th:href="@{/static/css/style.css}">
     <link rel="icon" th:href="@{/static/images/favicon.svg}" type="image/svg+xml">
-    <style>
-        /* 深色游戏引擎主题 */
-        body {
-            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
-            background-attachment: fixed;
-            color: #e8e9ea;
-        }
-    </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <a th:href="@{/}">首页</a>
-            <a th:href="@{/about}">关于</a>
-        </nav>
-    </header>
+    <!-- 页面导航可以由各个页面的导航栏覆盖（如首页的 .homepage-nav）-->
+    <!-- 对于其他页面，保留基础导航 -->
 
     <main>
         <!-- 内容区域，被子模板通过layout:fragment="content"替换 -->
