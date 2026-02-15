@@ -15,57 +15,27 @@
                 <a href="/" class="back-button">← 返回首页</a>
             </div>
 
-            <!-- 游戏信息表单 -->
-            <div class="game-info-panel">
-                <div class="info-group">
-                    <label>游戏名称</label>
-                    <input type="text" id="game-name" placeholder="输入游戏名称">
-                </div>
-                <div class="info-group">
-                    <label>游戏描述</label>
-                    <textarea id="game-description" placeholder="输入游戏描述"></textarea>
-                </div>
-            </div>
+            <!-- 功能入口选择 -->
+            <div class="editor-selector">
+                <h2>选择编辑器</h2>
+                <div class="editor-options">
+                    <!-- 地图编辑入口 -->
+                    <a href="/create-game/tilemap" class="editor-card">
+                        <div class="editor-icon">🗺️</div>
+                        <h3>地图编辑</h3>
+                        <p>创建和编辑游戏地图，放置地块和设计关卡</p>
+                    </a>
 
-            <!-- 编辑器选项卡 -->
-            <div class="editor-tabs">
-                <div class="editor-tab-header">
-                    <button class="editor-tab-button active" data-tab="tilemap">
-                        🗺️ 地图编辑
-                    </button>
-                    <button class="editor-tab-button" data-tab="image">
-                        🖼️ 图片编辑
-                    </button>
+                    <!-- 图片编辑入口 -->
+                    <a href="/create-game/image" class="editor-card">
+                        <div class="editor-icon">🖼️</div>
+                        <h3>图片编辑</h3>
+                        <p>编辑游戏精灵图和纹理资源</p>
+                    </a>
                 </div>
-
-                <!-- 地图编辑器容器 (Tab 1) -->
-                <div class="editor-tab-content active" id="tilemap-tab">
-                    <div class="editor-container">
-                        <!-- 嵌入 Tilemap 编辑器 -->
-                        <div th:replace="~{tilemap-editor :: content}"></div>
-                    </div>
-                </div>
-
-                <!-- 图片编辑器容器 (Tab 2) -->
-                <div class="editor-tab-content" id="image-tab">
-                    <div class="image-editor-container">
-                        <div class="editor-placeholder">
-                            <p>🖼️ 图片编辑器开发中...</p>
-                            <p class="placeholder-hint">支持的功能：精灵图编辑、贴图库管理等</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="action-buttons">
-                <button class="btn btn-save">保存游戏</button>
-                <button class="btn btn-publish">发布到广场</button>
-                <button class="btn btn-cancel">取消</button>
             </div>
         </div>
     </div>
-    <script th:src="@{/static/js/game-creation.js}"></script>
 </body>
 </html>
 

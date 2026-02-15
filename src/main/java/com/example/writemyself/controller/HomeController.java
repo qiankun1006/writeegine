@@ -21,12 +21,22 @@ public class HomeController {
     }
 
     /**
-     * 创作游戏页面
-     * 在此页面中嵌入 Tilemap 编辑器
+     * 创作游戏目录页面
+     * 显示两个功能入口：地图编辑和图片编辑
      */
     @GetMapping("/create-game")
     public String createGame(Model model) {
         model.addAttribute("title", "创作游戏");
+        return "create-game";
+    }
+
+    /**
+     * Tilemap 地图编辑页面
+     * 在此页面中嵌入完整的 Tilemap 编辑器
+     */
+    @GetMapping("/create-game/tilemap")
+    public String createGameTilemap(Model model) {
+        model.addAttribute("title", "地图编辑 - 创作游戏");
 
         // 为嵌入的 Tilemap 编辑器准备数据（与 TilemapEditorController 相同）
         List<String> tileImages = new ArrayList<>(Arrays.asList(
@@ -54,7 +64,17 @@ public class HomeController {
         model.addAttribute("tileNames", tileNames);
         model.addAttribute("defaultGridSize", 16);
 
-        return "create-game";
+        return "create-game-tilemap";
+    }
+
+    /**
+     * 图片编辑页面
+     * 显示图片编辑器（开发中）
+     */
+    @GetMapping("/create-game/image")
+    public String createGameImage(Model model) {
+        model.addAttribute("title", "图片编辑 - 创作游戏");
+        return "create-game-image";
     }
 
     /**

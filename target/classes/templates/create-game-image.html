@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>图片编辑</title>
+    <link rel="stylesheet" th:href="@{/static/css/game-creation.css}">
+    <style>
+        .image-editor-placeholder {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        .editor-empty-state {
+            background: rgba(26, 31, 46, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .editor-empty-state .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .editor-empty-state h2 {
+            font-size: 28px;
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+
+        .editor-empty-state p {
+            font-size: 16px;
+            color: #a0a1a2;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #a0a1a2;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+
+        .back-button:hover {
+            color: #00d4ff;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="image-editor-placeholder">
+            <!-- 返回按钮 -->
+            <a href="/create-game" class="back-button">← 返回创作游戏</a>
+
+            <!-- 空状态提示 -->
+            <div class="editor-empty-state">
+                <div class="icon">🖼️</div>
+                <h2>图片编辑器</h2>
+                <p>
+                    图片编辑器功能正在开发中...<br>
+                    <br>
+                    支持的功能将包括：
+                    <br>• 精灵图编辑
+                    <br>• 纹理贴图管理
+                    <br>• 图片处理和优化
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -8,7 +8,9 @@
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="tilemap-editor-wrapper">
+        <!-- 独立 fragment，供其他模板引入 -->
+        <div th:fragment="content">
+            <div class="tilemap-editor-wrapper">
             <!-- 左侧：图块选择面板 -->
             <div class="tile-selector-panel">
                 <h3>图块选择</h3>
@@ -88,6 +90,7 @@
 
         <!-- 隐藏下载链接 -->
         <a id="download-link" style="display: none;"></a>
+        </div><!-- 关闭 th:fragment="content" -->
     </div>
 </body>
 </html>
