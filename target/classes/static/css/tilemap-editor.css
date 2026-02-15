@@ -150,43 +150,44 @@
 /* ===== 编辑面板头部 ===== */
 .editor-header {
     display: flex;
-    flex-direction: column;
     gap: 12px;
+    align-items: flex-start;
 }
 
-/* ===== 当前选中显示（非浮动） ===== */
+/* ===== 当前选中显示（紧凑风格） ===== */
 .current-tile-display {
     position: static;
-    width: 100%;
+    width: 120px;
+    flex-shrink: 0;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 6px;
-    padding: 12px;
+    padding: 8px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 4px;
 }
 
 .current-tile-display h3 {
-    margin: 0 0 12px 0;
-    font-size: 13px;
+    margin: 0;
+    font-size: 11px;
     color: var(--color-primary);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     font-weight: 600;
 }
 
 .current-tile-preview {
-    width: 100px;
-    height: 100px;
+    width: 64px;
+    height: 64px;
     border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.3);
-    margin-bottom: 8px;
     overflow: hidden;
 }
 
@@ -197,15 +198,19 @@
 }
 
 #current-tile-name {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-primary);
-    margin-bottom: 8px;
-    font-size: 12px;
+    font-size: 11px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tile-info-tip {
-    font-size: 11px;
+    font-size: 9px;
     color: var(--text-tertiary);
+    display: none;
 }
 
 /* ===== 工具栏 ===== */
@@ -217,6 +222,7 @@
     border-radius: 6px;
     align-items: center;
     flex-wrap: wrap;
+    flex: 1;
 }
 
 .toolbar-group {
