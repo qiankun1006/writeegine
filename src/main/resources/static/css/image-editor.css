@@ -1,0 +1,518 @@
+/* 图片编辑器样式 */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.image-editor-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  background: #1e1e1e;
+  color: #333;
+}
+
+/* 菜单栏 */
+.menu-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2d2d2d;
+  border-bottom: 1px solid #404040;
+  padding: 8px 12px;
+  height: 40px;
+  min-height: 40px;
+}
+
+.menu-group {
+  display: flex;
+  gap: 8px;
+}
+
+.menu-btn {
+  padding: 4px 12px;
+  background: #404040;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.menu-btn:hover {
+  background: #4a4a4a;
+  border-color: #666;
+}
+
+.zoom-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zoom-btn {
+  padding: 4px 8px;
+  background: #404040;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 30px;
+}
+
+.zoom-btn:hover {
+  background: #4a4a4a;
+}
+
+.zoom-input {
+  width: 50px;
+  padding: 4px;
+  background: #3a3a3a;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.zoom-label {
+  color: #aaa;
+  font-size: 12px;
+  margin-left: -4px;
+}
+
+/* 工作区 */
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 工具栏 */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #252525;
+  border-right: 1px solid #404040;
+  padding: 12px 8px;
+  width: 70px;
+  min-width: 70px;
+  overflow-y: auto;
+}
+
+.tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tool-btn {
+  width: 48px;
+  height: 48px;
+  background: #353535;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background: #404040;
+  border-color: #666;
+}
+
+.tool-btn.active {
+  background: #0078d4;
+  border-color: #0078d4;
+  box-shadow: 0 0 8px rgba(0, 120, 212, 0.5);
+}
+
+.tool-separator {
+  width: 100%;
+  height: 1px;
+  background: #404040;
+}
+
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.color-picker label {
+  font-size: 10px;
+  color: #aaa;
+}
+
+.color-picker input[type="color"] {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 左侧面板 */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  min-width: 200px;
+  background: #252525;
+  border-right: 1px solid #404040;
+  overflow: hidden;
+}
+
+/* 面板通用样式 */
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  border-bottom: 1px solid #404040;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: #2d2d2d;
+  border-bottom: 1px solid #404040;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ddd;
+  margin: 0;
+}
+
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.panel-buttons {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.btn-small {
+  flex: 1;
+  padding: 4px 8px;
+  background: #404040;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.btn-small:hover {
+  background: #4a4a4a;
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  padding: 4px 8px;
+  background: #404040;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-icon:hover {
+  background: #4a4a4a;
+}
+
+/* 图层面板 */
+.layers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: #353535;
+  border: 1px solid #454545;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.layer-item:hover {
+  background: #3a3a3a;
+  border-color: #555;
+}
+
+.layer-item.selected {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: white;
+}
+
+.layer-visibility input {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.layer-name {
+  flex: 1;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layer-opacity {
+  width: 50px;
+}
+
+.layer-opacity input {
+  width: 100%;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* 画布区域 */
+.canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  overflow: hidden;
+  position: relative;
+}
+
+#editorCanvas {
+  background: white;
+  cursor: default;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* 右侧面板 */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  min-width: 220px;
+  background: #252525;
+  border-left: 1px solid #404040;
+  overflow: hidden;
+}
+
+/* 工具选项面板 */
+.tool-options-panel {
+  border-bottom: 1px solid #404040;
+}
+
+.tool-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-bottom: 1px solid #353535;
+}
+
+.tool-option label {
+  font-size: 11px;
+  color: #aaa;
+  text-transform: capitalize;
+}
+
+.tool-option input[type="text"],
+.tool-option input[type="number"],
+.tool-option input[type="range"],
+.tool-option input[type="color"] {
+  padding: 4px;
+  background: #353535;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 2px;
+  font-size: 11px;
+}
+
+.tool-option input[type="range"] {
+  padding: 0;
+  height: 18px;
+}
+
+.tool-option input[type="range"]::-webkit-slider-thumb {
+  background: #0078d4;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 历史记录面板 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.history-item {
+  padding: 4px;
+  background: #353535;
+  border: 1px solid #454545;
+  border-radius: 2px;
+  font-size: 11px;
+  color: #aaa;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item:hover {
+  background: #3a3a3a;
+  border-color: #555;
+}
+
+.history-item.current {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: white;
+  font-weight: 600;
+}
+
+/* 状态栏 */
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #2d2d2d;
+  border-top: 1px solid #404040;
+  padding: 6px 12px;
+  height: 30px;
+  min-height: 30px;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-item button {
+  margin-left: auto;
+}
+
+/* 菜单 */
+.context-menu {
+  position: fixed;
+  background: #2d2d2d;
+  border: 1px solid #555;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.context-menu .menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  color: #ddd;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.context-menu .menu-item:hover {
+  background: #353535;
+  color: white;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #252525;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .toolbar {
+    width: 60px;
+  }
+
+  .left-panel,
+  .right-panel {
+    width: 150px;
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .toolbar,
+  .left-panel,
+  .right-panel {
+    display: none;
+  }
+
+  .workspace {
+    flex-direction: column;
+  }
+}
+
+/* 禁用文本选择（工具栏） */
+.toolbar,
+.menu-bar {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
