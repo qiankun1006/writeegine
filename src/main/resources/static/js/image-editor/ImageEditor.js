@@ -56,6 +56,52 @@ class ImageEditor {
 
     // 激活画笔工具作为默认工具
     this.toolManager.activate('brush', this);
+
+    // 初始化滤镜系统
+    this._setupFilters();
+  }
+
+  /**
+   * 设置滤镜系统
+   */
+  _setupFilters() {
+    // 注册基础滤镜
+    filterPipeline.registerFilter('blur', BlurFilter);
+    filterPipeline.registerFilter('sharpen', SharpenFilter);
+    filterPipeline.registerFilter('emboss', EmbossFilter);
+    filterPipeline.registerFilter('edge-detect', EdgeDetectFilter);
+
+    // 注册色彩调整滤镜
+    filterPipeline.registerFilter('brightness-contrast', BrightnessContrastFilter);
+    filterPipeline.registerFilter('hue-saturation', HueSaturationFilter);
+    filterPipeline.registerFilter('levels', LevelsFilter);
+    filterPipeline.registerFilter('curves', CurvesFilter);
+    filterPipeline.registerFilter('saturation', SaturationFilter);
+    filterPipeline.registerFilter('grayscale', GrayscaleFilter);
+    filterPipeline.registerFilter('invert', InvertFilter);
+    filterPipeline.registerFilter('temperature', TemperatureFilter);
+
+    // 注册高级滤镜
+    filterPipeline.registerFilter('liquify', LiquifyFilter);
+    filterPipeline.registerFilter('displace', DisplaceFilter);
+    filterPipeline.registerFilter('motion-blur', MotionBlurFilter);
+    filterPipeline.registerFilter('radial-blur', RadialBlurFilter);
+    filterPipeline.registerFilter('pixelate', PixelateFilter);
+    filterPipeline.registerFilter('oil-paint', OilPaintFilter);
+
+    // 注册效果滤镜
+    filterPipeline.registerFilter('clouds', CloudsFilter);
+    filterPipeline.registerFilter('lighting', LightingFilter);
+    filterPipeline.registerFilter('emboss-render', EmbossRenderFilter);
+    filterPipeline.registerFilter('bevel-emboss', BevelEmbossFilter);
+    filterPipeline.registerFilter('mirror', MirrorFilter);
+    filterPipeline.registerFilter('checkerboard', CheckerboardFilter);
+
+    // 注册图层样式
+    layerStyleManager.registerStyle('drop-shadow', DropShadowStyle);
+    layerStyleManager.registerStyle('outer-glow', OuterGlowStyle);
+    layerStyleManager.registerStyle('inner-glow', InnerGlowStyle);
+    layerStyleManager.registerStyle('stroke', StrokeStyle);
   }
 
   /**
@@ -423,6 +469,134 @@ class ImageEditor {
       canRedo: this.canRedo(),
       isDirty: this.isDirty
     };
+  }
+
+  /**
+   * 应用滤镜到当前图层
+   */
+  applyFilter(filterId, params = {}) {
+    const layer = this.getSelectedLayer();
+    if (!layer) return null;
+
+    const ctx = layer.getContext();
+    const previousImageData = ctx.getImageData(0, 0, layer.width, layer.height);
+
+    // 应用滤镜
+    const newImageData = filterPipeline.applyFilter(filterId, previousImageData, params);
+
+    if (newImageData) {
+      ctx.putImageData(newImageData, 0, 0);
+
+      // 添加到撤销历史
+      const command = new DrawCommand(layer, newImageData, previousImageData);
+      commandHistory.execute(command);
+
+      this.isDirty = true;
+      this.render();
+      eventBus.emit('filterApplied', { filterId, params });
+
+      return newImageData;
+    }
+
+    return null;
+  }
+
+  /**
+   * 应用滤镜链
+   */
+  applyFilterChain(filterIds, paramsList = []) {
+    const layer = this.getSelectedLayer();
+    if (!layer) return null;
+
+    const ctx = layer.getContext();
+    const previousImageData = ctx.getImageData(0, 0, layer.width, layer.height);
+
+    // 应用滤镜链
+    let result = filterPipeline.applyFilterChain(filterIds, previousImageData, paramsList);
+
+    if (result) {
+      ctx.putImageData(result, 0, 0);
+
+      // 添加到撤销历史
+      const command = new DrawCommand(layer, result, previousImageData);
+      commandHistory.execute(command);
+
+      this.isDirty = true;
+      this.render();
+      eventBus.emit('filterChainApplied', { filterIds });
+
+      return result;
+    }
+
+    return null;
+  }
+
+  /**
+   * 应用图层样式
+   */
+  applyLayerStyle(styleId, params = {}) {
+    const layer = this.getSelectedLayer();
+    if (!layer) return null;
+
+    const ctx = layer.getContext();
+    const previousImageData = ctx.getImageData(0, 0, layer.width, layer.height);
+
+    // 应用样式
+    const newImageData = layerStyleManager.applyStyle(styleId, previousImageData, params);
+
+    if (newImageData) {
+      ctx.putImageData(newImageData, 0, 0);
+
+      // 添加到撤销历史
+      const command = new DrawCommand(layer, newImageData, previousImageData);
+      commandHistory.execute(command);
+
+      this.isDirty = true;
+      this.render();
+      eventBus.emit('layerStyleApplied', { styleId, params });
+
+      return newImageData;
+    }
+
+    return null;
+  }
+
+  /**
+   * 获取所有可用的滤镜
+   */
+  getAvailableFilters() {
+    return filterPipeline.getAllFilters();
+  }
+
+  /**
+   * 获取滤镜历史
+   */
+  getFilterHistory() {
+    return filterPipeline.getHistory();
+  }
+
+  /**
+   * 撤销滤镜
+   */
+  undoFilter() {
+    const item = filterPipeline.undo();
+    if (item) {
+      this.render();
+      return item;
+    }
+    return null;
+  }
+
+  /**
+   * 重做滤镜
+   */
+  redoFilter() {
+    const item = filterPipeline.redo();
+    if (item) {
+      this.render();
+      return item;
+    }
+    return null;
   }
 }
 

@@ -176,7 +176,7 @@ function setupEventListeners() {
     e.preventDefault();
   });
 
-  // 菜单栏按钮（暂时显示提示）
+  // 菜单栏按钮
   document.getElementById('menuFile').addEventListener('click', () => {
     alert('文件菜单 - 功能开发中');
   });
@@ -193,11 +193,50 @@ function setupEventListeners() {
     alert('选择菜单 - 功能开发中');
   });
   document.getElementById('menuFilter').addEventListener('click', () => {
-    alert('滤镜菜单 - 功能开发中');
+    showFilterMenu();
   });
   document.getElementById('menuView').addEventListener('click', () => {
     alert('查看菜单 - 功能开发中');
   });
+}
+
+/**
+ * 显示滤镜菜单
+ */
+function showFilterMenu() {
+  const filters = editor.getAvailableFilters();
+  const message = `可用滤镜 (${filters.length}):\n\n` +
+    '基础滤镜:\n' +
+    '- blur (模糊)\n' +
+    '- sharpen (锐化)\n' +
+    '- emboss (浮雕)\n' +
+    '- edge-detect (边界检测)\n\n' +
+    '色彩调整:\n' +
+    '- brightness-contrast (亮度/对比度)\n' +
+    '- hue-saturation (色相/饱和度)\n' +
+    '- saturation (饱和度)\n' +
+    '- grayscale (黑白)\n' +
+    '- invert (反色)\n' +
+    '- temperature (色温)\n\n' +
+    '高级滤镜:\n' +
+    '- pixelate (像素化)\n' +
+    '- oil-paint (油画)\n' +
+    '- motion-blur (运动模糊)\n' +
+    '- radial-blur (径向模糊)\n\n' +
+    '效果滤镜:\n' +
+    '- clouds (云彩)\n' +
+    '- lighting (光照)\n' +
+    '- mirror (镜像)\n\n' +
+    '示例: editor.applyFilter(\'blur\', {radius: 5})';
+
+  alert(message);
+}
+
+/**
+ * 应用示例滤镜的便捷函数
+ */
+function applyFilterQuick(filterId, params = {}) {
+  editor.applyFilter(filterId, params);
 }
 
 /**
