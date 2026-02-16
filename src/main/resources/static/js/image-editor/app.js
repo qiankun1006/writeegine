@@ -175,6 +175,29 @@ function setupEventListeners() {
   editor.canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
   });
+
+  // 菜单栏按钮（暂时显示提示）
+  document.getElementById('menuFile').addEventListener('click', () => {
+    alert('文件菜单 - 功能开发中');
+  });
+  document.getElementById('menuEdit').addEventListener('click', () => {
+    alert('编辑菜单 - 功能开发中');
+  });
+  document.getElementById('menuImage').addEventListener('click', () => {
+    alert('图像菜单 - 功能开发中');
+  });
+  document.getElementById('menuLayer').addEventListener('click', () => {
+    alert('图层菜单 - 功能开发中');
+  });
+  document.getElementById('menuSelect').addEventListener('click', () => {
+    alert('选择菜单 - 功能开发中');
+  });
+  document.getElementById('menuFilter').addEventListener('click', () => {
+    alert('滤镜菜单 - 功能开发中');
+  });
+  document.getElementById('menuView').addEventListener('click', () => {
+    alert('查看菜单 - 功能开发中');
+  });
 }
 
 /**
