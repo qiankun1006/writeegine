@@ -1,79 +1,155 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html lang="zh-CN">
 <head>
-    <title>图片编辑</title>
-    <link rel="stylesheet" th:href="@{/static/css/game-creation.css}">
-    <style>
-        .image-editor-placeholder {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 30px;
-        }
-
-        .editor-empty-state {
-            background: rgba(26, 31, 46, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 212, 255, 0.1);
-            border-radius: 12px;
-            padding: 80px 40px;
-            text-align: center;
-        }
-
-        .editor-empty-state .icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-        }
-
-        .editor-empty-state h2 {
-            font-size: 28px;
-            color: #00d4ff;
-            margin-bottom: 15px;
-        }
-
-        .editor-empty-state p {
-            font-size: 16px;
-            color: #a0a1a2;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
-        .back-button {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #a0a1a2;
-            text-decoration: none;
-            font-size: 14px;
-            padding: 8px 16px;
-        }
-
-        .back-button:hover {
-            color: #00d4ff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片编辑器 - WriteEngine</title>
+  <link rel="stylesheet" href="/static/css/image-editor.css">
 </head>
 <body>
-    <div layout:fragment="content">
-        <div class="image-editor-placeholder">
-            <!-- 返回按钮 -->
-            <a href="/create-game" class="back-button">← 返回创作游戏</a>
+  <div class="image-editor-container">
+    <!-- 顶部菜单栏 -->
+    <div class="menu-bar">
+      <div class="menu-group">
+        <button class="menu-btn" id="menuFile">文件</button>
+        <button class="menu-btn" id="menuEdit">编辑</button>
+        <button class="menu-btn" id="menuImage">图像</button>
+        <button class="menu-btn" id="menuLayer">图层</button>
+        <button class="menu-btn" id="menuSelect">选择</button>
+        <button class="menu-btn" id="menuFilter">滤镜</button>
+        <button class="menu-btn" id="menuView">查看</button>
+      </div>
 
-            <!-- 空状态提示 -->
-            <div class="editor-empty-state">
-                <div class="icon">🖼️</div>
-                <h2>图片编辑器</h2>
-                <p>
-                    图片编辑器功能正在开发中...<br>
-                    <br>
-                    支持的功能将包括：
-                    <br>• 精灵图编辑
-                    <br>• 纹理贴图管理
-                    <br>• 图片处理和优化
-                </p>
-            </div>
-        </div>
+      <div class="zoom-control">
+        <button id="zoomOut" class="zoom-btn" title="缩小">−</button>
+        <input type="number" id="zoomLevel" class="zoom-input" value="100" min="10" max="1000">
+        <span class="zoom-label">%</span>
+        <button id="zoomIn" class="zoom-btn" title="放大">+</button>
+        <button id="fitWindow" class="zoom-btn" title="适应窗口">适应</button>
+      </div>
     </div>
+
+    <!-- 主工作区 -->
+    <div class="workspace">
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="tool-group">
+          <button class="tool-btn" data-tool="rect-select" title="矩形选择 (R)">⬜</button>
+          <button class="tool-btn" data-tool="ellipse-select" title="椭圆选择 (E)">⭕</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
+        <div class="tool-group">
+          <button class="tool-btn active" data-tool="brush" title="画笔 (B)">🖌️</button>
+          <button class="tool-btn" data-tool="pencil" title="铅笔 (P)">✏️</button>
+          <button class="tool-btn" data-tool="eraser" title="橡皮 (E)">🧹</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
+        <div class="color-picker">
+          <label>前景色</label>
+          <input type="color" id="foregroundColor" value="#000000">
+          <label style="margin-left: 10px;">背景色</label>
+          <input type="color" id="backgroundColor" value="#ffffff">
+        </div>
+      </div>
+
+      <!-- 左侧面板 -->
+      <div class="left-panel">
+        <!-- 图层面板 -->
+        <div class="panel layers-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">图层</h3>
+          </div>
+          <div class="panel-content">
+            <div class="layers-list" id="layersList"></div>
+            <div class="panel-buttons">
+              <button id="addLayerBtn" class="btn-small" title="新建图层">➕ 新建</button>
+              <button id="deleteLayerBtn" class="btn-small" title="删除图层">🗑️ 删除</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中央画布区域 -->
+      <div class="canvas-area">
+        <canvas id="editorCanvas"></canvas>
+      </div>
+
+      <!-- 右侧面板 -->
+      <div class="right-panel">
+        <!-- 工具选项面板 -->
+        <div class="panel tool-options-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">工具选项</h3>
+          </div>
+          <div class="panel-content">
+            <div id="toolOptions"></div>
+          </div>
+        </div>
+
+        <!-- 历史记录面板 -->
+        <div class="panel history-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">历史记录</h3>
+            <div class="panel-buttons">
+              <button id="undoBtn" class="btn-icon" title="撤销 (Ctrl+Z)">↶</button>
+              <button id="redoBtn" class="btn-icon" title="重做 (Ctrl+Y)">↷</button>
+            </div>
+          </div>
+          <div class="panel-content">
+            <div class="history-list" id="historyList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <div class="statusbar">
+      <div class="status-item">
+        <span id="coordsDisplay">X: 0, Y: 0</span>
+      </div>
+      <div class="status-item">
+        <span id="sizeDisplay">宽: 800 × 高: 600</span>
+      </div>
+      <div class="status-item">
+        <span id="layerInfoDisplay">图层: 1</span>
+      </div>
+      <div class="status-item" style="flex: 1;"></div>
+      <div class="status-item">
+        <button id="exportBtn" class="btn-small" title="导出图片">📥 导出</button>
+        <button id="saveBtn" class="btn-small" title="保存文档">💾 保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导出菜单 -->
+  <div id="exportMenu" class="context-menu" style="display: none;">
+    <button class="menu-item" data-format="png">导出为 PNG</button>
+    <button class="menu-item" data-format="jpg">导出为 JPG</button>
+  </div>
+
+  <!-- 脚本加载 -->
+  <script src="/static/js/image-editor/EventBus.js"></script>
+  <script src="/static/js/image-editor/CommandHistory.js"></script>
+  <script src="/static/js/image-editor/Layer.js"></script>
+  <script src="/static/js/image-editor/Tool.js"></script>
+  <script src="/static/js/image-editor/CanvasRenderer.js"></script>
+  <script src="/static/js/image-editor/ImageEditor.js"></script>
+
+  <!-- Phase 1 工具 -->
+  <script src="/static/js/image-editor/tools/SelectionTools.js"></script>
+  <script src="/static/js/image-editor/tools/PaintingTools.js"></script>
+
+  <!-- Phase 2 工具 -->
+  <script src="/static/js/image-editor/tools/AdvancedSelectionTools.js"></script>
+  <script src="/static/js/image-editor/tools/AdvancedPaintingTools.js"></script>
+  <script src="/static/js/image-editor/tools/FillTools.js"></script>
+  <script src="/static/js/image-editor/tools/PenTool.js"></script>
+
+  <script src="/static/js/image-editor/app.js"></script>
 </body>
 </html>
 
