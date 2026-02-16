@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>滤镜系统测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #007bff;
+      margin-top: 20px;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .filters-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .filter-item {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      border-left: 4px solid #007bff;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    pre {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 滤镜系统测试</h1>
+    <div id="testStatus"></div>
+  </div>
+
+  <!-- 脚本加载 -->
+  <script src="/static/js/image-editor/EventBus.js"></script>
+  <script src="/static/js/image-editor/CommandHistory.js"></script>
+  <script src="/static/js/image-editor/filters/FilterPipeline.js"></script>
+  <script src="/static/js/image-editor/filters/BasicFilters.js"></script>
+  <script src="/static/js/image-editor/filters/ColorAdjustments.js"></script>
+  <script src="/static/js/image-editor/filters/LayerStyles.js"></script>
+  <script src="/static/js/image-editor/filters/AdvancedFilters.js"></script>
+  <script src="/static/js/image-editor/filters/EffectFilters.js"></script>
+
+  <script>
+    function generateTestReport() {
+      let html = '<h2>测试结果</h2>';
+
+      // 测试 FilterPipeline
+      html += '<h3>FilterPipeline 系统</h3>';
+      if (typeof filterPipeline !== 'undefined') {
+        html += '<div class="status success">✓ FilterPipeline 已加载</div>';
+      } else {
+        html += '<div class="status error">✗ FilterPipeline 未定义</div>';
+        document.getElementById('testStatus').innerHTML = html;
+        return;
+      }
+
+      // 测试 LayerStyleManager
+      html += '<h3>LayerStyleManager 系统</h3>';
+      if (typeof layerStyleManager !== 'undefined') {
+        html += '<div class="status success">✓ LayerStyleManager 已加载</div>';
+      } else {
+        html += '<div class="status error">✗ LayerStyleManager 未定义</div>';
+      }
+
+      // 获取所有滤镜
+      const filters = filterPipeline.getAllFilters();
+      html += `<h3>滤镜统计</h3>`;
+      html += `<div class="status info">✓ 总共 ${filters.length} 个滤镜</div>`;
+
+      // 分类显示
+      const categories = {
+        '基础滤镜': ['blur', 'sharpen', 'emboss', 'edge-detect'],
+        '色彩调整': ['brightness-contrast', 'hue-saturation', 'levels', 'curves', 'saturation', 'grayscale', 'invert', 'temperature'],
+        '高级滤镜': ['liquify', 'displace', 'motion-blur', 'radial-blur', 'pixelate', 'oil-paint'],
+        '效果滤镜': ['clouds', 'lighting', 'emboss-render', 'bevel-emboss', 'mirror', 'checkerboard']
+      };
+
+      for (const [category, ids] of Object.entries(categories)) {
+        const available = ids.filter(id => filters.includes(id));
+        const status = available.length === ids.length ? 'success' : 'error';
+        html += `<div style="margin-top: 15px;">`;
+        html += `<h4>${category}</h4>`;
+        html += `<div class="status ${status}">✓ ${available.length}/${ids.length} 已加载</div>`;
+
+        html += '<div class="filters-list">';
+        available.forEach(id => {
+          html += `<div class="filter-item">✓ ${id}</div>`;
+        });
+        html += '</div>';
+
+        if (available.length < ids.length) {
+          const missing = ids.filter(id => !filters.includes(id));
+          html += '<div class="filters-list">';
+          missing.forEach(id => {
+            html += `<div class="filter-item" style="border-left-color: #dc3545; background: #f8d7da;">✗ ${id}</div>`;
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+
+      // 测试滤镜类
+      html += '<h3>滤镜类验证</h3>';
+      const filterClasses = [
+        'BlurFilter', 'SharpenFilter', 'EmbossFilter', 'EdgeDetectFilter',
+        'BrightnessContrastFilter', 'HueSaturationFilter', 'LevelsFilter', 'CurvesFilter',
+        'SaturationFilter', 'GrayscaleFilter', 'InvertFilter', 'TemperatureFilter',
+        'LiquifyFilter', 'DisplaceFilter', 'MotionBlurFilter', 'RadialBlurFilter',
+        'PixelateFilter', 'OilPaintFilter',
+        'CloudsFilter', 'LightingFilter', 'EmbossRenderFilter', 'BevelEmbossFilter',
+        'MirrorFilter', 'CheckerboardFilter'
+      ];
+
+      const loadedClasses = filterClasses.filter(cls => typeof window[cls] !== 'undefined');
+      const totalClasses = filterClasses.length;
+      const status = loadedClasses.length === totalClasses ? 'success' : 'error';
+
+      html += `<div class="status ${status}">✓ ${loadedClasses.length}/${totalClasses} 滤镜类已加载</div>`;
+      html += '<div class="filters-list">';
+      loadedClasses.forEach(cls => {
+        html += `<div class="filter-item">✓ ${cls}</div>`;
+      });
+      html += '</div>';
+
+      // 测试样式类
+      html += '<h3>样式类验证</h3>';
+      const styleClasses = ['DropShadowStyle', 'OuterGlowStyle', 'InnerGlowStyle', 'StrokeStyle'];
+      const loadedStyles = styleClasses.filter(cls => typeof window[cls] !== 'undefined');
+      const statusStyle = loadedStyles.length === styleClasses.length ? 'success' : 'error';
+
+      html += `<div class="status ${statusStyle}">✓ ${loadedStyles.length}/${styleClasses.length} 样式类已加载</div>`;
+      html += '<div class="filters-list">';
+      loadedStyles.forEach(cls => {
+        html += `<div class="filter-item">✓ ${cls}</div>`;
+      });
+      html += '</div>';
+
+      // 测试基础功能
+      html += '<h3>功能测试</h3>';
+      try {
+        // 创建测试图片数据
+        const testCanvas = document.createElement('canvas');
+        testCanvas.width = 100;
+        testCanvas.height = 100;
+        const ctx = testCanvas.getContext('2d');
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(0, 0, 100, 100);
+        const imageData = ctx.getImageData(0, 0, 100, 100);
+
+        // 测试应用滤镜
+        const blurFilter = new BlurFilter({ radius: 5 });
+        const result = blurFilter.apply(imageData);
+
+        if (result && result.data.length === imageData.data.length) {
+          html += '<div class="status success">✓ 滤镜应用成功 (BlurFilter 测试)</div>';
+        } else {
+          html += '<div class="status error">✗ 滤镜应用失败</div>';
+        }
+      } catch (error) {
+        html += `<div class="status error">✗ 滤镜应用失败: ${error.message}</div>`;
+      }
+
+      // 总结
+      html += '<h3>总体评估</h3>';
+      const allChecks = [
+        filterPipeline && layerStyleManager,
+        loadedClasses.length === totalClasses,
+        loadedStyles.length === styleClasses.length,
+        filters.length >= 24
+      ];
+      const allPassed = allChecks.every(c => c);
+
+      if (allPassed) {
+        html += '<div class="status success" style="font-size: 16px; padding: 15px;">✓ 所有测试通过！滤镜系统已完全实现</div>';
+      } else {
+        html += '<div class="status error" style="font-size: 16px; padding: 15px;">✗ 部分测试未通过，请检查加载状态</div>';
+      }
+
+      document.getElementById('testStatus').innerHTML = html;
+    }
+
+    // 页面加载完成后执行测试
+    window.addEventListener('load', generateTestReport);
+  </script>
+</body>
+</html>
+
