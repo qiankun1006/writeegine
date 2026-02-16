@@ -3,6 +3,7 @@ package com.example.writemyself.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +107,15 @@ public class HomeController {
     public String about(Model model) {
         model.addAttribute("title", "关于我们");
         return "about";
+    }
+
+    /**
+     * Favicon 处理
+     * 浏览器自动请求 /favicon.ico，我们将其重定向到 SVG 版本
+     */
+    @GetMapping("/favicon.ico")
+    public RedirectView favicon() {
+        return new RedirectView("/static/images/favicon.svg");
     }
 }
 
