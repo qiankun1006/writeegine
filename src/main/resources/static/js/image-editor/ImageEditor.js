@@ -54,6 +54,14 @@ class ImageEditor {
     this.toolManager.register(new TextTool());
     this.toolManager.register(new PenTool());
 
+    // Phase 4 - 变换与3D工具
+    this.toolManager.register(new FreeTransformTool());
+    this.toolManager.register(new ScaleTool());
+    this.toolManager.register(new RotateTool());
+    this.toolManager.register(new SkewTool());
+    this.toolManager.register(new PerspectiveTool());
+    this.toolManager.register(new ThreeDTransformTool());
+
     // 激活画笔工具作为默认工具
     this.toolManager.activate('brush', this);
 

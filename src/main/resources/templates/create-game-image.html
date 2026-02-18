@@ -48,6 +48,22 @@
 
         <div class="tool-separator"></div>
 
+        <div class="tool-group">
+          <button class="tool-btn" data-tool="free-transform" title="自由变换 (T)">🔄</button>
+          <button class="tool-btn" data-tool="scale" title="缩放 (S)">↔️</button>
+          <button class="tool-btn" data-tool="rotate" title="旋转 (R)">🔄</button>
+          <button class="tool-btn" data-tool="skew" title="倾斜 (K)">🔀</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
+        <div class="tool-group">
+          <button class="tool-btn" data-tool="perspective" title="透视变换 (P)">🔲</button>
+          <button class="tool-btn" data-tool="3d-transform" title="3D 变换 (3)">📦</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
         <div class="color-picker">
           <label>前景色</label>
           <input type="color" id="foregroundColor" value="#000000">
@@ -157,8 +173,14 @@
   <script src="/static/js/image-editor/filters/AdvancedFilters.js"></script>
   <script src="/static/js/image-editor/filters/EffectFilters.js"></script>
 
+  <!-- Phase 4 变换与3D工具 -->
+  <script src="/static/js/image-editor/tools/TransformTools.js"></script>
+  <script src="/static/js/image-editor/tools/PerspectiveTool.js"></script>
+  <script src="/static/js/image-editor/tools/ThreeDTransformTool.js"></script>
+
   <script src="/static/js/image-editor/app.js"></script>
   <script src="/static/js/image-editor/filters-test.js"></script>
+  <script src="/static/js/image-editor/transform-test.js"></script>
 </body>
 </html>
 
