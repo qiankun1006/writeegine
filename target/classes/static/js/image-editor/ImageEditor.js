@@ -17,12 +17,23 @@ class ImageEditor {
     this.history = commandHistory;
     this.toolManager = toolManager;
 
+    // 初始化工具提示管理器
+    this.tooltipManager = new TooltipManager({
+      delay: 300,
+      fadeDuration: 150,
+      position: 'top'
+    });
+    this.tooltipManager.init();
+
     // 编辑器状态
     this.isDirty = false;
     this.isDrawing = false;
 
     // 初始化工具
     this._setupTools();
+
+    // 设置工具提示
+    this._setupTooltips();
 
     // 事件监听
     this._setupEventListeners();
@@ -67,6 +78,193 @@ class ImageEditor {
 
     // 初始化滤镜系统
     this._setupFilters();
+  }
+
+  /**
+   * 设置工具提示
+   */
+  _setupTooltips() {
+    // 选择工具提示
+    this._registerTooltip('rect-select-btn', {
+      title: '矩形选择',
+      description: '创建矩形选区，用于选择图像的矩形区域',
+      shortcut: 'R'
+    });
+
+    this._registerTooltip('ellipse-select-btn', {
+      title: '椭圆选择',
+      description: '创建椭圆选区，用于选择图像的椭圆区域',
+      shortcut: 'E'
+    });
+
+    // 绘制工具提示
+    this._registerTooltip('brush-btn', {
+      title: '画笔',
+      description: '使用软边画笔绘制，模拟真实画笔效果',
+      shortcut: 'B'
+    });
+
+    this._registerTooltip('pencil-btn', {
+      title: '铅笔',
+      description: '使用硬边铅笔绘制，创建清晰的线条',
+      shortcut: 'P'
+    });
+
+    this._registerTooltip('eraser-btn', {
+      title: '橡皮擦',
+      description: '擦除图像内容，显示下层图层或透明背景',
+      shortcut: 'E'
+    });
+
+    // 变换工具提示
+    this._registerTooltip('free-transform-btn', {
+      title: '自由变换',
+      description: '自由缩放、旋转和扭曲选中的图层或选区',
+      shortcut: 'Ctrl+T'
+    });
+
+    this._registerTooltip('scale-btn', {
+      title: '缩放',
+      description: '按比例调整图层或选区的大小',
+      shortcut: 'S'
+    });
+
+    this._registerTooltip('rotate-btn', {
+      title: '旋转',
+      description: '旋转图层或选区',
+      shortcut: 'R'
+    });
+
+    this._registerTooltip('skew-btn', {
+      title: '倾斜',
+      description: '倾斜图层或选区，创建透视效果',
+      shortcut: 'K'
+    });
+
+    this._registerTooltip('perspective-btn', {
+      title: '透视变换',
+      description: '调整图层的透视效果，模拟三维空间',
+      shortcut: 'P'
+    });
+
+    this._registerTooltip('3d-transform-btn', {
+      title: '3D变换',
+      description: '在三维空间中旋转和变换图层',
+      shortcut: '3'
+    });
+
+    // 菜单按钮提示
+    this._registerTooltip('menuFile', {
+      title: '文件',
+      description: '文件操作菜单：新建、打开、保存、导出等'
+    });
+
+    this._registerTooltip('menuEdit', {
+      title: '编辑',
+      description: '编辑操作菜单：撤销、重做、复制、粘贴等'
+    });
+
+    this._registerTooltip('menuImage', {
+      title: '图像',
+      description: '图像操作菜单：调整大小、旋转、裁剪等'
+    });
+
+    this._registerTooltip('menuLayer', {
+      title: '图层',
+      description: '图层操作菜单：新建、删除、合并、调整等'
+    });
+
+    this._registerTooltip('menuSelect', {
+      title: '选择',
+      description: '选择操作菜单：全选、反选、取消选择等'
+    });
+
+    this._registerTooltip('menuFilter', {
+      title: '滤镜',
+      description: '滤镜效果菜单：模糊、锐化、色彩调整等'
+    });
+
+    this._registerTooltip('menuView', {
+      title: '查看',
+      description: '查看选项菜单：缩放、网格、标尺等'
+    });
+
+    // 缩放控制提示
+    this._registerTooltip('zoomOut', {
+      title: '缩小',
+      description: '缩小画布显示比例',
+      shortcut: 'Ctrl+-'
+    });
+
+    this._registerTooltip('zoomIn', {
+      title: '放大',
+      description: '放大画布显示比例',
+      shortcut: 'Ctrl++'
+    });
+
+    this._registerTooltip('fitWindow', {
+      title: '适应窗口',
+      description: '调整画布大小以适应窗口'
+    });
+
+    // 面板按钮提示
+    this._registerTooltip('addLayerBtn', {
+      title: '新建图层',
+      description: '在当前文档中添加新的空白图层'
+    });
+
+    this._registerTooltip('deleteLayerBtn', {
+      title: '删除图层',
+      description: '删除当前选中的图层'
+    });
+
+    this._registerTooltip('undoBtn', {
+      title: '撤销',
+      description: '撤销上一步操作',
+      shortcut: 'Ctrl+Z'
+    });
+
+    this._registerTooltip('redoBtn', {
+      title: '重做',
+      description: '重做被撤销的操作',
+      shortcut: 'Ctrl+Y'
+    });
+
+    // 状态栏按钮提示
+    this._registerTooltip('exportBtn', {
+      title: '导出图片',
+      description: '将当前文档导出为图片文件（PNG/JPG）'
+    });
+
+    this._registerTooltip('saveBtn', {
+      title: '保存文档',
+      description: '保存当前编辑的文档'
+    });
+
+    // 状态栏信息提示
+    this._registerTooltip('coordsDisplay', {
+      title: '坐标信息',
+      description: '显示鼠标当前位置的坐标（X, Y）'
+    });
+
+    this._registerTooltip('sizeDisplay', {
+      title: '文档尺寸',
+      description: '显示当前文档的宽度和高度'
+    });
+
+    this._registerTooltip('layerInfoDisplay', {
+      title: '图层信息',
+      description: '显示当前图层信息和总图层数'
+    });
+  }
+
+  /**
+   * 注册工具提示
+   * @param {string} elementId - 元素ID
+   * @param {Object} data - 工具提示数据
+   */
+  _registerTooltip(elementId, data) {
+    this.tooltipManager.register(elementId, data);
   }
 
   /**
@@ -605,6 +803,46 @@ class ImageEditor {
       return item;
     }
     return null;
+  }
+
+  /**
+   * 销毁编辑器
+   */
+  destroy() {
+    // 销毁工具提示管理器
+    if (this.tooltipManager) {
+      this.tooltipManager.destroy();
+      this.tooltipManager = null;
+    }
+
+    // 清理其他资源
+    if (this.renderer) {
+      this.renderer.destroy();
+      this.renderer = null;
+    }
+
+    // 清理事件监听
+    if (this._eventListeners) {
+      this._eventListeners.forEach(({ element, type, handler }) => {
+        element.removeEventListener(type, handler);
+      });
+      this._eventListeners = null;
+    }
+
+    // 清理画布
+    if (this.canvas) {
+      const context = this.canvas.getContext('2d');
+      if (context) {
+        context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+    }
+
+    // 重置状态
+    this.document = null;
+    this.history = null;
+    this.toolManager = null;
+    this.isDirty = false;
+    this.isDrawing = false;
   }
 }
 

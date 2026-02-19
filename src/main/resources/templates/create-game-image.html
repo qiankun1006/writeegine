@@ -34,32 +34,40 @@
       <!-- 工具栏 -->
       <div class="toolbar">
         <div class="tool-group">
-          <button class="tool-btn" data-tool="rect-select" title="矩形选择 (R)">⬜</button>
-          <button class="tool-btn" data-tool="ellipse-select" title="椭圆选择 (E)">⭕</button>
+          <button class="tool-btn" id="rect-select-btn" data-tool="rect-select" title="矩形选择 (R)">⬜</button>
+          <button class="tool-btn" id="ellipse-select-btn" data-tool="ellipse-select" title="椭圆选择 (E)">⭕</button>
         </div>
 
         <div class="tool-separator"></div>
 
         <div class="tool-group">
-          <button class="tool-btn active" data-tool="brush" title="画笔 (B)">🖌️</button>
-          <button class="tool-btn" data-tool="pencil" title="铅笔 (P)">✏️</button>
-          <button class="tool-btn" data-tool="eraser" title="橡皮 (E)">🧹</button>
+          <button class="tool-btn active" id="brush-btn" data-tool="brush" title="画笔 (B)">🖌️</button>
+          <button class="tool-btn" id="pencil-btn" data-tool="pencil" title="铅笔 (P)">✏️</button>
+          <button class="tool-btn" id="eraser-btn" data-tool="eraser" title="橡皮 (E)">🧹</button>
         </div>
 
         <div class="tool-separator"></div>
 
         <div class="tool-group">
-          <button class="tool-btn" data-tool="free-transform" title="自由变换 (T)">🔄</button>
-          <button class="tool-btn" data-tool="scale" title="缩放 (S)">↔️</button>
-          <button class="tool-btn" data-tool="rotate" title="旋转 (R)">🔄</button>
-          <button class="tool-btn" data-tool="skew" title="倾斜 (K)">🔀</button>
+          <button class="tool-btn" id="free-transform-btn" data-tool="free-transform" title="自由变换 (T)">🔄</button>
+          <button class="tool-btn" id="scale-btn" data-tool="scale" title="缩放 (S)">↔️</button>
+          <button class="tool-btn" id="rotate-btn" data-tool="rotate" title="旋转 (R)">🔄</button>
+          <button class="tool-btn" id="skew-btn" data-tool="skew" title="倾斜 (K)">🔀</button>
         </div>
 
         <div class="tool-separator"></div>
 
         <div class="tool-group">
-          <button class="tool-btn" data-tool="perspective" title="透视变换 (P)">🔲</button>
-          <button class="tool-btn" data-tool="3d-transform" title="3D 变换 (3)">📦</button>
+          <button class="tool-btn" id="perspective-btn" data-tool="perspective" title="透视变换 (P)">🔲</button>
+          <button class="tool-btn" id="3d-transform-btn" data-tool="3d-transform" title="3D 变换 (3)">📦</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
+        <div class="tool-group">
+          <button class="tool-btn" id="ai-detect-btn" data-tool="ai-detect" title="AI对象检测 (D)">🤖</button>
+          <button class="tool-btn" id="ai-inpaint-btn" data-tool="ai-inpaint" title="AI内容补全 (I)">🎨</button>
+          <button class="tool-btn" id="ai-style-btn" data-tool="ai-style" title="AI风格转换 (S)">✨</button>
         </div>
 
         <div class="tool-separator"></div>
@@ -153,6 +161,7 @@
   <script src="/static/js/image-editor/Layer.js"></script>
   <script src="/static/js/image-editor/Tool.js"></script>
   <script src="/static/js/image-editor/CanvasRenderer.js"></script>
+  <script src="/static/js/image-editor/TooltipManager.js"></script>
   <script src="/static/js/image-editor/ImageEditor.js"></script>
 
   <!-- Phase 1 工具 -->

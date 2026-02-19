@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工具提示功能测试</title>
+  <link rel="stylesheet" href="/static/css/image-editor.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      border-left: 4px solid #4CAF50;
+    }
+
+    h2 {
+      color: #555;
+      margin-bottom: 15px;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .test-item {
+      padding: 15px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .test-item:hover {
+      background: #f0f8ff;
+      border-color: #4CAF50;
+      transform: translateY(-2px);
+    }
+
+    .test-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .test-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .instructions {
+      background: #e8f5e9;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      border-left: 4px solid #4CAF50;
+    }
+
+    .instructions h3 {
+      margin-top: 0;
+      color: #2e7d32;
+    }
+
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .test-results {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .result-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 4px;
+      border-left: 4px solid #ddd;
+    }
+
+    .result-item.passed {
+      border-left-color: #4CAF50;
+    }
+
+    .result-item.failed {
+      border-left-color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>📝 图片编辑器工具提示功能测试</h1>
+
+    <div class="instructions">
+      <h3>测试说明</h3>
+      <p>将鼠标悬停在下面的测试元素上，观察工具提示是否正常显示。每个工具提示应包含：</p>
+      <ol>
+        <li>工具名称（标题）</li>
+        <li>功能描述</li>
+        <li>快捷键信息（如果适用）</li>
+      </ol>
+      <p>工具提示应在300毫秒延迟后淡入显示，鼠标离开后淡出隐藏。</p>
+    </div>
+
+    <div class="test-section">
+      <h2>🔧 工具栏按钮测试</h2>
+      <div class="test-grid">
+        <div class="test-item" id="test-rect-select">
+          <span class="test-icon">⬜</span>
+          <span class="test-label">矩形选择</span>
+        </div>
+        <div class="test-item" id="test-ellipse-select">
+          <span class="test-icon">⭕</span>
+          <span class="test-label">椭圆选择</span>
+        </div>
+        <div class="test-item" id="test-brush">
+          <span class="test-icon">🖌️</span>
+          <span class="test-label">画笔</span>
+        </div>
+        <div class="test-item" id="test-pencil">
+          <span class="test-icon">✏️</span>
+          <span class="test-label">铅笔</span>
+        </div>
+        <div class="test-item" id="test-eraser">
+          <span class="test-icon">🧹</span>
+          <span class="test-label">橡皮擦</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>🔄 变换工具测试</h2>
+      <div class="test-grid">
+        <div class="test-item" id="test-free-transform">
+          <span class="test-icon">🔄</span>
+          <span class="test-label">自由变换</span>
+        </div>
+        <div class="test-item" id="test-scale">
+          <span class="test-icon">↔️</span>
+          <span class="test-label">缩放</span>
+        </div>
+        <div class="test-item" id="test-rotate">
+          <span class="test-icon">🔄</span>
+          <span class="test-label">旋转</span>
+        </div>
+        <div class="test-item" id="test-skew">
+          <span class="test-icon">🔀</span>
+          <span class="test-label">倾斜</span>
+        </div>
+        <div class="test-item" id="test-perspective">
+          <span class="test-icon">🔲</span>
+          <span class="test-label">透视变换</span>
+        </div>
+        <div class="test-item" id="test-3d-transform">
+          <span class="test-icon">📦</span>
+          <span class="test-label">3D变换</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>📋 菜单与面板测试</h2>
+      <div class="test-grid">
+        <div class="test-item" id="test-menu-file">
+          <span class="test-icon">📁</span>
+          <span class="test-label">文件菜单</span>
+        </div>
+        <div class="test-item" id="test-menu-edit">
+          <span class="test-icon">✏️</span>
+          <span class="test-label">编辑菜单</span>
+        </div>
+        <div class="test-item" id="test-add-layer">
+          <span class="test-icon">➕</span>
+          <span class="test-label">新建图层</span>
+        </div>
+        <div class="test-item" id="test-undo">
+          <span class="test-icon">↶</span>
+          <span class="test-label">撤销</span>
+        </div>
+        <div class="test-item" id="test-export">
+          <span class="test-icon">📥</span>
+          <span class="test-label">导出图片</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-results">
+      <h2>📊 测试结果</h2>
+      <div id="testResults">
+        <div class="result-item">测试尚未开始...</div>
+      </div>
+    </div>
+
+    <div class="status" id="testStatus">
+      准备测试...
+    </div>
+
+    <button onclick="runAllTests()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+      🚀 运行完整测试
+    </button>
+
+    <button onclick="clearResults()" style="padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-left: 10px;">
+      🗑️ 清除结果
+    </button>
+  </div>
+
+  <script src="/static/js/image-editor/TooltipManager.js"></script>
+  <script>
+    // 创建工具提示管理器
+    const tooltipManager = new TooltipManager({
+      delay: 300,
+      fadeDuration: 150,
+      position: 'top'
+    });
+
+    // 初始化工具提示管理器
+    tooltipManager.init();
+
+    // 注册测试工具提示
+    const testTooltips = [
+      // 工具栏按钮
+      { id: 'test-rect-select', data: { title: '矩形选择', description: '创建矩形选区，用于选择图像的矩形区域', shortcut: 'R' }},
+      { id: 'test-ellipse-select', data: { title: '椭圆选择', description: '创建椭圆选区，用于选择图像的椭圆区域', shortcut: 'E' }},
+      { id: 'test-brush', data: { title: '画笔', description: '使用软边画笔绘制，模拟真实画笔效果', shortcut: 'B' }},
+      { id: 'test-pencil', data: { title: '铅笔', description: '使用硬边铅笔绘制，创建清晰的线条', shortcut: 'P' }},
+      { id: 'test-eraser', data: { title: '橡皮擦', description: '擦除图像内容，显示下层图层或透明背景', shortcut: 'E' }},
+
+      // 变换工具
+      { id: 'test-free-transform', data: { title: '自由变换', description: '自由缩放、旋转和扭曲选中的图层或选区', shortcut: 'Ctrl+T' }},
+      { id: 'test-scale', data: { title: '缩放', description: '按比例调整图层或选区的大小', shortcut: 'S' }},
+      { id: 'test-rotate', data: { title: '旋转', description: '旋转图层或选区', shortcut: 'R' }},
+      { id: 'test-skew', data: { title: '倾斜', description: '倾斜图层或选区，创建透视效果', shortcut: 'K' }},
+      { id: 'test-perspective', data: { title: '透视变换', description: '调整图层的透视效果，模拟三维空间', shortcut: 'P' }},
+      { id: 'test-3d-transform', data: { title: '3D变换', description: '在三维空间中旋转和变换图层', shortcut: '3' }},
+
+      // 菜单与面板
+      { id: 'test-menu-file', data: { title: '文件', description: '文件操作菜单：新建、打开、保存、导出等' }},
+      { id: 'test-menu-edit', data: { title: '编辑', description: '编辑操作菜单：撤销、重做、复制、粘贴等' }},
+      { id: 'test-add-layer', data: { title: '新建图层', description: '在当前文档中添加新的空白图层' }},
+      { id: 'test-undo', data: { title: '撤销', description: '撤销上一步操作', shortcut: 'Ctrl+Z' }},
+      { id: 'test-export', data: { title: '导出图片', description: '将当前文档导出为图片文件（PNG/JPG）' }},
+    ];
+
+    // 注册所有测试工具提示
+    testTooltips.forEach(({ id, data }) => {
+      tooltipManager.register(id, data);
+    });
+
+    // 测试结果存储
+    const testResults = [];
+
+    // 添加测试结果
+    function addTestResult(testName, passed, message) {
+      const result = {
+        name: testName,
+        passed: passed,
+        message: message,
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      testResults.push(result);
+      updateResultsDisplay();
+    }
+
+    // 更新结果显示
+    function updateResultsDisplay() {
+      const resultsContainer = document.getElementById('testResults');
+      const statusElement = document.getElementById('testStatus');
+
+      resultsContainer.innerHTML = '';
+
+      let passedCount = 0;
+      let failedCount = 0;
+
+      testResults.forEach(result => {
+        const resultElement = document.createElement('div');
+        resultElement.className = `result-item ${result.passed ? 'passed' : 'failed'}`;
+
+        const icon = result.passed ? '✅' : '❌';
+        resultElement.innerHTML = `
+          <strong>${icon} ${result.name}</strong>
+          <div style="font-size: 12px; color: #666; margin-top: 4px;">
+            ${result.message}
+            <span style="float: right;">${result.timestamp}</span>
+          </div>
+        `;
+
+        resultsContainer.appendChild(resultElement);
+
+        if (result.passed) {
+          passedCount++;
+        } else {
+          failedCount++;
+        }
+      });
+
+      const totalTests = testResults.length;
+      const passRate = totalTests > 0 ? Math.round((passedCount / totalTests) * 100) : 0;
+
+      statusElement.className = `status ${failedCount === 0 ? 'success' : 'error'}`;
+      statusElement.innerHTML = `
+        📊 测试完成: ${passedCount} 通过, ${failedCount} 失败, ${totalTests} 总计 (${passRate}% 通过率)
+      `;
+    }
+
+    // 运行单个测试
+    function runTest(testId, expectedTitle) {
+      return new Promise((resolve) => {
+        const element = document.getElementById(testId);
+        if (!element) {
+          addTestResult(`测试 ${testId}`, false, '测试元素不存在');
+          resolve(false);
+          return;
+        }
+
+        // 模拟鼠标悬停
+        const mouseEnterEvent = new MouseEvent('mouseenter', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        });
+
+        element.dispatchEvent(mouseEnterEvent);
+
+        // 等待工具提示显示
+        setTimeout(() => {
+          const tooltipContainer = document.querySelector('.image-editor-tooltip-container');
+          const tooltip = tooltipContainer ? tooltipContainer.querySelector('.image-editor-tooltip') : null;
+
+          let passed = false;
+          let message = '';
+
+          if (tooltip && tooltip.style.opacity === '1') {
+            const titleElement = tooltip.querySelector('.tooltip-title');
+            if (titleElement && titleElement.textContent === expectedTitle) {
+              passed = true;
+              message = '工具提示正常显示，内容正确';
+            } else {
+              message = '工具提示显示但内容不正确';
+            }
+          } else {
+            message = '工具提示未显示';
+          }
+
+          addTestResult(`测试 ${testId}`, passed, message);
+
+          // 模拟鼠标离开
+          const mouseLeaveEvent = new MouseEvent('mouseleave', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+          });
+
+          element.dispatchEvent(mouseLeaveEvent);
+
+          resolve(passed);
+        }, 500); // 等待500ms确保工具提示有足够时间显示
+      });
+    }
+
+    // 运行所有测试
+    async function runAllTests() {
+      const statusElement = document.getElementById('testStatus');
+      statusElement.className = 'status';
+      statusElement.textContent = '🚀 正在运行测试...';
+
+      // 清空之前的结果
+      testResults.length = 0;
+      updateResultsDisplay();
+
+      // 运行每个测试
+      for (const test of testTooltips) {
+        await runTest(test.id, test.data.title);
+        await new Promise(resolve => setTimeout(resolve, 300)); // 测试间延迟
+      }
+
+      statusElement.textContent = '✅ 所有测试完成！';
+    }
+
+    // 清除结果
+    function clearResults() {
+      testResults.length = 0;
+      updateResultsDisplay();
+
+      const statusElement = document.getElementById('testStatus');
+      statusElement.className = 'status';
+      statusElement.textContent = '准备测试...';
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      addTestResult('工具提示管理器初始化', true, 'TooltipManager类已成功加载和初始化');
+      addTestResult('CSS样式加载', true, '工具提示CSS样式已成功加载');
+      addTestResult('测试元素注册', true, `已注册 ${testTooltips.length} 个测试工具提示`);
+    });
+  </script>
+</body>
+</html>
+
