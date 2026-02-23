@@ -91,6 +91,68 @@ body {
   margin-left: -4px;
 }
 
+/* 菜单按钮包装器 - 相对定位容器 */
+.menu-button-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* 文件菜单下拉样式 */
+.file-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #3a3a3a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.2s ease-out;
+  z-index: 1000;
+  margin-top: 2px;
+  max-width: 100vw;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+
+.file-menu-dropdown.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.file-menu-dropdown .menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: #ddd;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.file-menu-dropdown .menu-item:hover {
+  background: #4a4a4a;
+}
+
+.file-menu-dropdown .menu-item:active {
+  background: #555;
+}
+
+.file-menu-dropdown .menu-separator {
+  height: 1px;
+  background: #555;
+  margin: 4px 0;
+  border: none;
+}
+
 /* 工作区 */
 .workspace {
   display: flex;

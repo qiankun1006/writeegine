@@ -2,36 +2,108 @@
  * 应用初始化脚本
  */
 
+console.log('%c=== app.js 开始加载 === [时间戳: ' + new Date().getTime() + ']', 'color: red; font-weight: bold; font-size: 14px');
+
 let editor = null;
 
 /**
  * 初始化编辑器
  */
 function initializeEditor() {
+  console.log('🔧 initializeEditor 开始执行');
+
   const canvas = document.getElementById('editorCanvas');
+  console.log('📍 Canvas 元素:', canvas);
+
   if (!canvas) {
-    console.error('Canvas element not found');
+    console.error('❌ Canvas element not found');
     return;
   }
 
   // 设置 Canvas 大小
   canvas.width = window.innerWidth - 300; // 减去左右边栏
   canvas.height = window.innerHeight - 120; // 减去菜单栏和状态栏
+  console.log('📐 Canvas 大小设置:', { width: canvas.width, height: canvas.height });
 
   // 创建编辑器
-  editor = new ImageEditor(canvas, {
-    width: 800,
-    height: 600
-  });
+  console.log('🎨 开始创建 ImageEditor...');
+  console.log('🔍 ImageEditor 类:', typeof ImageEditor);
+
+  try {
+    editor = new ImageEditor(canvas, {
+      width: 800,
+      height: 600
+    });
+    console.log('✓ ImageEditor 创建成功');
+  } catch (error) {
+    console.error('❌ ImageEditor 创建失败:', error);
+    return;
+  }
+
+  // 初始化文件菜单
+  try {
+    console.log('🎬 即将调用 initializeFileMenu');
+    initializeFileMenu();
+    console.log('✓ initializeFileMenu 执行完成');
+  } catch (error) {
+    console.error('❌ initializeFileMenu 执行失败:', error);
+  }
 
   // 设置事件监听
-  setupEventListeners();
+  try {
+    setupEventListeners();
+    console.log('✓ setupEventListeners 执行完成');
+  } catch (error) {
+    console.error('❌ setupEventListeners 执行失败:', error);
+  }
 
   // 初始化 UI
   updateLayersList();
   updateHistoryList();
 
   console.log('Editor initialized successfully');
+}
+
+/**
+ * 初始化文件菜单 [NEW VERSION - 时间戳: ' + new Date().getTime() + ']
+ */
+function initializeFileMenu() {
+  console.log('%c🎯 initializeFileMenu 被调用了 [版本: 2025]', 'color: purple; font-weight: bold; font-size: 16px');
+
+  const menuFileBtn = document.getElementById('menuFile');
+  const menuFileDropdown = document.getElementById('fileMenuDropdown');
+
+  console.log('%c菜单初始化 - 调试信息:', 'color: purple; font-weight: bold');
+  console.log('menuFileBtn:', menuFileBtn);
+  console.log('menuFileDropdown:', menuFileDropdown);
+  console.log('FileMenuManager class:', typeof FileMenuManager);
+  console.log('editor object:', !!editor);
+
+  if (menuFileBtn && menuFileDropdown) {
+    console.log('%c✅ 菜单元素都存在', 'color: green; font-weight: bold');
+
+    if (typeof FileMenuManager !== 'undefined') {
+      console.log('%c✅ FileMenuManager 类已加载', 'color: green; font-weight: bold');
+      try {
+        window.fileMenuManager = new FileMenuManager(menuFileBtn, menuFileDropdown, editor);
+        console.log('%c✓✓✓ 文件菜单初始化成功！✓✓✓', 'color: green; font-weight: bold; font-size: 14px');
+        console.log('%c点击【文件】按钮应该现在可以工作了', 'color: green; font-weight: bold');
+      } catch (error) {
+        console.error('%c❌ FileMenuManager 初始化出错:', 'color: red; font-weight: bold', error);
+        console.error('错误详情:', error.message);
+        console.error('错误堆栈:', error.stack);
+      }
+    } else {
+      console.error('%c❌ FileMenuManager 类未定义', 'color: red; font-weight: bold');
+      console.log('可用的全局对象:', Object.keys(window).filter(k => k.includes('Menu') || k.includes('File')));
+    }
+  } else {
+    console.warn('%c❌ 菜单元素缺失:', 'color: red; font-weight: bold', {
+      menuFileBtn: !!menuFileBtn,
+      menuFileDropdown: !!menuFileDropdown
+    });
+    console.log('页面上所有按钮:', document.querySelectorAll('button').map(b => ({id: b.id, text: b.textContent})));
+  }
 }
 
 /**
@@ -176,10 +248,7 @@ function setupEventListeners() {
     e.preventDefault();
   });
 
-  // 菜单栏按钮
-  document.getElementById('menuFile').addEventListener('click', () => {
-    alert('文件菜单 - 功能开发中');
-  });
+  // 菜单栏按钮 - 编辑菜单
   document.getElementById('menuEdit').addEventListener('click', () => {
     alert('编辑菜单 - 功能开发中');
   });
@@ -365,7 +434,24 @@ function setLayerOpacity(layerId, opacity) {
 }
 
 // 页面加载完成后初始化编辑器
+console.log('📢 注册 DOMContentLoaded 事件监听器');
+
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('✓ DOMContentLoaded 事件触发，document.readyState:', document.readyState);
   initializeEditor();
 });
+
+// 如果页面已经加载完成，直接初始化
+if (document.readyState === 'loading') {
+  console.log('📄 页面仍在加载中...');
+} else {
+  console.log('⏱️ 页面已加载完成，直接初始化');
+  // 延迟执行以确保所有脚本都已加载
+  setTimeout(() => {
+    if (!editor) {
+      console.log('⚡ 直接调用 initializeEditor');
+      initializeEditor();
+    }
+  }, 100);
+}
 

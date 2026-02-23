@@ -1,7 +1,6 @@
 package com.example.writemyself.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,15 +28,6 @@ public class ImageEditorController {
 
     // 文档存储目录
     private static final String DOCUMENTS_DIR = "uploads/documents/";
-
-    /**
-     * 图片编辑页面
-     */
-    @GetMapping("/create-game/image")
-    public String createGameImage(Model model) {
-        model.addAttribute("title", "图片编辑 - 创作游戏");
-        return "create-game-image";
-    }
 
     /**
      * 上传图片文件

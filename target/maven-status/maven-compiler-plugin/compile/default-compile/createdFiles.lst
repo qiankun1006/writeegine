@@ -1,4 +1,5 @@
 com/example/writemyself/controller/HomeController.class
+com/example/writemyself/controller/ImageEditorController.class
 com/example/writemyself/controller/GlobalExceptionHandler.class
 com/example/writemyself/controller/ErrorHandlingController.class
 com/example/writemyself/controller/TilemapEditorController.class

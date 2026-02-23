@@ -7,11 +7,31 @@
   <link rel="stylesheet" href="/static/css/image-editor.css">
 </head>
 <body>
-  <div class="image-editor-container">
+
+<!-- 页面加载诊断脚本 -->
+<script>
+  console.log('%c🚀 图片编辑器页面开始加载', 'color: blue; font-weight: bold; font-size: 14px');
+  console.log('时间:', new Date().toLocaleTimeString());
+  console.log('浏览器:', navigator.userAgent.split(' ').slice(-2).join(' '));
+</script>
+
+<div class="image-editor-container">
     <!-- 顶部菜单栏 -->
     <div class="menu-bar">
       <div class="menu-group">
-        <button class="menu-btn" id="menuFile">文件</button>
+        <!-- 文件菜单 -->
+        <div class="menu-button-wrapper">
+          <button class="menu-btn" id="menuFile">文件</button>
+          <div class="file-menu-dropdown" id="fileMenuDropdown" style="display: none;">
+            <button class="menu-item" data-action="import" id="importMenuItem">📁 导入</button>
+            <button class="menu-item" data-action="save" id="saveMenuItem">💾 保存</button>
+            <button class="menu-item" data-action="saveas" id="saveasMenuItem">💾 另存为</button>
+            <div class="menu-separator"></div>
+            <button class="menu-item" data-action="export-png" id="exportPngMenuItem">📤 导出为 PNG</button>
+            <button class="menu-item" data-action="export-jpg" id="exportJpgMenuItem">📤 导出为 JPG</button>
+          </div>
+        </div>
+
         <button class="menu-btn" id="menuEdit">编辑</button>
         <button class="menu-btn" id="menuImage">图像</button>
         <button class="menu-btn" id="menuLayer">图层</button>
@@ -155,6 +175,27 @@
     <button class="menu-item" data-format="jpg">导出为 JPG</button>
   </div>
 
+  <!-- 隐藏的文件输入控件 -->
+  <input type="file" id="fileInput" accept="image/*,.json" style="display: none;">
+
+  <!-- 脚本加载追踪 -->
+  <script>
+    console.log('%c脚本加载开始', 'color: green; font-weight: bold');
+
+    // 为所有脚本标签添加事件监听
+    document.addEventListener('load', (e) => {
+      if (e.target.tagName === 'SCRIPT') {
+        console.log('✓ 加载完成:', e.target.src || '内联脚本');
+      }
+    }, true);
+
+    document.addEventListener('error', (e) => {
+      if (e.target.tagName === 'SCRIPT') {
+        console.error('❌ 加载失败:', e.target.src);
+      }
+    }, true);
+  </script>
+
   <!-- 脚本加载 -->
   <script src="/static/js/image-editor/EventBus.js"></script>
   <script src="/static/js/image-editor/CommandHistory.js"></script>
@@ -162,6 +203,7 @@
   <script src="/static/js/image-editor/Tool.js"></script>
   <script src="/static/js/image-editor/CanvasRenderer.js"></script>
   <script src="/static/js/image-editor/TooltipManager.js"></script>
+  <script src="/static/js/image-editor/MenuManager.js"></script>
   <script src="/static/js/image-editor/ImageEditor.js"></script>
 
   <!-- Phase 1 工具 -->
