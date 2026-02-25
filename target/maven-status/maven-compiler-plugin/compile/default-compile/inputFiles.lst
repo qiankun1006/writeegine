@@ -5,3 +5,8 @@
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/controller/ImageEditorController.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/controller/TilemapEditorController.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/controller/UnityController.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/model/UnityMaterial.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/model/UnityObject.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/model/UnityPhysicsComponent.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/model/UnityScene.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/UnityService.java

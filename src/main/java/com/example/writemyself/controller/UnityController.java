@@ -1,11 +1,14 @@
 package com.example.writemyself.controller;
 
+import com.example.writemyself.service.UnityService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,6 +17,9 @@ import java.util.Map;
  */
 @Controller
 public class UnityController {
+
+    @Autowired
+    private UnityService unityService;
 
     /**
      * Unity 编辑器页面
@@ -78,12 +84,12 @@ public class UnityController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 这里应该将场景数据保存到数据库或文件系统
-            // 目前先返回成功响应
+            // 使用 UnityService 保存场景
+            Map<String, Object> savedScene = unityService.createScene(sceneData);
 
-            String sceneId = "scene_" + System.currentTimeMillis();
             response.put("success", true);
-            response.put("sceneId", sceneId);
+            response.put("sceneId", savedScene.get("id"));
+            response.put("scene", savedScene);
             response.put("message", "场景保存成功");
             response.put("timestamp", System.currentTimeMillis());
 
@@ -104,13 +110,14 @@ public class UnityController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 这里应该从数据库或文件系统加载场景数据
-            // 目前先返回示例数据
+            // 使用 UnityService 加载场景
+            Map<String, Object> scene = unityService.getSceneById(sceneId);
 
-            Map<String, Object> scene = getDefaultSceneConfig();
-            scene.put("id", sceneId);
-            scene.put("name", "示例场景");
-            scene.put("lastModified", System.currentTimeMillis());
+            if (scene == null) {
+                response.put("success", false);
+                response.put("message", "场景不存在: " + sceneId);
+                return response;
+            }
 
             response.put("success", true);
             response.put("scene", scene);
@@ -214,30 +221,190 @@ public class UnityController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 这里应该从数据库获取场景列表
-            // 目前先返回示例数据
-
-            Map<String, Object>[] scenes = new Map[3];
-            for (int i = 0; i < 3; i++) {
-                Map<String, Object> scene = new HashMap<>();
-                scene.put("id", "scene_" + (i + 1));
-                scene.put("name", "示例场景 " + (i + 1));
-                scene.put("thumbnail", "/static/images/unity/thumbnail_" + (i + 1) + ".png");
-                scene.put("objectCount", (i + 1) * 5);
-                scene.put("lastModified", System.currentTimeMillis() - i * 86400000L);
-                scene.put("size", (i + 1) * 1024 * 1024L);
-                scenes[i] = scene;
-            }
+            // 使用 UnityService 获取场景列表
+            List<Map<String, Object>> scenes = unityService.getSceneList(page, pageSize);
+            int total = unityService.getSceneCount();
 
             response.put("success", true);
             response.put("scenes", scenes);
-            response.put("total", 3);
+            response.put("total", total);
             response.put("page", page);
             response.put("pageSize", pageSize);
 
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "获取列表失败: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * 更新场景 API
+     */
+    @PutMapping("/api/unity/scene/update/{sceneId}")
+    @ResponseBody
+    public Map<String, Object> updateScene(
+            @PathVariable String sceneId,
+            @RequestBody Map<String, Object> sceneData) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 使用 UnityService 更新场景
+            Map<String, Object> updatedScene = unityService.updateScene(sceneId, sceneData);
+
+            if (updatedScene == null) {
+                response.put("success", false);
+                response.put("message", "场景不存在: " + sceneId);
+                return response;
+            }
+
+            response.put("success", true);
+            response.put("scene", updatedScene);
+            response.put("message", "场景更新成功");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "更新失败: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * 删除场景 API
+     */
+    @DeleteMapping("/api/unity/scene/delete/{sceneId}")
+    @ResponseBody
+    public Map<String, Object> deleteScene(@PathVariable String sceneId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 使用 UnityService 删除场景
+            boolean deleted = unityService.deleteScene(sceneId);
+
+            if (!deleted) {
+                response.put("success", false);
+                response.put("message", "场景不存在: " + sceneId);
+                return response;
+            }
+
+            response.put("success", true);
+            response.put("message", "场景删除成功");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "删除失败: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * 创建对象 API
+     */
+    @PostMapping("/api/unity/object/create")
+    @ResponseBody
+    public Map<String, Object> createObject(@RequestBody Map<String, Object> objectData) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 使用 UnityService 创建对象
+            Map<String, Object> createdObject = unityService.createObject(objectData);
+
+            response.put("success", true);
+            response.put("object", createdObject);
+            response.put("message", "对象创建成功");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "创建失败: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * 更新对象 API
+     */
+    @PutMapping("/api/unity/object/update/{objectId}")
+    @ResponseBody
+    public Map<String, Object> updateObject(
+            @PathVariable String objectId,
+            @RequestBody Map<String, Object> objectData) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 使用 UnityService 更新对象
+            Map<String, Object> updatedObject = unityService.updateObject(objectId, objectData);
+
+            if (updatedObject == null) {
+                response.put("success", false);
+                response.put("message", "对象不存在: " + objectId);
+                return response;
+            }
+
+            response.put("success", true);
+            response.put("object", updatedObject);
+            response.put("message", "对象更新成功");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "更新失败: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * 删除对象 API
+     */
+    @DeleteMapping("/api/unity/object/delete/{objectId}")
+    @ResponseBody
+    public Map<String, Object> deleteObject(@PathVariable String objectId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 使用 UnityService 删除对象
+            boolean deleted = unityService.deleteObject(objectId);
+
+            if (!deleted) {
+                response.put("success", false);
+                response.put("message", "对象不存在: " + objectId);
+                return response;
+            }
+
+            response.put("success", true);
+            response.put("message", "对象删除成功");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "删除失败: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * 获取场景统计信息 API
+     */
+    @GetMapping("/api/unity/statistics")
+    @ResponseBody
+    public Map<String, Object> getStatistics() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 使用 UnityService 获取统计信息
+            Map<String, Object> statistics = unityService.getSceneStatistics();
+
+            response.put("success", true);
+            response.put("statistics", statistics);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "获取统计信息失败: " + e.getMessage());
         }
 
         return response;
