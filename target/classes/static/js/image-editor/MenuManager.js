@@ -110,164 +110,38 @@ class FileMenuManager extends MenuManager {
   }
 
   _setupFileInputListener() {
-    if (!this.fileInput) return;
+    if (!this.fileInput) {
+      console.error('❌ 文件输入控件未找到');
+      return;
+    }
 
     this.fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      console.log('📂 文件选择变化，文件:', file);
-      if (!file) {
-        console.warn('❌ 没有选择文件');
-        return;
-      }
+      console.log('📂 文件选择变化');
 
-      console.log('📄 开始读取文件:', {
-        name: file.name,
-        type: file.type,
-        size: file.size
-      });
+      try {
+        // 阶段1：文件选择
+        const file = e.target.files[0];
+        console.log('📄 选择的文件:', file);
 
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const result = event.target.result;
-          console.log('✓ FileReader 读取完成，结果长度:', result.length);
-
-          // 如果是 JSON 文件，加载为文档
-          if (file.name.endsWith('.json')) {
-            console.log('🔄 检测到 JSON 文件，开始解析');
-            const json = JSON.parse(result);
-            if (this.editor.loadDocument) {
-              await this.editor.loadDocument(json);
-              console.log('✓ JSON 文档加载完成');
-            } else {
-              console.warn('Editor does not support loadDocument method');
-            }
-          }
-          // 如果是图片文件，加载图片
-          else if (file.type.startsWith('image/')) {
-            console.log('🖼️ 检测到图片文件，开始加载');
-            const img = new Image();
-
-            img.onload = () => {
-              console.log('✓ 图片加载成功:', {
-                width: img.width,
-                height: img.height,
-                naturalWidth: img.naturalWidth,
-                naturalHeight: img.naturalHeight
-              });
-
-              // 检查编辑器是否存在
-              if (!this.editor || !this.editor.document) {
-                console.error('❌ 编辑器或文档不存在');
-                alert('编辑器初始化失败，请刷新页面');
-                return;
-              }
-
-              // 关键：先更新文档尺寸，再添加图片图层
-              console.log('📐 更新文档尺寸:', { width: img.width, height: img.height });
-              this.editor.document.width = img.width;
-              this.editor.document.height = img.height;
-
-              // 更新 canvas 尺寸以匹配文档
-              if (this.editor.canvas) {
-                this.editor.canvas.width = img.width;
-                this.editor.canvas.height = img.height;
-                console.log('✓ Canvas 尺寸已更新');
-              }
-
-              // 创建一个新的图层用于放置导入的图片
-              console.log('🎨 创建新图层用于放置导入的图片');
-              const newLayer = new Layer({
-                name: file.name || 'Imported Image',
-                width: img.width,
-                height: img.height
-              });
-
-              // 在新图层的 canvas 上绘制图片
-              const layerCtx = newLayer.getContext();
-              if (!layerCtx) {
-                console.error('❌ 无法获取图层 context');
-                alert('图层初始化失败');
-                return;
-              }
-
-              layerCtx.drawImage(img, 0, 0);
-              console.log('✓ 图片已绘制到新图层');
-
-              // 将新图层添加到文档中，替换背景层
-              if (this.editor.document.layers.length > 0) {
-                // 如果已有图层，添加到最上面
-                this.editor.document.addLayer(newLayer);
-              } else {
-                // 否则作为第一个图层
-                this.editor.document.addLayer(newLayer);
-              }
-              console.log('✓ 新图层已添加到文档');
-
-              // 渲染编辑器
-              if (this.editor.render) {
-                console.log('🎨 调用 editor.render()');
-                this.editor.render();
-              } else {
-                console.warn('⚠️ 编辑器没有 render 方法');
-              }
-
-              // 更新编辑器状态
-              if (this.editor.isDirty !== undefined) {
-                this.editor.isDirty = true;
-                console.log('✓ 编辑器状态标记为脏数据');
-              }
-
-              console.log('%c✓✓✓ 图片导入完成！✓✓✓', 'color: green; font-weight: bold; font-size: 14px');
-            };
-
-            img.onerror = (error) => {
-              console.error('❌ 图片加载失败:', {
-                error: error,
-                src: img.src ? img.src.substring(0, 100) : 'N/A'
-              });
-              alert('图片加载失败，请检查文件');
-            };
-
-            img.onabort = () => {
-              console.warn('⚠️ 图片加载被中止');
-            };
-
-            console.log('🔗 开始设置图片源 (Data URL)');
-            img.src = result;
-            console.log('✓ 图片源已设置，等待加载...');
-          } else {
-            console.warn('⚠️ 不支持的文件类型:', file.type);
-            alert('不支持的文件类型，请选择图片或 JSON 文件');
-          }
-        } catch (error) {
-          console.error('❌ 文件加载失败:', error);
-          console.error('错误堆栈:', error.stack);
-          alert('文件加载失败，请检查文件格式');
+        if (!file) {
+          console.warn('❌ 没有选择文件');
+          this._showError('请选择一个文件');
+          return;
         }
-      };
 
-      reader.onerror = (error) => {
-        console.error('❌ FileReader 读取失败:', error);
-        alert('文件读取失败，请重试');
-      };
+        // 阶段2：文件读取
+        const fileData = await this._readFile(file);
 
-      reader.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          console.log(`📊 文件读取进度: ${percent}%`);
-        }
-      };
+        // 阶段3：处理文件
+        await this._processFile(file, fileData);
 
-      // 根据文件类型选择读取方式
-      if (file.name.endsWith('.json')) {
-        console.log('📖 以文本方式读取文件');
-        reader.readAsText(file);
-      } else if (file.type.startsWith('image/')) {
-        console.log('🔍 以 Data URL 方式读取图片');
-        reader.readAsDataURL(file);
-      } else {
-        console.warn('⚠️ 不支持的文件，跳过读取');
+        console.log('%c✓✓✓ 文件导入完成！✓✓✓', 'color: green; font-weight: bold; font-size: 14px');
+      } catch (error) {
+        console.error('❌ 文件导入失败:', error);
+        this._showError(`导入失败: ${error.message}`);
+      } finally {
+        // 重置文件输入，允许选择同一个文件
+        this.fileInput.value = '';
       }
     });
   }
@@ -379,6 +253,279 @@ class FileMenuManager extends MenuManager {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  }
+
+  /**
+   * 读取文件内容
+   */
+  async _readFile(file) {
+    return new Promise((resolve, reject) => {
+      console.log('📖 开始读取文件:', file.name);
+
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        console.log('✅ 文件读取完成，数据长度:', event.target.result.length);
+        resolve(event.target.result);
+      };
+
+      reader.onerror = (error) => {
+        console.error('❌ 文件读取失败:', error);
+        reject(new Error(`文件读取失败: ${error.target.error?.message || '未知错误'}`));
+      };
+
+      reader.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          console.log(`📊 文件读取进度: ${percent}%`);
+          this._showProgress(`正在读取文件... ${percent}%`);
+        }
+      };
+
+      // 根据文件类型选择读取方式
+      if (file.name.endsWith('.json')) {
+        reader.readAsText(file);
+      } else if (file.type.startsWith('image/')) {
+        reader.readAsDataURL(file);
+      } else {
+        reject(new Error(`不支持的文件格式: ${file.type || '未知'}`));
+      }
+    });
+  }
+
+  /**
+   * 处理文件数据
+   */
+  async _processFile(file, fileData) {
+    console.log('🔄 开始处理文件:', file.name);
+
+    // 如果是 JSON 文件，加载为文档
+    if (file.name.endsWith('.json')) {
+      console.log('📋 检测到 JSON 文件，开始解析');
+      const json = JSON.parse(fileData);
+      if (this.editor.loadDocument) {
+        await this.editor.loadDocument(json);
+        console.log('✅ JSON 文档加载完成');
+      } else {
+        throw new Error('编辑器不支持 loadDocument 方法');
+      }
+    }
+    // 如果是图片文件，加载图片
+    else if (file.type.startsWith('image/')) {
+      console.log('🖼️ 检测到图片文件，开始加载');
+      await this._loadAndAddImage(fileData, file.name);
+    } else {
+      throw new Error(`不支持的文件类型: ${file.type}`);
+    }
+  }
+
+  /**
+   * 加载图片并添加到文档
+   */
+  async _loadAndAddImage(dataUrl, filename) {
+    return new Promise((resolve, reject) => {
+      console.log('🔗 创建图片对象');
+      const img = new Image();
+
+      img.onload = () => {
+        console.log('✅ 图片加载成功:', {
+          width: img.width,
+          height: img.height,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight
+        });
+
+        try {
+          this._addImageToDocument(img, filename);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      img.onerror = (error) => {
+        console.error('❌ 图片加载失败:', error);
+        reject(new Error('图片加载失败，文件可能已损坏'));
+      };
+
+      img.onabort = () => {
+        console.warn('⚠️ 图片加载被中止');
+        reject(new Error('图片加载被中止'));
+      };
+
+      console.log('🔗 设置图片源');
+      img.src = dataUrl;
+      console.log('⏳ 等待图片加载...');
+    });
+  }
+
+  /**
+   * 将图片添加到文档
+   */
+  _addImageToDocument(img, filename) {
+    console.log('🎨 开始将图片添加到文档');
+
+    // 检查编辑器是否存在
+    if (!this.editor || !this.editor.document) {
+      throw new Error('编辑器或文档未初始化');
+    }
+
+    // 关键：先更新文档尺寸，再添加图片图层
+    console.log('📐 更新文档尺寸:', { width: img.width, height: img.height });
+    // 文档保留图片的厚类尺寸，方便后续缩放操作
+    this.editor.document.width = img.width;
+    this.editor.document.height = img.height;
+
+    // 更新 canvas 尺寸以匹配文档
+    if (this.editor.canvas) {
+      // 可能需要求符的容器大小
+      const canvasArea = this.editor.canvas.parentElement;
+      if (canvasArea) {
+        const maxWidth = canvasArea.clientWidth;
+        const maxHeight = canvasArea.clientHeight;
+
+        console.log('📐 可用容器尺寸:', { maxWidth, maxHeight });
+        console.log('📐 图片厚类尺寸:', { width: img.width, height: img.height });
+
+        // 设置为整个可用空间或按比例缩放
+        if (img.width <= maxWidth && img.height <= maxHeight) {
+          // 图片小于可用空间，直接使用图片尺寸
+          this.editor.canvas.width = img.width;
+          this.editor.canvas.height = img.height;
+          console.log('📐 使用图片实际尺寸');
+        } else {
+          // 图片大于可用空间，按比例缩放到可用空间
+          const scaleX = maxWidth / img.width;
+          const scaleY = maxHeight / img.height;
+          const scale = Math.min(scaleX, scaleY, 1);
+
+          this.editor.canvas.width = img.width * scale;
+          this.editor.canvas.height = img.height * scale;
+          console.log('📐 按比例缩放到:', { scale, width: this.editor.canvas.width, height: this.editor.canvas.height });
+        }
+      } else {
+        // 不能找到父元素，使用图片尺寸
+        this.editor.canvas.width = img.width;
+        this.editor.canvas.height = img.height;
+      }
+      console.log('✅ Canvas 尺寸已更新:', { width: this.editor.canvas.width, height: this.editor.canvas.height });
+    }
+
+    // 创建一个新的图层用于放置导入的图片
+    console.log('🎨 创建新图层用于放置导入的图片');
+    console.log('📐 图层尺寸参数:', { width: img.width, height: img.height });
+
+    const newLayer = new Layer({
+      name: filename || 'Imported Image',
+      width: img.width,
+      height: img.height
+    });
+
+    console.log('✅ 图层创建完成:', {
+      id: newLayer.id,
+      name: newLayer.name,
+      width: newLayer.width,
+      height: newLayer.height,
+      canvasWidth: newLayer.canvas?.width,
+      canvasHeight: newLayer.canvas?.height
+    });
+
+    // 在新图层的 canvas 上绘制图片
+    console.log('🖌️ 准备在图层上绘制图片');
+    const layerCtx = newLayer.getContext();
+    if (!layerCtx) {
+      console.error('❌ 无法获取图层 context，图层状态:', {
+        hasCanvas: !!newLayer.canvas,
+        canvasWidth: newLayer.canvas?.width,
+        canvasHeight: newLayer.canvas?.height
+      });
+      throw new Error('图层初始化失败：无法获取绘图上下文');
+    }
+
+    console.log('✅ 成功获取图层上下文');
+
+    // 计算缩放比例
+    const canvasArea = this.editor.canvas.parentElement;
+    let drawWidth = img.width;
+    let drawHeight = img.height;
+
+    if (canvasArea) {
+      const maxWidth = canvasArea.clientWidth;
+      const maxHeight = canvasArea.clientHeight;
+
+      if (img.width > maxWidth || img.height > maxHeight) {
+        const scaleX = maxWidth / img.width;
+        const scaleY = maxHeight / img.height;
+        const scale = Math.min(scaleX, scaleY, 1);
+
+        drawWidth = img.width * scale;
+        drawHeight = img.height * scale;
+        console.log('📐 敬画需要缩放：', { scale, drawWidth, drawHeight });
+      }
+    }
+
+    // 在图层canvas上缩放绘制图片
+    layerCtx.drawImage(img, 0, 0, drawWidth, drawHeight);
+    console.log('✅ 图片已绘制到新图层（尺寸: ' + drawWidth + ' x ' + drawHeight + '）');
+
+    // 将新图层添加到文档中
+    console.log('📄 将图层添加到文档');
+    this.editor.document.addLayer(newLayer);
+    console.log('✅ 新图层已添加到文档');
+
+     // 重置渲染器视口以适应新尺寸
+     if (this.editor.renderer && this.editor.renderer.viewport) {
+       console.log('🔄 重置渲染器视口');
+       // 复位视口的位置和缩放
+       this.editor.renderer.viewport.x = 0;
+       this.editor.renderer.viewport.y = 0;
+       this.editor.renderer.viewport.scale = 1.0;
+       console.log('✅ 视口已重置');
+     }
+
+    // 渲染编辑器
+    if (this.editor.render) {
+      console.log('🎨 调用 editor.render()');
+      console.log('📊 渲染前状态:', {
+        documentWidth: this.editor.document?.width,
+        documentHeight: this.editor.document?.height,
+        canvasWidth: this.editor.canvas?.width,
+        canvasHeight: this.editor.canvas?.height,
+        layerCount: this.editor.document?.layers?.length
+      });
+      this.editor.render();
+      console.log('✅ render() 调用完成');
+    } else {
+      console.warn('⚠️ 编辑器没有 render 方法');
+    }
+
+    // 更新编辑器状态
+    if (this.editor.isDirty !== undefined) {
+      this.editor.isDirty = true;
+      console.log('✅ 编辑器状态标记为脏数据');
+    }
+
+    // 更新UI（始放全局函数的控件）
+    if (typeof updateLayersList === 'function') {
+      updateLayersList();
+      console.log('✅ 图层列表已更新');
+    }
+  }
+
+  /**
+   * 显示错误消息
+   */
+  _showError(message) {
+    console.error('显示错误消息:', message);
+    alert(`错误: ${message}`);
+  }
+
+  /**
+   * 显示进度提示
+   */
+  _showProgress(message) {
+    console.log('进度:', message);
+    // 这里可以添加更友好的进度显示，暂时使用控制台日志
   }
 }
 

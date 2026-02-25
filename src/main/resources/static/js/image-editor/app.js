@@ -20,19 +20,25 @@ function initializeEditor() {
     return;
   }
 
-  // 设置 Canvas 大小
-  canvas.width = window.innerWidth - 300; // 减去左右边栏
-  canvas.height = window.innerHeight - 120; // 减去菜单栏和状态栏
+  // 计算 Canvas 大小（占满整个可用空间）
+  // 左侧面板宽度约 250px，右侧面板宽度约 250px，工具栏高度 50px，菜单栏高度 40px
+  const leftPanelWidth = 250;
+  const rightPanelWidth = 250;
+  const toolbarHeight = 50;
+  const menuBarHeight = 40;
+
+  canvas.width = window.innerWidth - leftPanelWidth - rightPanelWidth;
+  canvas.height = window.innerHeight - menuBarHeight - toolbarHeight;
   console.log('📐 Canvas 大小设置:', { width: canvas.width, height: canvas.height });
 
-  // 创建编辑器
+  // 创建编辑器（初始文档尺寸为可用空间大小）
   console.log('🎨 开始创建 ImageEditor...');
   console.log('🔍 ImageEditor 类:', typeof ImageEditor);
 
   try {
     editor = new ImageEditor(canvas, {
-      width: 800,
-      height: 600
+      width: canvas.width,
+      height: canvas.height
     });
     console.log('✓ ImageEditor 创建成功');
   } catch (error) {

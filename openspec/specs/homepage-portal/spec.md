@@ -1,0 +1,58 @@
+# homepage-portal Specification
+
+## Purpose
+TBD - created by archiving change redesign-homepage-with-game-menu. Update Purpose after archive.
+## Requirements
+### Requirement: 首页门户 UI 布局
+系统SHALL展示一个现代的游戏平台门户界面，包含顶部导航栏、英雄区、功能菜单网格和页脚。
+
+#### Scenario: 用户首次访问首页
+- **WHEN** 用户访问首页
+- **THEN** 页面显示 "WriteMyself 游戏创作平台" 标题
+- **AND** 显示 "欢迎来到游戏创作平台" 英雄区
+- **AND** 显示三个菜单卡片：创作游戏、我的游戏、游戏广场
+- **AND** 每个卡片有标题、描述、CTA按钮
+- **AND** 页面采用深色科技感主题
+
+#### Scenario: 用户点击菜单卡片
+- **WHEN** 用户在首页点击"创作游戏"卡片
+- **THEN** 跳转到 `/create-game` 页面
+- **AND** 编辑器界面正常加载
+
+### Requirement: 导航栏功能
+系统SHALL在顶部导航栏提供快速访问各个主要功能的链接，并标识当前页面。
+
+#### Scenario: 导航栏链接
+- **WHEN** 用户在任何页面查看顶部导航栏
+- **THEN** 显示 "✨ WriteMyself" 品牌名
+- **AND** 显示导航链接：首页、我的游戏、游戏广场
+- **AND** 当前页面的链接高亮显示
+- **AND** 点击链接能正确跳转到对应页面
+
+### Requirement: 响应式设计
+系统SHALL确保首页在所有屏幕尺寸上都能正常显示。
+
+#### Scenario: 在移动设备上访问首页
+- **WHEN** 用户在手机（< 768px）上访问首页
+- **THEN** 菜单卡片从 3 列变为 1 列
+- **AND** 导航栏改为竖直堆叠
+- **AND** 所有内容可读且易于交互
+- **AND** 没有内容溢出屏幕
+
+#### Scenario: 在平板上访问首页
+- **WHEN** 用户在平板（768px - 1024px）上访问首页
+- **THEN** 菜单卡片显示为 2 列或 3 列（自适应）
+- **AND** 页面布局合理
+
+### Requirement: 主题样式
+系统SHALL采用与 Tilemap 编辑器一致的深色科技感主题。
+
+#### Scenario: 颜色和样式
+- **WHEN** 用户访问首页
+- **THEN** 背景色为深灰黑渐变
+- **AND** 强调色为青蓝色
+- **AND** 文字色为亮灰白
+- **AND** 卡片有半透明玻璃态效果
+- **AND** 按钮有渐变和发光效果
+- **AND** 悬停时有动画反馈
+

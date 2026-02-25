@@ -1,0 +1,80 @@
+# index-system Specification
+
+## Purpose
+TBD - created by archiving change add-simple-mysql-database. Update Purpose after archive.
+## Requirements
+### Requirement: B+树索引结构
+系统SHALL实现B+树索引结构，支持高效的数据查找和范围扫描。
+
+#### Scenario: B+树节点分裂
+- **WHEN** 向满的B+树节点插入新记录时
+- **THEN** 执行节点分裂操作，保持B+树的平衡性
+
+#### Scenario: B+树节点合并
+- **WHEN** 删除记录导致节点使用率过低时
+- **THEN** 执行节点合并或重分布，维护B+树的存储效率
+
+#### Scenario: 叶子节点链表
+- **WHEN** 需要执行范围查询时
+- **THEN** 利用叶子节点间的双向链表快速顺序扫描
+
+### Requirement: 聚簇索引实现
+系统SHALL支持聚簇索引，将数据行直接存储在索引的叶子节点中。
+
+#### Scenario: 主键聚簇索引
+- **WHEN** 创建表时指定主键
+- **THEN** 自动创建以主键为键值的聚簇索引，数据行存储在叶子节点
+
+#### Scenario: 聚簇索引查找
+- **WHEN** 通过主键查找数据时
+- **THEN** 直接在聚簇索引中定位数据行，无需额外的回表操作
+
+#### Scenario: 聚簇索引插入
+- **WHEN** 插入新数据行时
+- **THEN** 根据主键值在聚簇索引中找到正确位置插入
+
+### Requirement: 二级索引实现
+系统SHALL支持二级索引，提供非主键字段的快速查找能力。
+
+#### Scenario: 二级索引创建
+- **WHEN** 执行CREATE INDEX语句时
+- **THEN** 创建以指定列为键值、主键为值的二级索引
+
+#### Scenario: 二级索引查找
+- **WHEN** 通过非主键字段查找数据时
+- **THEN** 先在二级索引中查找到主键值，再通过聚簇索引获取数据行
+
+#### Scenario: 覆盖索引优化
+- **WHEN** 查询的所有字段都包含在索引中时
+- **THEN** 直接从索引返回结果，无需回表查询
+
+### Requirement: 索引维护操作
+系统SHALL在数据变更时自动维护索引的一致性。
+
+#### Scenario: 插入时索引更新
+- **WHEN** 向表中插入新记录时
+- **THEN** 同时更新所有相关的索引结构
+
+#### Scenario: 删除时索引更新
+- **WHEN** 从表中删除记录时
+- **THEN** 从所有相关索引中删除对应的索引项
+
+#### Scenario: 更新时索引维护
+- **WHEN** 更新包含索引字段的记录时
+- **THEN** 删除旧的索引项，插入新的索引项
+
+### Requirement: 索引统计信息
+系统SHALL维护索引的统计信息，支持查询优化器的成本估算。
+
+#### Scenario: 基数统计
+- **WHEN** 需要估算查询成本时
+- **THEN** 提供索引字段的唯一值数量统计信息
+
+#### Scenario: 分布统计
+- **WHEN** 执行范围查询优化时
+- **THEN** 提供索引值的分布直方图信息
+
+#### Scenario: 统计信息更新
+- **WHEN** 数据发生大量变更时
+- **THEN** 自动或手动更新索引的统计信息
+

@@ -11,6 +11,8 @@ function generateId() {
  */
 class Layer {
   constructor(options = {}) {
+    console.log('🔧 Layer 构造函数被调用，参数:', options);
+
     this.id = options.id || generateId();
     this.name = options.name || 'Layer';
     this.type = options.type || 'raster'; // raster, group, text, smart-object
@@ -19,13 +21,19 @@ class Layer {
     this.blendMode = options.blendMode || 'normal';
     this.x = options.x || 0;
     this.y = options.y || 0;
-    this.width = options.width || 0;
-    this.height = options.height || 0;
+
+    // 修复：确保width和height有有效值
+    this.width = options.width > 0 ? options.width : 800;
+    this.height = options.height > 0 ? options.height : 600;
+
+    console.log('📐 图层尺寸设置:', { width: this.width, height: this.height });
 
     // 图层内容（Canvas）
     this.canvas = options.canvas || this._createCanvas();
     this.canvas.width = this.width;
     this.canvas.height = this.height;
+
+    console.log('✅ Canvas 尺寸设置:', { canvasWidth: this.canvas.width, canvasHeight: this.canvas.height });
 
     // 图层蒙版
     this.mask = options.mask || null;
@@ -51,17 +59,52 @@ class Layer {
    * 创建 Canvas 元素
    */
   _createCanvas() {
-    const canvas = document.createElement('canvas');
-    canvas.width = this.width;
-    canvas.height = this.height;
-    return canvas;
+    try {
+      console.log('🎨 创建Canvas，尺寸:', { width: this.width, height: this.height });
+
+      if (this.width <= 0 || this.height <= 0) {
+        console.warn('⚠️ 无效的Canvas尺寸，使用默认值');
+        this.width = Math.max(this.width, 800);
+        this.height = Math.max(this.height, 600);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = this.width;
+      canvas.height = this.height;
+
+      console.log('✅ Canvas创建成功:', { width: canvas.width, height: canvas.height });
+      return canvas;
+    } catch (error) {
+      console.error('❌ Canvas创建失败:', error);
+      // 创建备用Canvas
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = 800;
+      fallbackCanvas.height = 600;
+      return fallbackCanvas;
+    }
   }
 
   /**
    * 获取 2D 绘图上下文
    */
   getContext() {
-    return this.canvas.getContext('2d');
+    try {
+      if (!this.canvas) {
+        console.error('❌ Canvas不存在，无法获取上下文');
+        return null;
+      }
+
+      const ctx = this.canvas.getContext('2d');
+      if (!ctx) {
+        console.error('❌ 无法获取2D上下文');
+        return null;
+      }
+
+      return ctx;
+    } catch (error) {
+      console.error('❌ 获取绘图上下文失败:', error);
+      return null;
+    }
   }
 
   /**
