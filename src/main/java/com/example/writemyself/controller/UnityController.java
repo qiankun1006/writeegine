@@ -22,13 +22,67 @@ public class UnityController {
     private UnityService unityService;
 
     /**
-     * Unity 编辑器页面
-     * 与图片编辑器和地图编辑器同级的功能入口
+     * 游戏类型选择门户
+     * 用户在这里选择要开发的游戏类型
      */
     @GetMapping("/create-game/unity")
     public String createGameUnity(Model model) {
-        model.addAttribute("title", "Unity 编辑器 - 创作游戏");
-        model.addAttribute("editorType", "unity");
+        model.addAttribute("title", "游戏创建 - 选择游戏类型");
+        model.addAttribute("editorType", "portal");
+        model.addAttribute("version", "1.0.0");
+
+        // 添加门户配置信息
+        Map<String, Object> portalConfig = new HashMap<>();
+        portalConfig.put("name", "游戏类型选择门户");
+        portalConfig.put("description", "选择您要开发的游戏类型，进入对应的轻量化编辑器");
+        model.addAttribute("portalConfig", portalConfig);
+        return "create-game-unity-portal";
+    }
+
+    /**
+     * 2D 策略战棋编辑器页面
+     */
+    @GetMapping("/create-game/unity/2d-strategy")
+    public String createGame2DStrategy(Model model, @RequestParam(required = false) String gameId) {
+        model.addAttribute("title", "2D 策略战棋编辑器");
+        model.addAttribute("editorType", "2d-strategy");
+        model.addAttribute("gameId", gameId != null ? gameId : "");
+        model.addAttribute("version", "1.0.0");
+        return "create-game-2d-strategy";
+    }
+
+    /**
+     * 2D 恶魔城编辑器页面
+     */
+    @GetMapping("/create-game/unity/2d-metroidvania")
+    public String createGame2DMetroidvania(Model model, @RequestParam(required = false) String gameId) {
+        model.addAttribute("title", "2D 恶魔城编辑器");
+        model.addAttribute("editorType", "2d-metroidvania");
+        model.addAttribute("gameId", gameId != null ? gameId : "");
+        model.addAttribute("version", "1.0.0");
+        return "create-game-2d-metroidvania";
+    }
+
+    /**
+     * 2D RPG 编辑器页面
+     */
+    @GetMapping("/create-game/unity/2d-rpg")
+    public String createGame2DRPG(Model model, @RequestParam(required = false) String gameId) {
+        model.addAttribute("title", "2D RPG 编辑器");
+        model.addAttribute("editorType", "2d-rpg");
+        model.addAttribute("gameId", gameId != null ? gameId : "");
+        model.addAttribute("version", "1.0.0");
+        return "create-game-2d-rpg";
+    }
+
+    /**
+     * 3D 射击编辑器页面
+     */
+    @GetMapping("/create-game/unity/3d-shooter")
+    public String createGame3DShooter(Model model, @RequestParam(required = false) String gameId) {
+        model.addAttribute("title", "3D 射击编辑器");
+        model.addAttribute("editorType", "3d-shooter");
+        model.addAttribute("gameId", gameId != null ? gameId : "");
         model.addAttribute("version", "1.0.0");
 
         // 添加编辑器配置信息
@@ -40,7 +94,7 @@ public class UnityController {
         editorConfig.put("defaultScene", getDefaultSceneConfig());
 
         model.addAttribute("editorConfig", editorConfig);
-        return "create-game-unity";
+        return "create-game-3d-shooter";
     }
 
     /**

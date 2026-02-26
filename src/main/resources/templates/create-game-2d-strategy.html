@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D 策略战棋编辑器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #2d2d30;
+            border-bottom: 1px solid #3e3e42;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #0078d4;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #1084d7;
+        }
+
+        .btn.danger {
+            background: #d13438;
+        }
+
+        .btn.danger:hover {
+            background: #da3b3b;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .toolbar {
+            background: #252526;
+            border-right: 1px solid #3e3e42;
+            padding: 10px;
+            width: 120px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tool-btn {
+            background: #3e3e42;
+            color: #cccccc;
+            border: 1px solid #3e3e42;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #3e3e42;
+            color: #fff;
+            border-color: #0078d4;
+        }
+
+        .tool-btn.active {
+            background: #0078d4;
+            color: #fff;
+            border-color: #0078d4;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: #f5f5f5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        .properties {
+            background: #252526;
+            border-left: 1px solid #3e3e42;
+            width: 280px;
+            overflow-y: auto;
+            padding: 10px;
+            border-top: 1px solid #3e3e42;
+        }
+
+        .property-group {
+            margin-bottom: 12px;
+        }
+
+        .property-group label {
+            display: block;
+            font-size: 12px;
+            color: #cccccc;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .property-group input {
+            width: 100%;
+            padding: 6px;
+            background: #3e3e42;
+            border: 1px solid #3e3e42;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .property-group input:focus {
+            outline: none;
+            border-color: #0078d4;
+        }
+
+        .property-group input[type="color"] {
+            width: 100%;
+            height: 32px;
+            cursor: pointer;
+        }
+
+        #propertyPanel {
+            color: #cccccc;
+            font-size: 12px;
+        }
+
+        .footer {
+            background: #2d2d30;
+            border-top: 1px solid #3e3e42;
+            padding: 5px 20px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #858585;
+        }
+
+        #statusBar {
+            flex: 1;
+        }
+
+        .info-tooltip {
+            background: #333;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+
+        .sidebar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            max-height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0078d4;
+            text-transform: uppercase;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>🎮 2D 策略战棋编辑器</h1>
+            <div class="header-buttons">
+                <button class="btn" onclick="editor.saveGame()">💾 保存</button>
+                <button class="btn" onclick="window.history.back()">← 返回</button>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <div class="section-title">编辑工具</div>
+                <button class="tool-btn active" onclick="editor.selectTool('select')" title="选择">✓ 选择</button>
+                <button class="tool-btn" onclick="editor.selectTool('rect')" title="矩形">□ 矩形</button>
+                <button class="tool-btn" onclick="editor.selectTool('circle')" title="圆形">○ 圆形</button>
+                <button class="tool-btn" onclick="editor.selectTool('line')" title="直线">/ 直线</button>
+                <button class="tool-btn" onclick="editor.selectTool('erase')" title="擦除">✕ 擦除</button>
+
+                <div class="section-title">网格系统</div>
+                <button class="tool-btn" onclick="editor.toggleGrid()" title="切换网格">⊞ 网格</button>
+                <button class="tool-btn" onclick="editor.toggleSnap()" title="切换对齐">📍 对齐</button>
+                <button class="tool-btn" onclick="editor.clearCanvas()" title="清空">🗑 清空</button>
+
+                <div class="section-title">寻路编辑</div>
+                <button class="tool-btn" onclick="editor.selectTool('obstacle')" title="障碍物">🚧 障碍</button>
+                <button class="tool-btn" onclick="editor.selectTool('start')" title="设置起点">S 起点</button>
+                <button class="tool-btn" onclick="editor.selectTool('end')" title="设置终点">E 终点</button>
+                <button class="tool-btn" onclick="editor.clearPath()" title="清除路径">🔄 重置</button>
+
+                <div class="section-title">战斗预览</div>
+                <button class="tool-btn" onclick="editor.selectTool('unit')" title="添加单位">⚔ 单位</button>
+                <button class="tool-btn" onclick="editor.setBattlePreview('move')" title="移动范围">🚶 移动</button>
+                <button class="tool-btn" onclick="editor.setBattlePreview('attack')" title="攻击范围">⚔ 攻击</button>
+                <button class="tool-btn" onclick="editor.setBattlePreview('skill')" title="技能范围">✨ 技能</button>
+
+                <div class="section-title">编辑</div>
+                <button class="tool-btn" onclick="editor.undo()" title="撤销">↶ 撤销</button>
+                <button class="tool-btn" onclick="editor.redo()" title="重做">↷ 重做</button>
+            </div>
+
+            <!-- 画布区 -->
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <!-- 属性面板 -->
+            <div class="properties">
+                <div class="section-title">属性</div>
+                <div id="propertyPanel">
+                    <p>选择一个对象以编辑属性</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部状态栏 -->
+        <div class="footer">
+            <div id="statusBar">准备就绪</div>
+        </div>
+    </div>
+
+    <!-- 加载脚本 -->
+    <script src="/static/js/unity-editor/Canvas2DUtils.js"></script>
+    <script src="/static/js/unity-editor/BaseEditor2D.js"></script>
+    <script src="/static/js/unity-editor/GridSystem.js"></script>
+    <script src="/static/js/unity-editor/PathfindingEditor.js"></script>
+    <script src="/static/js/unity-editor/BattlePreview.js"></script>
+    <script src="/static/js/unity-editor/EditorFactory.js"></script>
+
+    <script>
+        let editor = null;
+
+        // 2D 策略编辑器类
+        class Strategy2DEditor extends BaseEditor2D {
+            async initializeTools() {
+                console.log('🎯 初始化策略编辑器工具');
+                this.currentTool = 'select';
+
+                // 初始化网格系统
+                this.gridSystem = new GridSystem({
+                    tileSize: this.config.gridSize,
+                    showGrid: true,
+                    snapToGrid: true,
+                    gridColor: '#cccccc',
+                    gridAlpha: 0.4
+                });
+
+                // 初始化寻路编辑器
+                this.pathfindingEditor = new PathfindingEditor(this.gridSystem);
+                this.pathfindingEditor.pathfindingMode = 'bfs';
+
+                // 初始化战斗预览
+                this.battlePreview = new BattlePreview(this.gridSystem);
+
+                console.log('✅ 策略编辑器工具初始化完成');
+            }
+
+            initializeUI() {
+                // 绑定鼠标点击事件
+                const canvas = this.canvas;
+                canvas.addEventListener('mousedown', (e) => this.onToolMouseDown(e));
+                canvas.addEventListener('mousemove', (e) => this.onToolMouseMove(e));
+            }
+
+            onToolMouseDown(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left - this.panX) / this.zoom;
+                const y = (e.clientY - rect.top - this.panY) / this.zoom;
+                const gridCoords = this.gridSystem.pixelToGrid(x, y);
+                const { col, row } = gridCoords;
+
+                switch (this.currentTool) {
+                    case 'rect':
+                        this.createObject(x, y, 64, 64, '#667eea');
+                        break;
+                    case 'obstacle':
+                        this.pathfindingEditor.toggleObstacle(col, row);
+                        break;
+                    case 'start':
+                        this.pathfindingEditor.setStartPoint(col, row);
+                        break;
+                    case 'end':
+                        this.pathfindingEditor.setEndPoint(col, row);
+                        break;
+                    case 'unit':
+                        this.battlePreview.addUnit({
+                            col: col,
+                            row: row,
+                            team: 'ally'
+                        });
+                        break;
+                    default:
+                        // 调用基类的鼠标事件处理
+                        this.onMouseDown(e);
+                }
+            }
+
+            onToolMouseMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left - this.panX) / this.zoom;
+                const y = (e.clientY - rect.top - this.panY) / this.zoom;
+                const gridCoords = this.gridSystem.pixelToGrid(x, y);
+
+                // 更新网格高亮
+                this.gridSystem.highlightTile(gridCoords.col, gridCoords.row);
+
+                // 调用基类的鼠标移动处理
+                this.onMouseMove(e);
+            }
+
+            selectTool(toolName) {
+                this.currentTool = toolName;
+                console.log(`🔧 选择工具: ${toolName}`);
+
+                // 更新按钮状态
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                if (event && event.target) {
+                    event.target.classList.add('active');
+                }
+
+                // 如果是战斗预览模式，清除寻路预览
+                if (['move', 'attack', 'skill', 'vision'].includes(toolName)) {
+                    this.pathfindingEditor.clearPreview();
+                }
+            }
+
+            toggleGrid() {
+                this.gridSystem.toggleGrid();
+                console.log(`📊 网格: ${this.gridSystem.showGrid ? '显示' : '隐藏'}`);
+            }
+
+            toggleSnap() {
+                const snap = this.gridSystem.toggleSnap();
+                console.log(`📍 网格对齐: ${snap ? '开启' : '关闭'}`);
+            }
+
+            setBattlePreview(mode) {
+                this.battlePreview.setPreviewMode(mode);
+                console.log(`⚔️ 战斗预览模式: ${mode}`);
+            }
+
+            clearPath() {
+                this.pathfindingEditor.clearPath();
+                this.pathfindingEditor.clearObstacles();
+                console.log('🔄 寻路数据已重置');
+            }
+
+            clearCanvas() {
+                if (confirm('确定要清空画布吗？')) {
+                    this.saveUndoState();
+                    this.objects = [];
+                    this.selectedObject = null;
+                    this.pathfindingEditor.clearPath();
+                    this.battlePreview.clearUnits();
+                }
+            }
+
+            // 重写渲染方法，添加网格、寻路和战斗预览渲染
+            render() {
+                // 保存当前变换状态
+                this.ctx.save();
+
+                // 清空画布
+                Canvas2DUtils.clearCanvas(this.canvas);
+
+                // 应用变换
+                this.ctx.translate(this.panX, this.panY);
+                this.ctx.scale(this.zoom, this.zoom);
+
+                // 绘制网格
+                this.gridSystem.draw(this.ctx, this.canvas.width / this.zoom, this.canvas.height / this.zoom);
+
+                // 绘制寻路信息
+                this.pathfindingEditor.draw(this.ctx, this.gridSystem.tileSize);
+
+                // 绘制战斗预览
+                this.battlePreview.draw(this.ctx, this.gridSystem.tileSize);
+
+                // 绘制对象
+                this.objects.forEach(obj => {
+                    const isSelected = obj === this.selectedObject;
+                    Canvas2DUtils.drawRect(
+                        this.ctx,
+                        obj.x, obj.y, obj.width, obj.height,
+                        obj.color,
+                        isSelected ? '#333' : null,
+                        isSelected ? 2 : 0
+                    );
+
+                    // 绘制对象 ID
+                    Canvas2DUtils.drawText(
+                        this.ctx,
+                        obj.id.substr(0, 8),
+                        obj.x + 5, obj.y + 5,
+                        { fontSize: 10, color: '#fff' }
+                    );
+                });
+
+                // 恢复变换状态
+                this.ctx.restore();
+
+                // 绘制 UI 信息
+                this.renderUI();
+            }
+
+            // 重写 UI 渲染方法，添加策略编辑器特定信息
+            renderUI() {
+                const statusBar = document.getElementById('statusBar');
+                if (statusBar) {
+                    const objCount = this.objects.length;
+                    const zoom = (this.zoom * 100).toFixed(0);
+                    const unitCount = this.battlePreview.units.length;
+                    const pathLen = this.pathfindingEditor.getPathLength();
+
+                    let previewInfo = '';
+                    if (this.battlePreview.previewMode !== 'none') {
+                        previewInfo = ` | 预览: ${this.battlePreview.previewMode}`;
+                    }
+
+                    statusBar.innerHTML = `
+                        对象: ${objCount} | 单位: ${unitCount} | 路径: ${pathLen} | 缩放: ${zoom}%${previewInfo}
+                    `;
+                }
+            }
+        }
+
+        // 页面加载完成后初始化编辑器
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 获取游戏 ID（从 URL 参数或新游戏）
+            const params = new URLSearchParams(window.location.search);
+            const gameId = params.get('gameId');
+
+            // 创建编辑器实例
+            editor = new Strategy2DEditor(
+                {
+                    name: '2D 策略战棋编辑器',
+                    engine: 'canvas2d',
+                    tools: ['grid', 'pathfinding', 'battle-preview'],
+                    canvasSize: { width: window.innerWidth - 400, height: window.innerHeight - 80 },
+                    gridSize: 32,
+                    initialZoom: 1.0
+                },
+                gameId
+            );
+
+            // 初始化编辑器
+            const initialized = await editor.initialize();
+            if (initialized) {
+                console.log('🎮 策略编辑器已启动');
+            }
+        });
+
+        // 窗口大小调整时重新计算画布大小
+        window.addEventListener('resize', () => {
+            if (editor && editor.canvas) {
+                editor.canvas.width = window.innerWidth - 400;
+                editor.canvas.height = window.innerHeight - 80;
+            }
+        });
+
+        // 提示用户保存
+        window.addEventListener('beforeunload', (e) => {
+            if (editor && editor.undoStack.length > 0) {
+                e.preventDefault();
+                e.returnValue = '您有未保存的更改';
+            }
+        });
+    </script>
+</body>
+</html>
+

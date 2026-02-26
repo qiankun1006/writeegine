@@ -1,0 +1,87 @@
+{
+  "editorType": "2d-metroidvania",
+  "name": "2D 恶魔城编辑器",
+  "version": "1.0.0",
+  "modules": [
+    {
+      "id": "core",
+      "name": "核心引擎",
+      "priority": 1,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/Canvas2DUtils.js",
+        "/static/js/unity-editor/BaseEditor2D.js",
+        "/static/js/unity-editor/EditorFactory.js"
+      ],
+      "styles": [],
+      "size": "120KB"
+    },
+    {
+      "id": "platformer-tools",
+      "name": "平台游戏工具",
+      "priority": 2,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/CollisionBodyEditor.js",
+        "/static/js/unity-editor/PhysicsPreview.js",
+        "/static/js/unity-editor/PlatformerTools.js"
+      ],
+      "styles": [],
+      "size": "160KB",
+      "dependsOn": ["core"]
+    },
+    {
+      "id": "physics-engine",
+      "name": "物理引擎",
+      "priority": 3,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/PhysicsSimulator.js",
+        "/static/js/unity-editor/GravitySystem.js"
+      ],
+      "styles": [],
+      "size": "140KB",
+      "dependsOn": ["core"]
+    },
+    {
+      "id": "ui-framework",
+      "name": "UI 框架",
+      "priority": 3,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/UIComponents.js",
+        "/static/js/unity-editor/PropertyPanel.js"
+      ],
+      "styles": [
+        "/static/css/ui-components.css"
+      ],
+      "size": "80KB",
+      "dependsOn": ["core"]
+    },
+    {
+      "id": "advanced-physics",
+      "name": "高级物理",
+      "priority": 5,
+      "required": false,
+      "scripts": [
+        "/static/js/unity-editor/AdvancedPhysics.js",
+        "/static/js/unity-editor/JointSystem.js"
+      ],
+      "styles": [],
+      "size": "120KB",
+      "dependsOn": ["physics-engine"]
+    }
+  ],
+  "loadingStrategy": "lazy",
+  "cacheControl": {
+    "enabled": true,
+    "maxAge": 86400
+  },
+  "performance": {
+    "minChunkSize": "20KB",
+    "maxChunkSize": "500KB",
+    "parallel": true,
+    "maxParallel": 3
+  }
+}
+

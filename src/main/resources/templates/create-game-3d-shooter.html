@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 射击编辑器 - WriteEngine</title>
+  <link rel="stylesheet" href="/static/css/unity-editor.css">
+  <!-- Three.js 库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls 控制器 -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Ammo.js 物理引擎（可选） -->
+  <script src="https://cdn.jsdelivr.net/npm/ammo.js@0.0.10/builds/ammo.wasm.js"></script>
+</head>
+<body>
+
+<!-- 页面加载诊断脚本 -->
+<script>
+  console.log('%c🎯 3D 射击编辑器页面开始加载', 'color: #ff9800; font-weight: bold; font-size: 14px');
+  console.log('时间:', new Date().toLocaleTimeString());
+  console.log('浏览器:', navigator.userAgent.split(' ').slice(-2).join(' '));
+</script>
+
+<div class="unity-editor-container">
+    <!-- 顶部工具栏 -->
+    <div class="toolbar">
+        <!-- 文件操作 -->
+        <div class="toolbar-group">
+            <button class="toolbar-btn" id="btnNewScene" title="新建场景 (Ctrl+N)">
+                <span class="icon">📄</span> 新建
+            </button>
+            <button class="toolbar-btn" id="btnOpenScene" title="打开场景 (Ctrl+O)">
+                <span class="icon">📂</span> 打开
+            </button>
+            <button class="toolbar-btn" id="btnSaveScene" title="保存场景 (Ctrl+S)">
+                <span class="icon">💾</span> 保存
+            </button>
+            <button class="toolbar-btn" id="btnExportScene" title="导出场景">
+                <span class="icon">📤</span> 导出
+            </button>
+        </div>
+
+        <!-- 射击特定工具 -->
+        <div class="toolbar-group">
+            <button class="toolbar-btn" id="btnSpawnerTool" title="生成点工具">
+                <span class="icon">📍</span> 生成点
+            </button>
+            <button class="toolbar-btn" id="btnWeaponTool" title="武器位置">
+                <span class="icon">🔫</span> 武器
+            </button>
+            <button class="toolbar-btn" id="btnLightingTool" title="光照编辑">
+                <span class="icon">💡</span> 光照
+            </button>
+            <button class="toolbar-btn" id="btnParticleTool" title="粒子系统">
+                <span class="icon">✨</span> 粒子
+            </button>
+        </div>
+
+        <!-- 编辑工具 -->
+        <div class="toolbar-group">
+            <button class="toolbar-btn active" id="btnSelectTool" title="选择工具 (Q)">
+                <span class="icon">🖱️</span> 选择
+            </button>
+            <button class="toolbar-btn" id="btnMoveTool" title="移动工具 (W)">
+                <span class="icon">↔️</span> 移动
+            </button>
+            <button class="toolbar-btn" id="btnRotateTool" title="旋转工具 (E)">
+                <span class="icon">🔄</span> 旋转
+            </button>
+            <button class="toolbar-btn" id="btnScaleTool" title="缩放工具 (R)">
+                <span class="icon">📏</span> 缩放
+            </button>
+        </div>
+
+        <!-- 显示选项 -->
+        <div class="toolbar-group">
+            <button class="toolbar-btn" id="btnToggleGrid" title="切换网格 (G)">
+                <span class="icon">⊞</span> 网格
+            </button>
+            <button class="toolbar-btn" id="btnToggleAxes" title="切换坐标轴 (A)">
+                <span class="icon">⟂</span> 轴
+            </button>
+            <button class="toolbar-btn" id="btnToggleColliders" title="切换碰撞体 (C)">
+                <span class="icon">📦</span> 碰撞
+            </button>
+        </div>
+
+        <!-- 返回按钮 -->
+        <div class="toolbar-group" style="margin-left: auto;">
+            <button class="toolbar-btn" onclick="window.history.back()" title="返回门户">
+                <span class="icon">←</span> 返回
+            </button>
+        </div>
+    </div>
+
+    <!-- 侧栏容器 -->
+    <div class="editor-sidebar">
+        <!-- 层级面板 -->
+        <div class="panel hierarchy-panel">
+            <div class="panel-header">
+                <h3>🎬 场景结构</h3>
+                <button class="btn-small" id="btnAddObject" title="添加对象">➕</button>
+            </div>
+            <div class="panel-content">
+                <div id="hierarchyView" class="tree-view">
+                    <div class="tree-item expanded">
+                        <span class="tree-toggle">▼</span>
+                        <span class="tree-icon">🎬</span>
+                        <span class="tree-label">场景</span>
+                        <ul class="tree-children">
+                            <li class="tree-item">
+                                <span class="tree-toggle"></span>
+                                <span class="tree-icon">💡</span>
+                                <span class="tree-label">主光源</span>
+                            </li>
+                            <li class="tree-item">
+                                <span class="tree-toggle"></span>
+                                <span class="tree-icon">📷</span>
+                                <span class="tree-label">摄像机</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主视口区域 -->
+    <div class="main-content">
+        <div id="viewport" class="viewport"></div>
+
+        <!-- 工具提示 -->
+        <div class="tooltip">
+            按 <kbd>H</kbd> 显示帮助
+        </div>
+    </div>
+
+    <!-- 属性面板 -->
+    <div class="inspector-panel">
+        <div class="panel-header">
+            <h3>🔧 属性</h3>
+        </div>
+        <div class="panel-content" id="inspectorContent">
+            <p>选择一个对象以显示其属性</p>
+        </div>
+    </div>
+</div>
+
+<!-- 底部状态栏 -->
+<div class="status-bar">
+    <div class="status-item">
+        <span id="statusFPS">FPS: 60</span>
+    </div>
+    <div class="status-item">
+        <span id="statusObjects">对象: 0</span>
+    </div>
+    <div class="status-item">
+        <span id="statusMemory">内存: 0 MB</span>
+    </div>
+    <div class="status-item" style="margin-left: auto;">
+        <span id="statusReady">准备就绪</span>
+    </div>
+</div>
+
+<!-- 脚本加载 -->
+<script src="/static/js/unity-editor/LazyLoader.js"></script>
+<script src="/static/js/unity-editor/UnityRenderer.js"></script>
+<script src="/static/js/unity-editor/SelectionSystem.js"></script>
+<script src="/static/js/unity-editor/LightingEditor.js"></script>
+<script src="/static/js/unity-editor/ParticleSystemEditor.js"></script>
+<script src="/static/js/unity-editor/RaycastingTool.js"></script>
+<script src="/static/js/unity-editor/UnityEditor.js"></script>
+<script src="/static/js/unity-editor/app.js"></script>
+
+<script>
+    // 3D 射击编辑器初始化
+    console.log('%c🎯 初始化 3D 射击编辑器', 'color: #ff9800; font-weight: bold');
+
+    // 全局变量存储编辑器工具
+    let lightingEditor = null;
+    let particleSystemEditor = null;
+    let raycastingTool = null;
+
+    // 等待 Unity 编辑器初始化完成
+    window.addEventListener('editorReady', () => {
+        console.log('%c🎮 3D 射击编辑器准备就绪，初始化专用工具...', 'color: #4caf50');
+
+        const scene = window.unityEditor ? window.unityEditor.scene : null;
+        const camera = window.unityEditor ? window.unityEditor.camera : null;
+        const viewport = document.getElementById('viewport');
+
+        if (scene && camera) {
+            // 初始化光照编辑器
+            lightingEditor = new LightingEditor(scene);
+            lightingEditor.createPreset('daylight'); // 创建默认光照场景
+
+            // 初始化粒子系统编辑器
+            particleSystemEditor = new ParticleSystemEditor(scene);
+
+            // 初始化射线检测工具
+            if (viewport) {
+                raycastingTool = new RaycastingTool(camera, scene, viewport);
+                raycastingTool.enableMouseInteraction();
+
+                // 设置射线检测回调
+                raycastingTool.onObjectSelected = (object, hitInfo) => {
+                    console.log('选中对象:', object ? object.name : '无');
+                    if (window.unityEditor && window.unityEditor.selectObject) {
+                        window.unityEditor.selectObject(object);
+                    }
+                };
+
+                raycastingTool.onObjectHovered = (object, hitInfo) => {
+                    // 可以在这里添加悬停效果
+                    if (object) {
+                        viewport.style.cursor = 'pointer';
+                    } else {
+                        viewport.style.cursor = 'default';
+                    }
+                };
+            }
+
+            console.log('%c✅ 3D 射击编辑器工具初始化完成', 'color: #4caf50');
+            updateStatus('工具就绪', true);
+        } else {
+            console.error('❌ 无法初始化 3D 射击编辑器工具：场景或摄像机不可用');
+            updateStatus('初始化失败', false);
+        }
+    });
+
+    // 工具栏按钮事件
+    document.addEventListener('DOMContentLoaded', () => {
+        // 光照工具
+        const btnLightingTool = document.getElementById('btnLightingTool');
+        if (btnLightingTool) {
+            btnLightingTool.addEventListener('click', () => {
+                if (lightingEditor) {
+                    const stats = lightingEditor.getStatistics();
+                    console.log('💡 光照统计:', stats);
+                    alert(`当前光照统计:\n总数: ${stats.total}\n环境光: ${stats.ambient}\n方向光: ${stats.directional}\n点光源: ${stats.point}\n聚光灯: ${stats.spot}\n半球光: ${stats.hemisphere}`);
+                }
+            });
+        }
+
+        // 粒子工具
+        const btnParticleTool = document.getElementById('btnParticleTool');
+        if (btnParticleTool) {
+            btnParticleTool.addEventListener('click', () => {
+                if (particleSystemEditor) {
+                    // 在场景中心创建爆炸效果
+                    const explosion = particleSystemEditor.triggerEffect('explosion', new THREE.Vector3(0, 2, 0));
+                    console.log('✨ 触发爆炸效果');
+                    updateStatus('触发爆炸效果', true);
+                }
+            });
+        }
+
+        // 生成点工具
+        const btnSpawnerTool = document.getElementById('btnSpawnerTool');
+        if (btnSpawnerTool) {
+            btnSpawnerTool.addEventListener('click', () => {
+                if (window.unityEditor && window.unityEditor.scene) {
+                    // 创建生成点标记
+                    const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+                    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                    const spawner = new THREE.Mesh(geometry, material);
+                    spawner.name = `Spawner_${Date.now()}`;
+                    spawner.userData = { type: 'spawner' };
+                    spawner.position.set(
+                        (Math.random() - 0.5) * 10,
+                        2,
+                        (Math.random() - 0.5) * 10
+                    );
+                    window.unityEditor.scene.add(spawner);
+                    console.log('📍 创建生成点:', spawner.name);
+                    updateStatus('创建生成点', true);
+                }
+            });
+        }
+
+        // 武器工具
+        const btnWeaponTool = document.getElementById('btnWeaponTool');
+        if (btnWeaponTool) {
+            btnWeaponTool.addEventListener('click', () => {
+                if (window.unityEditor && window.unityEditor.scene) {
+                    // 创建武器标记
+                    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.5);
+                    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                    const weapon = new THREE.Mesh(geometry, material);
+                    weapon.name = `Weapon_${Date.now()}`;
+                    weapon.userData = { type: 'weapon' };
+                    weapon.position.set(
+                        (Math.random() - 0.5) * 10,
+                        1,
+                        (Math.random() - 0.5) * 10
+                    );
+                    window.unityEditor.scene.add(weapon);
+                    console.log('🔫 创建武器位置:', weapon.name);
+                    updateStatus('创建武器位置', true);
+                }
+            });
+        }
+
+        // 网格切换
+        const btnToggleGrid = document.getElementById('btnToggleGrid');
+        if (btnToggleGrid) {
+            btnToggleGrid.addEventListener('click', () => {
+                if (window.unityEditor && window.unityEditor.toggleGrid) {
+                    window.unityEditor.toggleGrid();
+                    updateStatus('切换网格显示', true);
+                }
+            });
+        }
+
+        // 坐标轴切换
+        const btnToggleAxes = document.getElementById('btnToggleAxes');
+        if (btnToggleAxes) {
+            btnToggleAxes.addEventListener('click', () => {
+                if (window.unityEditor && window.unityEditor.toggleAxes) {
+                    window.unityEditor.toggleAxes();
+                    updateStatus('切换坐标轴显示', true);
+                }
+            });
+        }
+    });
+
+    // 获取游戏 ID
+    const params = new URLSearchParams(window.location.search);
+    const gameId = params.get('gameId');
+
+    if (gameId) {
+        console.log(`📌 游戏 ID: ${gameId}`);
+        // 加载现有游戏
+        window.addEventListener('editorReady', () => {
+            if (window.unityEditor) {
+                window.unityEditor.loadGame(gameId);
+            }
+        });
+    }
+
+    // 处理返回键
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (confirm('确定要返回到选择页面？')) {
+                window.history.back();
+            }
+        }
+    });
+
+    // 更新状态栏
+    function updateStatus(message, success = true) {
+        const statusReady = document.getElementById('statusReady');
+        if (statusReady) {
+            statusReady.textContent = message;
+            statusReady.style.color = success ? '#4caf50' : '#f44336';
+        }
+    }
+</script>
+
+</body>
+</html>
+

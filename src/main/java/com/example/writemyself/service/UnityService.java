@@ -496,5 +496,95 @@ public class UnityService {
 
         return stats;
     }
+
+    // ===== 游戏类型管理方法 =====
+
+    /**
+     * 游戏存储（内存存储）
+     */
+    private final Map<String, Map<String, Object>> gameStore = new HashMap<>();
+
+    /**
+     * 创建新游戏
+     */
+    public Map<String, Object> createGame(String name, String type, String description) {
+        String gameId = "game_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8);
+        Map<String, Object> game = new HashMap<>();
+        game.put("id", gameId);
+        game.put("name", name);
+        game.put("type", type);
+        game.put("description", description);
+        game.put("metadata", new HashMap<>());
+        game.put("createdAt", System.currentTimeMillis());
+        game.put("updatedAt", System.currentTimeMillis());
+        gameStore.put(gameId, game);
+        return game;
+    }
+
+    /**
+     * 获取游戏列表
+     */
+    public List<Map<String, Object>> getGameList() {
+        return new ArrayList<>(gameStore.values());
+    }
+
+    /**
+     * 按类型获取游戏列表
+     */
+    public List<Map<String, Object>> getGamesByType(String type) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> game : gameStore.values()) {
+            if (type.equals(game.get("type"))) {
+                result.add(game);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取游戏详情
+     */
+    public Map<String, Object> getGame(String gameId) {
+        return gameStore.get(gameId);
+    }
+
+    /**
+     * 保存游戏
+     */
+    public Map<String, Object> saveGame(String gameId, Map<String, Object> gameData) {
+        if (gameStore.containsKey(gameId)) {
+            Map<String, Object> game = gameStore.get(gameId);
+            game.put("updatedAt", System.currentTimeMillis());
+            if (gameData.containsKey("name")) {
+                game.put("name", gameData.get("name"));
+            }
+            if (gameData.containsKey("description")) {
+                game.put("description", gameData.get("description"));
+            }
+            if (gameData.containsKey("metadata")) {
+                game.put("metadata", gameData.get("metadata"));
+            }
+            return game;
+        }
+        return null;
+    }
+
+    /**
+     * 更新游戏元数据
+     */
+    public void updateGameMetadata(String gameId, Map<String, Object> metadata) {
+        if (gameStore.containsKey(gameId)) {
+            Map<String, Object> game = gameStore.get(gameId);
+            game.put("metadata", metadata);
+            game.put("updatedAt", System.currentTimeMillis());
+        }
+    }
+
+    /**
+     * 删除游戏
+     */
+    public boolean deleteGame(String gameId) {
+        return gameStore.remove(gameId) != null;
+    }
 }
 

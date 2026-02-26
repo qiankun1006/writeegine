@@ -1,0 +1,76 @@
+{
+  "editorType": "2d-rpg",
+  "name": "2D RPG 编辑器",
+  "version": "1.0.0",
+  "modules": [
+    {
+      "id": "core",
+      "name": "核心引擎",
+      "priority": 1,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/Canvas2DUtils.js",
+        "/static/js/unity-editor/BaseEditor2D.js",
+        "/static/js/unity-editor/EditorFactory.js"
+      ],
+      "styles": [],
+      "size": "120KB"
+    },
+    {
+      "id": "rpg-systems",
+      "name": "RPG 系统",
+      "priority": 2,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/NPCEditor.js",
+        "/static/js/unity-editor/DialogueEditor.js",
+        "/static/js/unity-editor/QuestSystem.js"
+      ],
+      "styles": [],
+      "size": "180KB",
+      "dependsOn": ["core"]
+    },
+    {
+      "id": "ui-framework",
+      "name": "UI 框架",
+      "priority": 3,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/UIComponents.js",
+        "/static/js/unity-editor/PropertyPanel.js"
+      ],
+      "styles": [
+        "/static/css/ui-components.css"
+      ],
+      "size": "80KB",
+      "dependsOn": ["core"]
+    },
+    {
+      "id": "dialogue-trees",
+      "name": "对话树系统",
+      "priority": 4,
+      "required": false,
+      "scripts": [
+        "/static/js/unity-editor/DialogueTreeBuilder.js",
+        "/static/js/unity-editor/DialoguePreview.js"
+      ],
+      "styles": [
+        "/static/css/dialogue-editor.css"
+      ],
+      "size": "150KB",
+      "dependsOn": ["rpg-systems"]
+    }
+  ],
+  "loadingStrategy": "lazy",
+  "cacheControl": {
+    "enabled": true,
+    "maxAge": 86400
+  },
+  "performance": {
+    "minChunkSize": "20KB",
+    "maxChunkSize": "500KB",
+    "parallel": true,
+    "maxParallel": 3
+  }
+}
+
