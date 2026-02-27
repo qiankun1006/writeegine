@@ -264,12 +264,14 @@ class CropTool extends Tool {
       `;
       document.body.appendChild(panel);
 
-      // 绑定应用和取消按钮事件
+      // 绑定应用和取消按钮事件（使用箭头函数保持 this 上下文）
       document.getElementById('applyCropBtn').addEventListener('click', () => {
+        console.log('🔘 应用裁剪按钮被点击');
         this.applyCrop();
       });
 
       document.getElementById('cancelCropBtn').addEventListener('click', () => {
+        console.log('❌ 取消裁剪按钮被点击');
         this.cancelCrop();
       });
 
@@ -343,22 +345,39 @@ class CropTool extends Tool {
    * 应用裁剪操作（无损质量）
    */
   applyCrop() {
+    console.log('📋 applyCrop 方法被调用');
+
     if (!this.cropState.cropBox) {
       console.warn('⚠️ 没有选择裁剪区域');
       return;
     }
 
+    console.log('✅ 裁剪框存在:', this.cropState.cropBox);
+
     const editor = window.editor;
-    if (!editor) return;
+    console.log('📌 编辑器对象:', editor);
+
+    if (!editor) {
+      console.error('❌ 编辑器不存在');
+      return;
+    }
 
     const layer = editor.document.getSelectedLayer();
-    if (!layer) return;
+    console.log('📌 选中的图层:', layer);
+
+    if (!layer) {
+      console.error('❌ 没有选中的图层');
+      return;
+    }
 
     const box = this.cropState.cropBox;
     const x = Math.round(box.x);
     const y = Math.round(box.y);
     const w = Math.round(box.width);
     const h = Math.round(box.height);
+
+    console.log('📐 裁剪参数:', { x, y, w, h });
+    console.log('📦 原始图层尺寸:', { width: layer.width, height: layer.height });
 
     try {
       // 创建新的 canvas 用于裁剪内容
@@ -369,7 +388,12 @@ class CropTool extends Tool {
       const ctx = croppedCanvas.getContext('2d', { willReadFrequently: true });
 
       // 从原始图层 canvas 中提取指定区域（无损质量）
-      const imageData = layer.canvas.getContext('2d').getImageData(x, y, w, h);
+      const sourceCtx = layer.canvas.getContext('2d');
+      console.log('🎨 源 Canvas 尺寸:', { width: layer.canvas.width, height: layer.canvas.height });
+
+      const imageData = sourceCtx.getImageData(x, y, w, h);
+      console.log('📸 提取的图像数据:', { width: imageData.width, height: imageData.height });
+
       ctx.putImageData(imageData, 0, 0);
 
       // 更新图层内容
@@ -380,6 +404,7 @@ class CropTool extends Tool {
       layer.y = layer.y + y;
 
       console.log('✅ 裁剪成功:', { x, y, width: w, height: h });
+      console.log('📦 新图层尺寸:', { width: layer.width, height: layer.height });
 
       // 清空裁剪框并重新渲染
       this.cropState.cropBox = null;
@@ -390,6 +415,7 @@ class CropTool extends Tool {
 
     } catch (error) {
       console.error('❌ 裁剪失败:', error);
+      console.error('💥 错误堆栈:', error.stack);
       alert('裁剪失败: ' + error.message);
     }
   }
