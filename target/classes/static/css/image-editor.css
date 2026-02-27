@@ -759,3 +759,162 @@ body {
   perspective: 1000px;
 }
 
+/* ============================================
+   裁剪工具样式
+   ============================================ */
+
+#crop-panel {
+  position: fixed;
+  right: 20px;
+  top: 80px;
+  background: #2d2d2d;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 12px;
+  width: 280px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  font-size: 12px;
+}
+
+.crop-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-group label {
+  color: #aaa;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.control-group input[type="number"] {
+  padding: 6px;
+  background: #353535;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.crop-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #0078d4;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1084d8;
+}
+
+.btn-secondary {
+  background: #555;
+  color: #ddd;
+}
+
+.btn-secondary:hover {
+  background: #666;
+}
+
+/* ============================================
+   透明度工具样式
+   ============================================ */
+
+#opacity-panel {
+  position: fixed;
+  right: 20px;
+  top: 80px;
+  background: #2d2d2d;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 12px;
+  width: 280px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  font-size: 12px;
+}
+
+.opacity-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-select {
+  padding: 6px;
+  background: #353535;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.control-select option {
+  background: #353535;
+  color: #ddd;
+}
+
+#brushOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opacity-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.opacity-buttons button {
+  padding: 6px 12px;
+  background: #404040;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.opacity-buttons button:hover {
+  background: #4a4a4a;
+  border-color: #666;
+}
+
+/* 数值显示 */
+.control-group span,
+#brushSizeValue,
+#brushHardnessValue,
+#opacityValueDisplay {
+  color: #0078d4;
+  font-weight: 600;
+}
+

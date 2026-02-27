@@ -202,6 +202,186 @@ class Layer {
   }
 
   /**
+   * 启用透明通道 (Alpha Channel)
+   * 确保图层支持透明度编辑
+   */
+  enableAlphaChannel() {
+    if (this._hasAlphaChannel) {
+      console.log('⚠️ Alpha 通道已启用');
+      return true;
+    }
+
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return false;
+
+      // 获取现有内容
+      const imageData = ctx.getImageData(0, 0, this.width, this.height);
+
+      // 创建新的 canvas（支持透明）
+      const newCanvas = document.createElement('canvas');
+      newCanvas.width = this.width;
+      newCanvas.height = this.height;
+
+      const newCtx = newCanvas.getContext('2d');
+      newCtx.putImageData(imageData, 0, 0);
+
+      // 替换原有 canvas
+      this.canvas = newCanvas;
+      this._hasAlphaChannel = true;
+
+      console.log('✅ Alpha 通道已启用，图层现在支持透明度');
+      return true;
+    } catch (error) {
+      console.error('❌ 启用 Alpha 通道失败:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 将白色背景转换为透明（实用函数）
+   */
+  convertWhiteToTransparent(threshold = 240) {
+    if (!this._hasAlphaChannel) {
+      this.enableAlphaChannel();
+    }
+
+    try {
+      const ctx = this.getContext();
+      const imageData = ctx.getImageData(0, 0, this.width, this.height);
+      const data = imageData.data;
+
+      // 遍历所有像素
+      let changedPixels = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+
+        // 判断是否接近白色（超过阈值）
+        if (r > threshold && g > threshold && b > threshold && a > 240) {
+          // 设置透明度为 0
+          data[i + 3] = 0;
+          changedPixels++;
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      console.log(`✅ 已将 ${changedPixels} 个像素转换为透明`);
+      return true;
+    } catch (error) {
+      console.error('❌ 转换白色为透明失败:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 调整指定区域的透明度
+   * @param {number} x - 矩形左上角 X 坐标
+   * @param {number} y - 矩形左上角 Y 坐标
+   * @param {number} width - 矩形宽度
+   * @param {number} height - 矩形高度
+   * @param {number} alphaValue - 透明度值 (0-1)
+   */
+  adjustRegionOpacity(x, y, width, height, alphaValue) {
+    if (!this._hasAlphaChannel) {
+      this.enableAlphaChannel();
+    }
+
+    try {
+      const ctx = this.getContext();
+
+      // 确保坐标在有效范围内
+      const startX = Math.max(0, Math.min(x, this.width));
+      const startY = Math.max(0, Math.min(y, this.height));
+      const endX = Math.min(this.width, x + width);
+      const endY = Math.min(this.height, y + height);
+
+      const w = Math.max(0, endX - startX);
+      const h = Math.max(0, endY - startY);
+
+      if (w <= 0 || h <= 0) return false;
+
+      const imageData = ctx.getImageData(startX, startY, w, h);
+      const data = imageData.data;
+
+      // 调整区域内所有像素的透明度
+      for (let i = 3; i < data.length; i += 4) {
+        data[i] = Math.round(data[i] * alphaValue);
+      }
+
+      ctx.putImageData(imageData, startX, startY);
+      console.log(`✅ 已调整矩形区域 (${startX}, ${startY}, ${w}x${h}) 的透明度为 ${alphaValue * 100}%`);
+      return true;
+    } catch (error) {
+      console.error('❌ 调整区域透明度失败:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 使用笔刷在指定位置调整透明度
+   * @param {number} x - 笔刷中心 X 坐标
+   * @param {number} y - 笔刷中心 Y 坐标
+   * @param {number} brushSize - 笔刷大小
+   * @param {number} opacityValue - 透明度值 (0-1)
+   * @param {number} brushHardness - 笔刷硬度 (0-1)
+   */
+  applyOpacityBrush(x, y, brushSize, opacityValue, brushHardness = 0.7) {
+    if (!this._hasAlphaChannel) {
+      this.enableAlphaChannel();
+    }
+
+    try {
+      const ctx = this.getContext();
+
+      // 创建笔刷遮罩
+      const brushCanvas = document.createElement('canvas');
+      brushCanvas.width = brushSize;
+      brushCanvas.height = brushSize;
+
+      const brushCtx = brushCanvas.getContext('2d');
+      const centerX = brushSize / 2;
+      const centerY = brushSize / 2;
+      const radius = brushSize / 2;
+
+      // 创建径向渐变笔刷
+      const gradient = brushCtx.createRadialGradient(
+        centerX, centerY, 0,
+        centerX, centerY, radius
+      );
+
+      const softness = 1 - brushHardness;
+      gradient.addColorStop(0, `rgba(0, 0, 0, ${1 - softness})`);
+      gradient.addColorStop(brushHardness, `rgba(0, 0, 0, ${1 - softness})`);
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      brushCtx.fillStyle = gradient;
+      brushCtx.fillRect(0, 0, brushSize, brushSize);
+
+      // 应用笔刷
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out'; // 删除像素
+      ctx.globalAlpha = opacityValue;
+      ctx.drawImage(
+        brushCanvas,
+        x - brushSize / 2,
+        y - brushSize / 2,
+        brushSize,
+        brushSize
+      );
+      ctx.restore();
+
+      console.log(`✅ 已在 (${x}, ${y}) 应用透明度笔刷，大小: ${brushSize}, 强度: ${opacityValue * 100}%`);
+      return true;
+    } catch (error) {
+      console.error('❌ 应用笔刷透明度失败:', error);
+      return false;
+    }
+  }
+
+  /**
    * 将图层转换为 JSON
    */
   toJSON() {
@@ -220,8 +400,10 @@ class Layer {
       lockAlpha: this.lockAlpha,
       effects: this.effects,
       children: this.children.map(c => c.toJSON()),
-      // Canvas 数据使用 base64 编码
-      canvasData: this.canvas.toDataURL('image/png')
+      // Canvas 数据使用 base64 编码（PNG格式支持透明通道）
+      canvasData: this.canvas.toDataURL('image/png'),
+      // 保存是否启用了 Alpha 通道
+      hasAlphaChannel: this._hasAlphaChannel || false
     };
   }
 
@@ -254,6 +436,11 @@ class Layer {
           canvas: canvas,
           effects: json.effects
         });
+
+        // 恢复 Alpha 通道状态
+        if (json.hasAlphaChannel) {
+          layer._hasAlphaChannel = true;
+        }
 
         resolve(layer);
       };

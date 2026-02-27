@@ -78,6 +78,13 @@
         <div class="tool-separator"></div>
 
         <div class="tool-group">
+          <button class="tool-btn" id="crop-btn" data-tool="crop" title="裁剪 (C)">✂️</button>
+          <button class="tool-btn" id="opacity-btn" data-tool="opacity" title="透明度 (O)">👻</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
+        <div class="tool-group">
           <button class="tool-btn" id="perspective-btn" data-tool="perspective" title="透视变换 (P)">🔲</button>
           <button class="tool-btn" id="3d-transform-btn" data-tool="3d-transform" title="3D 变换 (3)">📦</button>
         </div>
@@ -229,9 +236,17 @@
   <script src="/static/js/image-editor/tools/PerspectiveTool.js"></script>
   <script src="/static/js/image-editor/tools/ThreeDTransformTool.js"></script>
 
+  <!-- Phase 5 裁剪与透明度工具 -->
+  <script src="/static/js/image-editor/tools/CropTool.js"></script>
+  <script src="/static/js/image-editor/tools/OpacityTool.js"></script>
+
   <script src="/static/js/image-editor/app.js"></script>
   <script src="/static/js/image-editor/filters-test.js"></script>
   <script src="/static/js/image-editor/transform-test.js"></script>
+
+  <!-- 可选: 裁剪与透明度工具测试脚本（开发环境使用） -->
+  <!-- 注: 在生产环境请注释掉此行 -->
+  <script src="/static/js/image-editor/tools-test.js"></script>
 </body>
 </html>
 

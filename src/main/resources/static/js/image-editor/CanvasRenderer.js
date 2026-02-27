@@ -33,7 +33,7 @@ class CanvasRenderer {
   /**
    * 渲染文档
    */
-  render(document, showSelection = true) {
+  render(document, showSelection = true, activeTool = null) {
     const startTime = performance.now();
 
     // 清空画布
@@ -57,6 +57,11 @@ class CanvasRenderer {
     // 绘制选区
     if (showSelection && this.selection) {
       this._drawSelection();
+    }
+
+    // 调用活跃工具的 render 方法（用于绘制工具特定的 UI，如裁剪框）
+    if (activeTool && typeof activeTool.render === 'function') {
+      activeTool.render(this.ctx, { renderer: this, document });
     }
 
     this.ctx.restore();

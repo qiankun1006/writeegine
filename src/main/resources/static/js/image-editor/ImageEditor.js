@@ -73,6 +73,10 @@ class ImageEditor {
     this.toolManager.register(new PerspectiveTool());
     this.toolManager.register(new ThreeDTransformTool());
 
+    // Phase 5 - 裁剪与透明度工具
+    this.toolManager.register(new CropTool());
+    this.toolManager.register(new OpacityTool());
+
     // 激活画笔工具作为默认工具
     this.toolManager.activate('brush', this);
 
@@ -151,6 +155,19 @@ class ImageEditor {
       title: '3D变换',
       description: '在三维空间中旋转和变换图层',
       shortcut: '3'
+    });
+
+    // 裁剪与透明度工具提示
+    this._registerTooltip('crop-btn', {
+      title: '裁剪',
+      description: '无损质量裁剪图像，支持自由调整裁剪区域',
+      shortcut: 'C'
+    });
+
+    this._registerTooltip('opacity-btn', {
+      title: '透明度',
+      description: '调整图层或指定区域的透明度，支持笔刷模式',
+      shortcut: 'O'
     });
 
     // 菜单按钮提示
@@ -490,7 +507,8 @@ class ImageEditor {
    * 渲染编辑器
    */
   render() {
-    this.renderer.render(this.document, true);
+    const activeTool = this.toolManager.getActiveTool();
+    this.renderer.render(this.document, true, activeTool);
   }
 
   /**
