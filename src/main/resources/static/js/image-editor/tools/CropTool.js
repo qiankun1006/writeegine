@@ -56,8 +56,8 @@ class CropTool extends Tool {
    * 鼠标按下事件
    */
   onMouseDown(e, editor) {
-    if (!editor.document || !editor.document.getActiveLayer()) {
-      console.warn('⚠️ 没有活跃图层');
+    if (!editor.document || !editor.document.getSelectedLayer()) {
+      console.warn('⚠️ 没有选中图层');
       return;
     }
 
@@ -87,7 +87,7 @@ class CropTool extends Tool {
    * 鼠标移动事件
    */
   onMouseMove(e, editor) {
-    if (!editor.document || !editor.document.getActiveLayer()) return;
+    if (!editor.document || !editor.document.getSelectedLayer()) return;
 
     const coords = editor.renderer.screenToWorldCoords(e.clientX, e.clientY);
 
@@ -351,7 +351,7 @@ class CropTool extends Tool {
     const editor = window.editor;
     if (!editor) return;
 
-    const layer = editor.document.getActiveLayer();
+    const layer = editor.document.getSelectedLayer();
     if (!layer) return;
 
     const box = this.cropState.cropBox;

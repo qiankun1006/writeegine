@@ -51,12 +51,12 @@ class OpacityTool extends Tool {
    * 鼠标按下事件
    */
   onMouseDown(e, editor) {
-    if (!editor.document || !editor.document.getActiveLayer()) {
+    if (!editor.document || !editor.document.getSelectedLayer()) {
       console.warn('⚠️ 没有活跃图层');
       return;
     }
 
-    const layer = editor.document.getActiveLayer();
+    const layer = editor.document.getSelectedLayer();
 
     // 确保图层支持透明通道
     this.ensureAlphaChannel(layer);
@@ -82,7 +82,7 @@ class OpacityTool extends Tool {
    * 鼠标移动事件
    */
   onMouseMove(e, editor) {
-    if (!editor.document || !editor.document.getActiveLayer()) return;
+    if (!editor.document || !editor.document.getSelectedLayer()) return;
 
     if (!this.isDrawing) return;
 
@@ -137,7 +137,7 @@ class OpacityTool extends Tool {
    * 应用全局透明度
    */
   applyGlobalOpacity(editor, e) {
-    const layer = editor.document.getActiveLayer();
+    const layer = editor.document.getSelectedLayer();
 
     // 弹出对话框让用户输入透明度值
     const input = prompt('请输入透明度 (0-100):', '50');
@@ -155,7 +155,7 @@ class OpacityTool extends Tool {
    * 应用笔刷透明度
    */
   applyBrushOpacity(editor, x, y) {
-    const layer = editor.document.getActiveLayer();
+    const layer = editor.document.getSelectedLayer();
     const ctx = layer.getContext();
 
     if (!ctx) return;
@@ -317,7 +317,7 @@ class OpacityTool extends Tool {
       // 启用透明通道
       document.getElementById('toggleAlphaBtn').addEventListener('click', () => {
         const editor = window.editor;
-        const layer = editor.document.getActiveLayer();
+        const layer = editor.document.getSelectedLayer();
         if (layer) {
           this.ensureAlphaChannel(layer);
           alert('✓ Alpha 通道已启用');
@@ -350,7 +350,7 @@ class OpacityTool extends Tool {
     const editor = window.editor;
     if (!editor) return;
 
-    const layer = editor.document.getActiveLayer();
+    const layer = editor.document.getSelectedLayer();
     if (!layer) return;
 
     // 首先确保有 Alpha 通道
