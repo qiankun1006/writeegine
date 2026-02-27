@@ -613,20 +613,26 @@ class ImageEditor {
   }
 
   /**
-   * 保存文档
+   * 保存文档 - 导出为 PNG 格式
    */
-  async saveDocument() {
-    const docJSON = await this.document.toJSON();
-    const dataStr = JSON.stringify(docJSON);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${this.document.name || 'image'}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+  saveDocument() {
+    try {
+      console.log('💾 保存文档开始...');
 
-    eventBus.emit('documentSaved', { documentName: this.document.name });
+      // 直接导出为 PNG 格式
+      const dataURL = this.renderer.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = `${this.document.name || 'image'}-${Date.now()}.png`;
+      link.click();
+
+      console.log('✅ 文档已保存为 PNG');
+      alert('✅ 图片已成功导出为 PNG 格式');
+      eventBus.emit('documentSaved', { documentName: this.document.name, format: 'png' });
+    } catch (error) {
+      console.error('❌ 保存失败:', error);
+      alert('保存失败: ' + error.message);
+    }
   }
 
   /**
