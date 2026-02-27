@@ -40,7 +40,10 @@ function initializeEditor() {
       width: canvas.width,
       height: canvas.height
     });
+    // 保存编辑器实例到全局 window 对象（供其他模块访问）
+    window.editor = editor;
     console.log('✓ ImageEditor 创建成功');
+    console.log('✓ 编辑器已保存到 window.editor');
   } catch (error) {
     console.error('❌ ImageEditor 创建失败:', error);
     return;
