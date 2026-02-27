@@ -1,266 +1,357 @@
-# 游戏类型选择门户 Proposal
+# 游戏类型门户和编辑器变更
 
-## 📝 概述
+## 变更描述
 
-这是一个针对 Unity 编辑器进行**类型化重构**的提案。核心目标是：
+本次变更实现了游戏类型选择门户，将原有的单一 3D 编辑器扩展为支持四种游戏类型的轻量化编辑器系统。
 
-🎯 **将重型的"一刀切" 3D 编辑器改造为轻量化的类型特定编辑器**
-
-当前状态: ✅ **Proposal 已创建并通过验证**
-
----
-
-## 📂 文件导航
-
-| 文件 | 用途 | 阅读时间 |
-|------|------|--------|
-| **PROPOSAL_SUMMARY.md** | 📊 快速概览（强烈推荐首先阅读） | 5 分钟 |
-| **proposal.md** | 📋 官方提案（为什么、做什么、影响什么） | 5 分钟 |
-| **design.md** | 🏗️ 技术设计（架构、决策、权衡） | 15 分钟 |
-| **tasks.md** | ✅ 实现清单（8 个阶段，~80 个任务） | 20 分钟 |
-| **specs/ 目录** | 🔍 详细需求（4 个规格文件，每个 20-30 个需求） | 30 分钟 |
-| **prompt.md** | 💬 原始需求（用户原话） | 1 分钟 |
+**变更 ID**: `add-game-type-portal`
+**变更版本**: 1.0.0
+**变更日期**: 2026-02-27
+**变更类型**: 新功能
 
 ---
 
-## 🎯 快速理解
+## 游戏类型
 
-### 当前状况 ❌
-```
-用户访问 /create-game/unity
-  ↓
-🎮 Unity 3D 编辑器 (一刀切)
-  ├─ 所有功能都在一起
-  ├─ 加载 Three.js + Ammo.js + 所有工具
-  ├─ 首屏: ~1s
-  └─ 内存: ~1000MB
-```
+### 2D 策略战棋编辑器
+- 适用游戏: 回合制策略、战棋、塔防、战棋 RPG
+- 核心功能: 网格系统、寻路编辑、单位放置
 
-### 改进后 ✅
-```
-用户访问 /create-game/unity
-  ↓
-🎮 游戏类型选择门户 (新!)
-  ├─ 2D 策略战棋 → Canvas 2D 编辑器 (~400ms)
-  ├─ 2D 恶魔城   → Canvas 2D 编辑器 (~450ms)
-  ├─ 2D RPG      → Canvas 2D 编辑器 (~480ms)
-  └─ 3D 射击     → Three.js 编辑器  (~300ms)
-```
+### 2D 恶魔城编辑器
+- 适用游戏: 类银河恶魔城、横版动作、平台跳跃
+- 核心功能: 平台编辑、碰撞体编辑、物理预览
+
+### 2D RPG 编辑器
+- 适用游戏: 2D RPG、JRPG、冒险游戏
+- 核心功能: NPC 编辑、对话系统、任务系统
+
+### 3D 射击编辑器
+- 适用游戏: FPS、TPS、3D 动作
+- 核心功能: 3D 场景编辑、光照系统、粒子效果
 
 ---
 
-## 📊 性能对比
+## 核心特性
 
-| 指标 | 原始编辑器 | 2D 编辑器 | 改进 |
-|------|----------|---------|------|
-| 首屏加载 | ~1.0s | ~400-480ms | ⬇️ **50-60%** |
-| 初始内存 | ~1000MB | ~400MB | ⬇️ **60%** |
-| 初始请求 | 8+ 个 | 5 个 | ⬇️ **40%** |
-| 初始数据 | ~1.2MB | ~600KB | ⬇️ **50%** |
+### 🎯 游戏类型门户
+- 四种游戏类型选择
+- 响应式设计
+- 新建和打开游戏功能
 
----
+### ⚡ 性能优化
+- 懒加载系统
+- 按编辑器类型动态加载模块
+- 性能监控工具
 
-## 💡 关键决策
+### 🔧 模块化设计
+- 可扩展的编辑器架构
+- 工具插件化
+- 配置驱动
 
-### 1️⃣ 为什么分离编辑器？
-- 2D 游戏开发者不需要 Three.js（节省 ~400KB）
-- 不同编辑器可独立优化（针对性加载）
-- 便于后续针对性功能开发（如 2D 骨骼动画）
-
-### 2️⃣ 为什么选 Canvas 2D？
-- 轻量级（比 Three.js 小 ~70%）
-- 加载速度快（无 WebGL 初始化开销）
-- 足以处理 2D 游戏需求
-- 降低学习曲线
-
-### 3️⃣ 数据兼容性怎样处理？
-- 现有游戏标记为 "3d-legacy"
-- 继续支持打开和编辑
-- 自动迁移，无需用户干预
+### 🧪 测试覆盖
+- 单元测试
+- 集成测试
+- 端到端测试
+- 性能测试
 
 ---
 
-## 🎮 支持的游戏类型
+## 访问入口
 
-### 1️⃣ **2D 策略战棋** 🗺️
-- 引擎: Canvas 2D
-- 特色工具:
-  - 网格系统（可配置网格大小）
-  - 寻路编辑
-  - 战斗预览（范围、伤害可视化）
-
-### 2️⃣ **2D 恶魔城** 🧛
-- 引擎: Canvas 2D
-- 特色工具:
-  - 碰撞体编辑（盒子、圆形、多边形）
-  - 物理预览（重力、摩擦力）
-  - 平台跳跃机制支持
-
-### 3️⃣ **2D RPG** 🎭
-- 引擎: Canvas 2D
-- 特色工具:
-  - NPC 编辑
-  - 对话系统（节点图/脚本）
-  - 任务链编辑
-
-### 4️⃣ **3D 射击** 🔫
-- 引擎: Three.js
-- 特色工具:
-  - 光照编辑（方向光、点光、聚光灯）
-  - 粒子系统
-  - 射线检测工具
-  - 网络同步配置（可选）
-
----
-
-## 📋 实现路线图
-
-### **第 1-2 天: 后端基础**
-- [ ] Game 数据模型（支持 4 种类型）
-- [ ] GameController 和 API
-- [ ] 数据库迁移（为现有游戏标记类型）
-
-### **第 2-3 天: 游戏门户**
-- [ ] 创建门户 HTML（4 张卡片）
-- [ ] 门户 JavaScript 逻辑（创建/打开游戏）
-- [ ] 门户样式和交互
-
-### **第 3-5 天: 2D 编辑器**
-- [ ] BaseEditor2D 基类
-- [ ] 策略编辑器（+网格工具）
-- [ ] 恶魔城编辑器（+碰撞体工具）
-- [ ] RPG 编辑器（+NPC 工具）
-
-### **第 5-6 天: 3D 编辑器优化**
-- [ ] 从现有编辑器中移除 2D 工具
-- [ ] 创建 3D 射击编辑器模板
-- [ ] 添加射击特定功能
-
-### **第 6-7 天: 性能优化**
-- [ ] 为每个编辑器配置懒加载
-- [ ] 性能基准测试
-- [ ] 监控和指标收集
-
-### **第 7-9 天: 测试和部署**
-- [ ] 端到端功能测试
-- [ ] 浏览器兼容性测试
-- [ ] 灰度发布准备
-- [ ] 文档编写
-
----
-
-## 🚀 如何开始
-
-### 1️⃣ **阅读 Proposal**
-```bash
-# 快速了解
-cat openspec/changes/add-game-type-portal/PROPOSAL_SUMMARY.md
-
-# 官方文档
-cat openspec/changes/add-game-type-portal/proposal.md
+### 门户页面
+```
+http://localhost:8080/create-game/unity
 ```
 
-### 2️⃣ **理解技术设计**
-```bash
-# 详细的架构、决策、风险分析
-cat openspec/changes/add-game-type-portal/design.md
-```
+### 编辑器页面
+- 2D 策略: `/create-game/unity/2d-strategy`
+- 2D 恶魔城: `/create-game/unity/2d-metroidvania`
+- 2D RPG: `/create-game/unity/2d-rpg`
+- 3D 射击: `/create-game/unity/3d-shooter`
 
-### 3️⃣ **查看规格需求**
-```bash
-# 每个规格的详细需求和场景
-ls -la openspec/changes/add-game-type-portal/specs/
-cat openspec/changes/add-game-type-portal/specs/game-portal/spec.md
-cat openspec/changes/add-game-type-portal/specs/2d-editor-lite/spec.md
-cat openspec/changes/add-game-type-portal/specs/3d-editor-lite/spec.md
-cat openspec/changes/add-game-type-portal/specs/game-management/spec.md
+### 测试页面
 ```
-
-### 4️⃣ **获取实现清单**
-```bash
-# ~80 个具体的任务项
-cat openspec/changes/add-game-type-portal/tasks.md
-```
-
-### 5️⃣ **验证 Proposal 质量**
-```bash
-# 确保所有规格和需求都符合 OpenSpec 规范
-openspec validate add-game-type-portal --strict
+http://localhost:8080/e2e-test
 ```
 
 ---
 
-## ✅ 验证状态
+## 快速开始
 
-✅ **proposal.md** - 格式正确
-✅ **design.md** - 技术设计完整
-✅ **tasks.md** - 任务清单详细
-✅ **game-portal/spec.md** - 需求完整，Scenarios 正确
-✅ **2d-editor-lite/spec.md** - 需求完整，Scenarios 正确
-✅ **3d-editor-lite/spec.md** - MODIFIED 需求正确
-✅ **game-management/spec.md** - ADDED + MODIFIED 需求正确
-✅ **openspec validate --strict** - **PASSED** ✨
+### 1. 访问门户
+打开浏览器访问门户页面，选择您要开发的游戏类型。
 
----
+### 2. 创建游戏
+点击"新建游戏"按钮，填写游戏信息，创建新游戏项目。
 
-## 📞 关键问题 & 答案
+### 3. 编辑游戏
+进入对应的编辑器，开始创建您的游戏场景和内容。
 
-### Q: 现有游戏会被破坏吗？
-**A**: 不会。现有游戏会被标记为 "3d-legacy" 类型，继续在 3D 编辑器中打开和编辑。
-
-### Q: 用户需要迁移吗？
-**A**: 不需要。迁移是自动的和透明的。用户在门户中访问游戏时，系统会自动处理。
-
-### Q: 如果我不想要 2D 编辑器呢？
-**A**: 虽然创建了 2D 编辑器，但用户仍然可以选择只使用 3D 编辑器。门户允许用户选择。
-
-### Q: 后续如何添加新游戏类型？
-**A**: 创建新的编辑器 HTML、添加类型到 GameType enum、扩展 API。见 design.md 中的 "Open Questions"。
-
-### Q: 2D 编辑器功能会不会太弱？
-**A**: 初期可能是。但通过迭代可以逐步增强（如添加骨骼动画、高级物理等）。
+### 4. 保存游戏
+使用工具栏的保存按钮或快捷键 Ctrl+S 保存游戏。
 
 ---
 
-## 🔗 相关链接
+## 文档
 
-- **OpenSpec 文档**: openspec/AGENTS.md
-- **项目规范**: openspec/project.md
-- **现有规格**: openspec/specs/
-- **已完成的 Changes**: openspec/changes/archive/
+### 用户文档
+📖 [用户指南](./docs/USER_GUIDE.md) - 详细的使用指南和常见问题
 
----
+### 开发者文档
+📖 [开发者指南](./docs/DEVELOPER_GUIDE.md) - 系统架构、API 文档、扩展指南
 
-## 📝 下一步
+### 部署文档
+📖 [部署说明](./docs/DEPLOYMENT.md) - 环境配置、部署步骤、监控配置
 
-1. ✅ **审核本 Proposal** - 确保方向正确
-2. 🟡 **批准执行** - 如无意见，准备开始实现
-3. 🟢 **执行 /openspec/apply** - 开始代码实现
-4. 📊 **定期同步进度** - 按 tasks.md 更新完成状态
-5. 🎉 **归档变更** - 完成后使用 `openspec archive`
+### 变更总结
+📖 [变更总结](./CHANGE_SUMMARY.md) - 完整的变更记录和技术细节
 
 ---
 
-## 👤 作者信息
+## 技术栈
 
-Created: 2026-02-25
-Change Type: 架构重构 + 性能优化
-Breaking Change: ⚠️ **是的** (路由改变，但兼容现有数据)
+### 后端
+- Spring Boot 2.x
+- Java 11+
+- MySQL 8.0+
+- Spring Data JPA
+
+### 前端
+- HTML5, CSS3, JavaScript (ES6+)
+- Three.js (3D 渲染)
+- Canvas 2D (2D 渲染)
+- 无构建工具（原生 JavaScript）
 
 ---
 
-**准备开始实现了吗?**
+## 主要变更文件
 
-```bash
-# 确认 Proposal 有效
-openspec validate add-game-type-portal --strict
+### 新增文件
 
-# 查看所有详情
-openspec show add-game-type-portal
+#### 门户页面
+- `src/main/resources/templates/create-game-unity-portal.html`
+- `src/main/resources/static/css/game-portal.css`
+- `src/main/resources/static/js/game-portal.js`
 
-# 当准备好时，执行:
-# /openspec/apply add-game-type-portal
+#### 编辑器页面
+- `src/main/resources/templates/create-game-2d-strategy.html`
+- `src/main/resources/templates/create-game-2d-metroidvania.html`
+- `src/main/resources/templates/create-game-2d-rpg.html`
+- `src/main/resources/templates/create-game-3d-shooter.html`
+
+#### 编辑器核心
+- `src/main/resources/static/js/unity-editor/BaseEditor2D.js`
+- `src/main/resources/static/js/unity-editor/LightingEditor.js`
+- `src/main/resources/static/js/unity-editor/ParticleSystemEditor.js`
+- `src/main/resources/static/js/unity-editor/RaycastingTool.js`
+- `src/main/resources/static/js/unity-editor/PerformanceMonitor.js`
+
+#### 编辑器工具
+- `src/main/resources/static/js/unity-editor/tools/GridSystem.js`
+- `src/main/resources/static/js/unity-editor/tools/PathfindingEditor.js`
+- `src/main/resources/static/js/unity-editor/tools/CollisionBodyEditor.js`
+- `src/main/resources/static/js/unity-editor/tools/PhysicsPreview.js`
+- `src/main/resources/static/js/unity-editor/tools/NPCEditor.js`
+- `src/main/resources/static/js/unity-editor/tools/DialogueEditor.js`
+- `src/main/resources/static/js/unity-editor/tools/QuestSystem.js`
+
+#### 懒加载配置
+- `src/main/resources/static/js/unity-editor/MODULES_CONFIG_2D.json`
+- `src/main/resources/static/js/unity-editor/MODULES_CONFIG_3D.json`
+
+#### 测试工具
+- `src/main/resources/static/js/unity-editor/Editor2DTest.js`
+- `src/main/resources/static/js/unity-editor/PerformanceTest3D.js`
+- `src/main/resources/static/js/unity-editor/EndToEndTest.js`
+- `src/main/resources/templates/e2e-test.html`
+
+#### 文档
+- `docs/USER_GUIDE.md`
+- `docs/DEVELOPER_GUIDE.md`
+- `docs/DEPLOYMENT.md`
+- `CHANGE_SUMMARY.md`
+
+### 修改文件
+
+#### 后端控制器
+- `src/main/java/com/example/writemyself/controller/UnityController.java` - 添加新编辑器路由
+
+---
+
+## 数据库变更
+
+### 新增表
+
+#### game 表
+```sql
+CREATE TABLE `game` (
+  `id` VARCHAR(64) PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `type` VARCHAR(32) NOT NULL,
+  `description` TEXT,
+  `thumbnail_url` VARCHAR(512),
+  `metadata` JSON,
+  `created_at` BIGINT NOT NULL,
+  `updated_at` BIGINT NOT NULL,
+  `user_id` VARCHAR(64),
+  INDEX `idx_type` (`type`),
+  INDEX `idx_user_id` (`user_id`),
+  INDEX `idx_created_at` (`created_at`)
+);
 ```
 
-🚀 **让我们开始构建 WriteEngine 的游戏类型生态系统吧！** 🎮
+### 表结构变更
+
+#### scene 表
+- 新增 `game_id` 外键字段
+- 建立与 game 表的关联关系
+
+---
+
+## 性能指标
+
+### 加载性能
+- 门户页面首屏: < 1s
+- 2D 编辑器启动: < 2s
+- 3D 编辑器启动: < 3s
+
+### 运行性能
+- 2D 编辑器 FPS: > 60
+- 3D 编辑器 FPS: > 30
+- 内存占用: < 500MB
+
+---
+
+## 浏览器支持
+
+- ✅ Chrome 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
+
+---
+
+## 测试
+
+### 运行测试
+
+1. 启动应用
+   ```bash
+   mvn spring-boot:run
+   ```
+
+2. 访问测试页面
+   ```
+   http://localhost:8080/e2e-test
+   ```
+
+3. 运行测试
+   - 点击"运行所有测试"按钮
+   - 查看测试结果
+   - 导出测试报告（可选）
+
+---
+
+## 部署
+
+### 前置要求
+
+- Java 11+
+- Maven 3.6+
+- MySQL 8.0+
+- Nginx 1.18+（可选）
+
+### 部署步骤
+
+详见 [部署说明](./docs/DEPLOYMENT.md)
+
+1. 构建项目
+   ```bash
+   mvn clean package -DskipTests
+   ```
+
+2. 执行数据库迁移
+
+3. 配置环境变量
+
+4. 部署 JAR 文件
+
+5. 启动服务
+
+6. 验证部署
+
+---
+
+## 灰度发布
+
+### 阶段 1: 5% (1-2 天)
+- 监控错误率
+- 收集反馈
+
+### 阶段 2: 25% (2-3 天)
+- 扩大范围
+- 验证稳定性
+
+### 阶段 3: 50% (3-5 天)
+- 继续监控
+- 优化体验
+
+### 阶段 4: 100% (1 天)
+- 全量发布
+- 持续监控
+
+---
+
+## 回滚计划
+
+详见 [部署说明](./docs/DEPLOYMENT.md) 中的回滚计划章节。
+
+### 回滚条件
+- 错误率 > 5%
+- 响应时间 > 2s
+- 严重 Bug
+
+---
+
+## 已知限制
+
+- ❌ 暂不支持多人协作
+- ❌ 暂不支持版本控制
+- ❌ 游戏导出功能开发中
+
+---
+
+## 后续计划
+
+- [ ] 多人实时协作
+- [ ] 游戏版本控制
+- [ ] 游戏导出功能
+- [ ] 本地缓存和离线编辑
+- [ ] 更多游戏类型支持
+
+---
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+---
+
+## 联系方式
+
+- 📧 邮箱: support@example.com
+- 📝 论坛: https://forum.example.com
+- 🐛 GitHub Issues: https://github.com/example/writeengine/issues
+
+---
+
+## 许可证
+
+Copyright © 2026 WriteEngine Team. All rights reserved.
+
+---
+
+**版本**: 1.0.0
+**最后更新**: 2026-02-27
+**状态**: ✅ 准备发布
 

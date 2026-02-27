@@ -6,11 +6,13 @@
 class LazyLoader {
     constructor(options = {}) {
         this.options = {
+            editorType: options.editorType || '3d-shooter',
             enablePhysics: options.enablePhysics || false,
             enableAnimations: options.enableAnimations || false,
             enableParticles: options.enableParticles || false,
             enableScripting: options.enableScripting || false,
             preloadAssets: options.preloadAssets || true,
+            configPath: options.configPath || '/static/config',
             ...options
         };
 
@@ -18,6 +20,25 @@ class LazyLoader {
         this.loadingModules = new Map();
         this.moduleCallbacks = new Map();
         this.resourceCache = new Map();
+        this.moduleConfig = null;
+    }
+
+    /**
+     * 根据编辑器类型加载模块配置
+     */
+    async loadModuleConfig() {
+        const configFile = `MODULES_CONFIG_${this.options.editorType.toUpperCase()}.json`;
+        const configUrl = `${this.options.configPath}/${configFile}`;
+
+        try {
+            const response = await fetch(configUrl);
+            this.moduleConfig = await response.json();
+            console.log(`✅ 加载模块配置: ${this.options.editorType}`);
+            return this.moduleConfig;
+        } catch (error) {
+            console.warn(`⚠️ 无法加载模块配置: ${configUrl}`, error);
+            return null;
+        }
     }
 
     /**

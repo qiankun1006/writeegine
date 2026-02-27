@@ -465,6 +465,16 @@ public class UnityController {
     }
 
     /**
+     * 端到端测试页面
+     */
+    @GetMapping("/e2e-test")
+    public String e2eTestPage(Model model) {
+        model.addAttribute("title", "端到端测试");
+        model.addAttribute("version", "1.0.0");
+        return "e2e-test";
+    }
+
+    /**
      * 检查支持的格式
      */
     private boolean isSupportedFormat(String format) {

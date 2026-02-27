@@ -1,0 +1,175 @@
+{
+  "editorType": "3d-shooter",
+  "name": "3D 射击编辑器",
+  "version": "1.1.0",
+  "modules": [
+    {
+      "id": "three-core",
+      "name": "Three.js 核心",
+      "priority": 1,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/UnityRenderer.js",
+        "/static/js/unity-editor/SelectionSystem.js"
+      ],
+      "styles": [],
+      "size": "200KB",
+      "cdn": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+    },
+    {
+      "id": "editor-core",
+      "name": "编辑器核心",
+      "priority": 2,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/UnityEditor.js",
+        "/static/js/unity-editor/app.js"
+      ],
+      "styles": [
+        "/static/css/unity-editor.css"
+      ],
+      "size": "180KB",
+      "dependsOn": ["three-core"]
+    },
+    {
+      "id": "lighting-editor",
+      "name": "光照编辑器",
+      "priority": 3,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/LightingEditor.js"
+      ],
+      "styles": [],
+      "size": "50KB",
+      "dependsOn": ["editor-core"],
+      "description": "创建和管理场景光源（环境光、方向光、点光源、聚光灯等）"
+    },
+    {
+      "id": "particle-system",
+      "name": "粒子系统编辑器",
+      "priority": 4,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/ParticleSystemEditor.js"
+      ],
+      "styles": [],
+      "size": "80KB",
+      "dependsOn": ["editor-core"],
+      "description": "创建和管理粒子效果（爆炸、火焰、烟雾、火花、弹痕等）"
+    },
+    {
+      "id": "raycasting-tool",
+      "name": "射线检测工具",
+      "priority": 5,
+      "required": true,
+      "scripts": [
+        "/static/js/unity-editor/RaycastingTool.js"
+      ],
+      "styles": [],
+      "size": "40KB",
+      "dependsOn": ["editor-core"],
+      "description": "3D 空间中的拾取、检测、瞄准线绘制等功能"
+    },
+    {
+      "id": "physics-optional",
+      "name": "物理引擎（可选）",
+      "priority": 6,
+      "required": false,
+      "scripts": [
+        "/static/js/unity-editor/AmmoPhysics.js"
+      ],
+      "cdn": "https://cdn.jsdelivr.net/npm/ammo.js@0.0.10/builds/ammo.wasm.js",
+      "styles": [],
+      "size": "300KB",
+      "dependsOn": ["editor-core"],
+      "description": "物理模拟和碰撞检测（可选加载）"
+    },
+    {
+      "id": "post-processing",
+      "name": "后期处理",
+      "priority": 7,
+      "required": false,
+      "scripts": [
+        "/static/js/unity-editor/PostProcessing.js",
+        "/static/js/unity-editor/EffectsPanel.js"
+      ],
+      "styles": [],
+      "size": "100KB",
+      "dependsOn": ["editor-core"],
+      "description": "后期处理效果（模糊、光晕、色彩校正等）"
+    },
+    {
+      "id": "animation-system",
+      "name": "动画系统",
+      "priority": 8,
+      "required": false,
+      "scripts": [
+        "/static/js/unity-editor/AnimationSystem.js"
+      ],
+      "styles": [],
+      "size": "120KB",
+      "dependsOn": ["editor-core"],
+      "description": "角色和物体动画编辑"
+    },
+    {
+      "id": "script-editor",
+      "name": "脚本编辑器",
+      "priority": 9,
+      "required": false,
+      "scripts": [
+        "/static/js/unity-editor/ScriptEditor.js"
+      ],
+      "styles": [],
+      "size": "150KB",
+      "dependsOn": ["editor-core"],
+      "description": "游戏逻辑脚本编辑器"
+    },
+    {
+      "id": "asset-library",
+      "name": "资源库",
+      "priority": 10,
+      "required": false,
+      "scripts": [
+        "/static/js/unity-editor/AssetLibrary.js"
+      ],
+      "styles": [],
+      "size": "200KB",
+      "dependsOn": ["editor-core"],
+      "description": "资源管理和浏览"
+    }
+  ],
+  "loadingStrategy": "lazy",
+  "preloadStrategy": {
+    "core": ["three-core", "editor-core"],
+    "priority": ["lighting-editor", "particle-system", "raycasting-tool"],
+    "deferred": ["physics-optional", "post-processing"],
+    "lazy": ["animation-system", "script-editor", "asset-library"]
+  },
+  "cacheControl": {
+    "enabled": true,
+    "maxAge": 86400,
+    "versioning": true
+  },
+  "performance": {
+    "minChunkSize": "20KB",
+    "maxChunkSize": "500KB",
+    "parallel": true,
+    "maxParallel": 4,
+    "compression": "gzip",
+    "useWorker": false,
+    "prefetch": true
+  },
+  "optimization": {
+    "bundleAnalysis": false,
+    "treeShaking": true,
+    "codeSplitting": true,
+    "lazyLoadImages": true
+  },
+  "monitoring": {
+    "enabled": true,
+    "trackLoadTimes": true,
+    "trackModuleUsage": true,
+    "reportErrors": true
+  }
+}
+
