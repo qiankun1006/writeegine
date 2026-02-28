@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>游戏类型选择</title>
-    <link rel="stylesheet" th:href="@{/css/game-portal.css}">
+    <link rel="stylesheet" th:href="@{/static/css/game-portal.css}">
 </head>
 <body>
-    <div layout:fragment="content">
-        <div class="game-creation-wrapper">
+    <div class="game-creation-wrapper">
             <!-- 页面头部 -->
             <div class="creation-header">
                 <h1>选择游戏类型</h1>
@@ -121,7 +120,7 @@
         </div>
     </div>
 
-    <script th:src="@{/js/game-portal.js}"></script>
+    <script th:src="@{/static/js/game-portal.js}"></script>
 </body>
 </html>
 
