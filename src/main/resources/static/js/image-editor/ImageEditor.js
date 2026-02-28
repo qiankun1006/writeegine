@@ -319,6 +319,8 @@ class ImageEditor {
     filterPipeline.registerFilter('bevel-emboss', BevelEmbossFilter);
     filterPipeline.registerFilter('mirror', MirrorFilter);
     filterPipeline.registerFilter('checkerboard', CheckerboardFilter);
+    filterPipeline.registerFilter('shadow', ShadowFilter);
+    filterPipeline.registerFilter('ground-shadow', GroundShadowFilter);
 
     // 注册图层样式
     layerStyleManager.registerStyle('drop-shadow', DropShadowStyle);

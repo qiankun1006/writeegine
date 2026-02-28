@@ -40,7 +40,10 @@ function initializeEditor() {
       width: canvas.width,
       height: canvas.height
     });
+    // 保存编辑器实例到全局 window 对象（供其他模块访问）
+    window.editor = editor;
     console.log('✓ ImageEditor 创建成功');
+    console.log('✓ 编辑器已保存到 window.editor');
   } catch (error) {
     console.error('❌ ImageEditor 创建失败:', error);
     return;
@@ -120,6 +123,16 @@ function setupEventListeners() {
   document.querySelectorAll('.tool-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const toolId = e.target.dataset.tool;
+      if (toolId === 'shadow') {
+        // 特殊处理阴影滤镜按钮
+        showShadowFilterDialog();
+        return;
+      }
+      if (toolId === 'ground-shadow') {
+        // 特殊处理地面阴影滤镜按钮
+        showGroundShadowFilterDialog();
+        return;
+      }
       if (toolId) {
         editor.activateTool(toolId);
         // 更新按钮状态
@@ -301,8 +314,12 @@ function showFilterMenu() {
     '效果滤镜:\n' +
     '- clouds (云彩)\n' +
     '- lighting (光照)\n' +
-    '- mirror (镜像)\n\n' +
-    '示例: editor.applyFilter(\'blur\', {radius: 5})';
+    '- mirror (镜像)\n' +
+      '- shadow (落地阴影) ✨\n' +
+      '- ground-shadow (地面阴影/快速投影) ✨ 新增\n\n' +
+      '示例:\n' +
+      'editor.applyFilter(\'shadow\', {offsetX: 5, offsetY: 10, blurRadius: 8, opacity: 0.4})\n' +
+      'editor.applyFilter(\'ground-shadow\', {projectionMethod: \'perspective\', lightX: 0.5, lightY: 0, lightHeight: 200, shadowWidth: 60, shadowLength: 40, blurRadius: 12, opacity: 0.5})';
 
   alert(message);
 }
@@ -312,6 +329,324 @@ function showFilterMenu() {
  */
 function applyFilterQuick(filterId, params = {}) {
   editor.applyFilter(filterId, params);
+}
+
+/**
+ * 快速应用落地阴影滤镜
+ */
+function applyShadowFilter() {
+  const params = {
+    offsetX: 5,
+    offsetY: 10,
+    blurRadius: 8,
+    opacity: 0.4,
+    scaleX: 0.8,
+    fadeDirection: 'bottom'
+  };
+  editor.applyFilter('shadow', params);
+}
+
+/**
+ * 显示阴影滤镜设置对话框
+ */
+function showShadowFilterDialog() {
+  const params = {
+    offsetX: 5,
+    offsetY: 10,
+    blurRadius: 8,
+    opacity: 0.4,
+    scaleX: 0.8,
+    fadeDirection: 'bottom'
+  };
+
+  const dialogHTML = `
+    <div class="dialog-overlay" id="shadowDialog">
+      <div class="dialog-content" style="min-width: 400px;">
+        <h3 style="margin: 0 0 20px 0; padding: 15px; background: #f0f0f0; border-radius: 4px 4px 0 0;">
+          🌑 落地阴影设置
+        </h3>
+        <div style="padding: 20px;">
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              水平偏移 (X): <span id="offsetXValue">${params.offsetX}</span>px
+            </label>
+            <input type="range" id="shadowOffsetX" min="-50" max="50" value="${params.offsetX}" step="1"
+                   style="width: 100%;" onchange="document.getElementById('offsetXValue').textContent = this.value">
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              垂直偏移 (Y): <span id="offsetYValue">${params.offsetY}</span>px
+            </label>
+            <input type="range" id="shadowOffsetY" min="-50" max="50" value="${params.offsetY}" step="1"
+                   style="width: 100%;" onchange="document.getElementById('offsetYValue').textContent = this.value">
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              模糊半径: <span id="blurRadiusValue">${params.blurRadius}</span>px
+            </label>
+            <input type="range" id="shadowBlurRadius" min="0" max="30" value="${params.blurRadius}" step="0.5"
+                   style="width: 100%;" onchange="document.getElementById('blurRadiusValue').textContent = this.value">
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              不透明度: <span id="opacityValue">${params.opacity}</span>
+            </label>
+            <input type="range" id="shadowOpacity" min="0.1" max="0.8" value="${params.opacity}" step="0.05"
+                   style="width: 100%;" onchange="document.getElementById('opacityValue').textContent = this.value">
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              水平缩放: <span id="scaleXValue">${params.scaleX}</span>
+            </label>
+            <input type="range" id="shadowScaleX" min="0.5" max="1.0" value="${params.scaleX}" step="0.05"
+                   style="width: 100%;" onchange="document.getElementById('scaleXValue').textContent = this.value">
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              近实远虚方向:
+            </label>
+            <select id="shadowFadeDirection" style="width: 100%; padding: 8px;">
+              <option value="bottom" ${params.fadeDirection === 'bottom' ? 'selected' : ''}>底部清晰，顶部模糊</option>
+              <option value="top" ${params.fadeDirection === 'top' ? 'selected' : ''}>顶部清晰，底部模糊</option>
+              <option value="right" ${params.fadeDirection === 'right' ? 'selected' : ''}>右侧清晰，左侧模糊</option>
+              <option value="left" ${params.fadeDirection === 'left' ? 'selected' : ''}>左侧清晰，右侧模糊</option>
+              <option value="none" ${params.fadeDirection === 'none' ? 'selected' : ''}>不应用</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="padding: 15px; background: #f0f0f0; border-radius: 0 0 4px 4px; text-align: right;">
+          <button onclick="document.getElementById('shadowDialog').remove()" style="margin-right: 10px; padding: 8px 20px;">
+            取消
+          </button>
+          <button onclick="applyShadowFilterFromDialog()" style="padding: 8px 20px; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            应用阴影
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 添加对话框到页面
+  const overlay = document.createElement('div');
+  overlay.innerHTML = dialogHTML;
+  document.body.appendChild(overlay.firstElementChild);
+}
+
+/**
+ * 从对话框应用阴影滤镜
+ */
+function applyShadowFilterFromDialog() {
+  const params = {
+    offsetX: parseInt(document.getElementById('shadowOffsetX').value),
+    offsetY: parseInt(document.getElementById('shadowOffsetY').value),
+    blurRadius: parseFloat(document.getElementById('shadowBlurRadius').value),
+    opacity: parseFloat(document.getElementById('shadowOpacity').value),
+    scaleX: parseFloat(document.getElementById('shadowScaleX').value),
+    fadeDirection: document.getElementById('shadowFadeDirection').value
+  };
+
+  console.log('应用阴影滤镜参数:', params);
+  editor.applyFilter('shadow', params);
+
+  // 关闭对话框
+  document.getElementById('shadowDialog').remove();
+}
+
+/**
+ * 显示地面阴影滤镜设置对话框（快速投影法）
+ */
+function showGroundShadowFilterDialog() {
+  const params = {
+    // 光源位置（百分比）
+    lightX: 50,        // 光源 X 位置（0-100，50=中心）
+    lightY: 0,         // 光源 Y 位置（0-100，0=顶部）
+    lightHeight: 200,  // 光源高度（像素）
+
+    // 阴影参数
+    shadowWidth: 60,   // 阴影宽度（像素）
+    shadowLength: 40,  // 阴影长度（像素）
+    blurRadius: 12,    // 模糊半径
+    opacity: 0.5,      // 不透明度
+
+    // 投影方式
+    projectionMethod: 'perspective'  // 'radial'（放射状）或 'perspective'（透视）
+  };
+
+  const dialogHTML = `
+    <div class="dialog-overlay" id="groundShadowDialog">
+      <div class="dialog-content" style="min-width: 500px; max-width: 600px;">
+        <h3 style="margin: 0 0 20px 0; padding: 15px; background: #f0f0f0; border-radius: 4px 4px 0 0;">
+          ⚫ 地面阴影设置（快速投影法）
+        </h3>
+        <div style="padding: 20px;">
+          <!-- 投影方式选择 -->
+          <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+            <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+              🎨 投影方式：
+            </label>
+            <div style="display: flex; gap: 20px;">
+              <label style="display: flex; align-items: center; cursor: pointer;">
+                <input type="radio" name="projectionMethod" value="perspective" checked
+                       onchange="document.getElementById('perspectiveOptions').style.display='block'; document.getElementById('radialOptions').style.display='none';"
+                       style="margin-right: 8px;">
+                <span>🌤️ 透视投影（推荐）</span>
+              </label>
+              <label style="display: flex; align-items: center; cursor: pointer;">
+                <input type="radio" name="projectionMethod" value="radial"
+                       onchange="document.getElementById('perspectiveOptions').style.display='none'; document.getElementById('radialOptions').style.display='block';"
+                       style="margin-right: 8px;">
+                <span>☀️ 放射状投影</span>
+              </label>
+            </div>
+            <small style="display: block; margin-top: 8px; color: #666;">
+              透视投影：根据光源位置自动计算阴影方向和长度<br>
+              放射状投影：简单的椭圆形阴影，不计算光源位置
+            </small>
+          </div>
+
+          <!-- 透视投影参数 -->
+          <div id="perspectiveOptions">
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+                光源水平位置: <span id="lightXValue">${params.lightX}</span>%
+              </label>
+              <input type="range" id="lightX" min="0" max="100" value="${params.lightX}" step="1"
+                     style="width: 100%;" onchange="document.getElementById('lightXValue').textContent = this.value">
+              <small style="color: #666;">0%=左, 50%=中, 100%=右。光源在左边，阴影向右偏</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+                光源垂直位置: <span id="lightYValue">${params.lightY}</span>%
+              </label>
+              <input type="range" id="lightY" min="-50" max="100" value="${params.lightY}" step="5"
+                     style="width: 100%;" onchange="document.getElementById('lightYValue').textContent = this.value">
+              <small style="color: #666;">0%=顶部, 100%=底部。负值=在图像上方</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+                光源高度: <span id="lightHeightValue">${params.lightHeight}</span>px
+              </label>
+              <input type="range" id="lightHeight" min="50" max="500" value="${params.lightHeight}" step="10"
+                     style="width: 100%;" onchange="document.getElementById('lightHeightValue').textContent = this.value">
+              <small style="color: #666;">光源越高，阴影越长、越淡</small>
+            </div>
+          </div>
+
+          <!-- 放射状投影参数 -->
+          <div id="radialOptions" style="display: none;">
+            <div style="padding: 10px; background: #fff3cd; border-radius: 4px; border-left: 3px solid #ffc107; margin-bottom: 15px;">
+              <small style="color: #856404;">
+                放射状投影不使用光源位置，仅调整阴影形状和模糊。
+              </small>
+            </div>
+          </div>
+
+          <!-- 通用阴影参数 -->
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid #e0e0e0;">
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              阴影宽度: <span id="shadowWidthValue">${params.shadowWidth}</span>px
+            </label>
+            <input type="range" id="shadowWidth" min="20" max="150" value="${params.shadowWidth}" step="5"
+                   style="width: 100%;" onchange="document.getElementById('shadowWidthValue').textContent = this.value">
+            <small style="color: #666;">阴影的横向宽度</small>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              阴影长度: <span id="shadowLengthValue">${params.shadowLength}</span>px
+            </label>
+            <input type="range" id="shadowLength" min="10" max="100" value="${params.shadowLength}" step="5"
+                   style="width: 100%;" onchange="document.getElementById('shadowLengthValue').textContent = this.value">
+            <small style="color: #666;">阴影的纵向长度（透视投影时会被光源高度影响）</small>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              模糊半径: <span id="groundBlurRadiusValue">${params.blurRadius}</span>px
+            </label>
+            <input type="range" id="groundBlurRadius" min="0" max="30" value="${params.blurRadius}" step="1"
+                   style="width: 100%;" onchange="document.getElementById('groundBlurRadiusValue').textContent = this.value">
+            <small style="color: #666;">阴影边缘的模糊程度</small>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+              不透明度: <span id="groundOpacityValue">${params.opacity}</span>
+            </label>
+            <input type="range" id="groundOpacity" min="0.1" max="0.9" value="${params.opacity}" step="0.05"
+                   style="width: 100%;" onchange="document.getElementById('groundOpacityValue').textContent = this.value">
+            <small style="color: #666;">阴影的深浅程度</small>
+          </div>
+
+          <div style="padding: 15px; background: #e3f2fd; border-radius: 4px; border-left: 4px solid #2196f3;">
+            <strong>💡 快速投影法说明：</strong>
+            <ul style="margin: 8px 0 0 20px; font-size: 12px; color: #666;">
+              <li>调整光源位置来控制阴影方向（光源在左，阴影向右）</li>
+              <li>调整光源高度来控制阴影长度（光源高→阴影长且淡）</li>
+              <li>适合快速创建自然的人物落地阴影</li>
+              <li>透视投影模式支持"近实远虚"效果</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="padding: 15px; background: #f0f0f0; border-radius: 0 0 4px 4px; text-align: right;">
+          <button onclick="document.getElementById('groundShadowDialog').remove()" style="margin-right: 10px; padding: 8px 20px;">
+            取消
+          </button>
+          <button onclick="applyGroundShadowFilterFromDialog()" style="padding: 8px 20px; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            应用阴影
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 添加对话框到页面
+  const overlay = document.createElement('div');
+  overlay.innerHTML = dialogHTML;
+  document.body.appendChild(overlay.firstElementChild);
+}
+
+/**
+ * 从对话框应用地面阴影滤镜（快速投影法）
+ */
+function applyGroundShadowFilterFromDialog() {
+  // 获取投影方式
+  const projectionMethod = document.querySelector('input[name="projectionMethod"]:checked').value;
+
+  // 构建参数
+  const params = {
+    projectionMethod: projectionMethod
+  };
+
+  // 透视投影参数
+  if (projectionMethod === 'perspective') {
+    params.lightX = parseInt(document.getElementById('lightX').value) / 100;
+    params.lightY = parseInt(document.getElementById('lightY').value) / 100;
+    params.lightHeight = parseInt(document.getElementById('lightHeight').value);
+  }
+
+  // 通用参数
+  params.shadowWidth = parseInt(document.getElementById('shadowWidth').value);
+  params.shadowLength = parseInt(document.getElementById('shadowLength').value);
+  params.blurRadius = parseInt(document.getElementById('groundBlurRadius').value);
+  params.opacity = parseFloat(document.getElementById('groundOpacity').value);
+
+  console.log('应用地面阴影滤镜参数（快速投影法）:', params);
+  editor.applyFilter('ground-shadow', params);
+
+  // 关闭对话框
+  document.getElementById('groundShadowDialog').remove();
 }
 
 /**
