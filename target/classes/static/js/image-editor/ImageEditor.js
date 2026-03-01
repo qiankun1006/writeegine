@@ -14,6 +14,7 @@ class ImageEditor {
     // 初始化子系统
     this.document = new Document(this.options.width, this.options.height);
     this.renderer = new CanvasRenderer(this.canvas);
+    this.renderer._lastEditor = this;  // 为工具 render 方法提供编辑器引用
     this.history = commandHistory;
     this.toolManager = toolManager;
 
@@ -76,6 +77,15 @@ class ImageEditor {
     // Phase 5 - 裁剪与透明度工具
     this.toolManager.register(new CropTool());
     this.toolManager.register(new OpacityTool());
+
+    // Phase 6 - 特殊效果工具
+    this.toolManager.register(new ShadowCircleTool());
+
+    // Phase 7 - 骨骼动画工具
+    if (typeof BoneEditTool !== 'undefined') {
+      this.toolManager.register(new BoneEditTool());
+      console.log('✓ 骨骼编辑工具已注册');
+    }
 
     // 激活画笔工具作为默认工具
     this.toolManager.activate('brush', this);
@@ -168,6 +178,42 @@ class ImageEditor {
       title: '透明度',
       description: '调整图层或指定区域的透明度，支持笔刷模式',
       shortcut: 'O'
+    });
+
+    this._registerTooltip('shadow-btn', {
+      title: '落地阴影',
+      description: '为人物添加落地阴影效果，复制图层、降低饱和度、扭曲压扁、模糊透明处理',
+      shortcut: 'S'
+    });
+
+    this._registerTooltip('ground-shadow-btn', {
+      title: '地面阴影',
+      description: '自动计算地面阴影，支持透视投影和放射状投影两种模式',
+      shortcut: 'G'
+    });
+
+    this._registerTooltip('shadow-circle-btn', {
+      title: '阴影圆工具',
+      description: '绘制圆形阴影，模拟人物脚下的投影效果。点击拖拽定义圆的大小',
+      shortcut: 'J'
+    });
+
+    // 骨骼动画工具提示
+    this._registerTooltip('bone-edit-btn', {
+      title: '骨骼编辑',
+      description: '进入骨骼编辑模式，可以创建、编辑和操作骨骼，为角色添加骨骼动画',
+      shortcut: 'Shift+B'
+    });
+
+    this._registerTooltip('toggle-animation-panel-btn', {
+      title: '骨骼动画编辑器',
+      description: '打开骨骼动画编辑面板，进行关键帧动画制作、时间轴编辑、动画播放等操作',
+      shortcut: 'Shift+A'
+    });
+
+    this._registerTooltip('menuAnimation', {
+      title: '动画',
+      description: '动画工具菜单：骨骼编辑、补间动画、时间轴控制等'
     });
 
     // 菜单按钮提示

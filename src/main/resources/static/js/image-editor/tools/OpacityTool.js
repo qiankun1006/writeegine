@@ -33,8 +33,8 @@ class OpacityTool extends Tool {
   /**
    * 激活工具
    */
-  activate() {
-    super.activate();
+  activate(editor) {
+    super.activate(editor);
     console.log('👻 透明度工具已激活');
     this.showOpacityUI();
   }

@@ -37,8 +37,8 @@ class TransformTool extends Tool {
   /**
    * 激活工具
    */
-  activate() {
-    super.activate();
+  activate(editor) {
+    super.activate(editor);
     this.showTransformControls();
   }
 
@@ -474,8 +474,8 @@ class ScaleTool extends TransformTool {
   /**
    * 激活工具
    */
-  activate() {
-    super.activate();
+  activate(editor) {
+    super.activate(editor);
     // 显示缩放选项
     this.showScaleOptions();
   }

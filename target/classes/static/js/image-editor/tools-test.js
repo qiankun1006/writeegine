@@ -190,6 +190,64 @@ function testLayerEnhancements() {
 }
 
 /**
+ * 测试骨骼编辑工具
+ */
+function testBoneEditTool() {
+  console.log('\n%c📋 测试骨骼编辑工具 (BoneEditTool)', 'color: blue; font-weight: bold');
+
+  try {
+    // 检查类是否存在
+    if (typeof BoneEditTool === 'undefined') {
+      console.error('❌ BoneEditTool 类未定义');
+      return false;
+    }
+    console.log('✓ BoneEditTool 类已定义');
+
+    // 检查编辑器是否存在
+    if (typeof editor === 'undefined' || !editor) {
+      console.warn('⚠️ 全局编辑器实例不存在，跳过 BoneEditTool 实例化');
+      return true;
+    }
+
+    // 创建实例
+    const boneTool = new BoneEditTool();
+    console.log('✓ BoneEditTool 实例创建成功');
+
+    // 检查属性
+    if (!boneTool.id || boneTool.id !== 'bone-edit') {
+      console.error('❌ BoneEditTool ID 不正确, 实际值:', boneTool.id);
+      return false;
+    }
+    console.log('✓ BoneEditTool ID:', boneTool.id);
+
+    // 检查方法
+    const requiredMethods = [
+      'activate',
+      'deactivate',
+      'onMouseDown',
+      'onMouseMove',
+      'onMouseUp',
+      'render',
+      'setSkeleton'
+    ];
+
+    for (const method of requiredMethods) {
+      if (typeof boneTool[method] !== 'function') {
+        console.error(`❌ 缺少方法: ${method}`);
+        return false;
+      }
+    }
+    console.log('✓ 所有必要方法都存在');
+
+    console.log('%c✅ BoneEditTool 测试通过', 'color: green; font-weight: bold');
+    return true;
+  } catch (error) {
+    console.error('❌ BoneEditTool 测试失败:', error);
+    return false;
+  }
+}
+
+/**
  * 测试工具是否在编辑器中注册
  */
 function testEditorIntegration() {
@@ -212,8 +270,9 @@ function testEditorIntegration() {
     console.log('✓ toolManager 存在');
 
     // 尝试获取工具
-    const cropTool = editor.toolManager.tools?.crop;
-    const opacityTool = editor.toolManager.tools?.opacity;
+    const cropTool = editor.toolManager.tools?.get?.('crop');
+    const opacityTool = editor.toolManager.tools?.get?.('opacity');
+    const boneTool = editor.toolManager.tools?.get?.('bone-edit');
 
     if (cropTool) {
       console.log('✓ 裁剪工具已在编辑器中注册');
@@ -225,6 +284,12 @@ function testEditorIntegration() {
       console.log('✓ 透明度工具已在编辑器中注册');
     } else {
       console.warn('⚠️ 透明度工具未找到，可能未在编辑器初始化时注册');
+    }
+
+    if (boneTool) {
+      console.log('✓ 骨骼编辑工具已在编辑器中注册');
+    } else {
+      console.warn('⚠️ 骨骼编辑工具未找到，可能未在编辑器初始化时注册');
     }
 
     console.log('%c✅ 编辑器集成测试完成', 'color: green; font-weight: bold');
@@ -240,11 +305,12 @@ function testEditorIntegration() {
  */
 function runAllTests() {
   console.log('%c🧪 开始运行所有测试套件', 'color: purple; font-weight: bold; font-size: 16px');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   const results = {
     cropTool: testCropTool(),
     opacityTool: testOpacityTool(),
+    boneEditTool: testBoneEditTool(),
     layerEnhancements: testLayerEnhancements(),
     editorIntegration: testEditorIntegration()
   };
@@ -268,7 +334,7 @@ ${Object.entries(results)
     console.log(`%c⚠️ ${total - passed} 个测试失败，请检查上述错误信息`, 'color: red; font-weight: bold; font-size: 14px');
   }
 
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
   return results;
 }
 
@@ -285,6 +351,7 @@ if (document.readyState === 'loading') {
 window.cropOpacityTests = {
   testCropTool,
   testOpacityTool,
+  testBoneEditTool,
   testLayerEnhancements,
   testEditorIntegration,
   runAllTests

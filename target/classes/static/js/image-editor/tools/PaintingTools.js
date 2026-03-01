@@ -119,6 +119,13 @@ class BrushTool extends Tool {
   _drawStroke(layer, fromX, fromY, toX, toY) {
     const ctx = layer.getContext();
 
+    // 关键修复：将世界坐标转换为图层本地坐标
+    // 这样才能正确在缩放/平移以及裁剪后的图层上绘制
+    const localFromX = fromX - layer.x;
+    const localFromY = fromY - layer.y;
+    const localToX = toX - layer.x;
+    const localToY = toY - layer.y;
+
     ctx.strokeStyle = this.options.color;
     ctx.lineWidth = this.options.size;
     ctx.lineCap = 'round';
@@ -131,8 +138,8 @@ class BrushTool extends Tool {
     ctx.shadowColor = this.options.color;
 
     ctx.beginPath();
-    ctx.moveTo(fromX, fromY);
-    ctx.lineTo(toX, toY);
+    ctx.moveTo(localFromX, localFromY);
+    ctx.lineTo(localToX, localToY);
     ctx.stroke();
 
     ctx.shadowBlur = 0;
@@ -227,6 +234,12 @@ class PencilTool extends Tool {
   _drawStroke(layer, fromX, fromY, toX, toY) {
     const ctx = layer.getContext();
 
+    // 关键修复：将世界坐标转换为图层本地坐标
+    const localFromX = fromX - layer.x;
+    const localFromY = fromY - layer.y;
+    const localToX = toX - layer.x;
+    const localToY = toY - layer.y;
+
     ctx.strokeStyle = this.options.color;
     ctx.lineWidth = this.options.size;
     ctx.lineCap = 'square';
@@ -235,8 +248,8 @@ class PencilTool extends Tool {
 
     // 铅笔是硬边缘，不带阴影
     ctx.beginPath();
-    ctx.moveTo(fromX, fromY);
-    ctx.lineTo(toX, toY);
+    ctx.moveTo(localFromX, localFromY);
+    ctx.lineTo(localToX, localToY);
     ctx.stroke();
 
     ctx.globalAlpha = 1.0;
@@ -325,6 +338,12 @@ class EraserTool extends Tool {
   _erase(layer, fromX, fromY, toX, toY) {
     const ctx = layer.getContext();
 
+    // 关键修复：将世界坐标转换为图层本地坐标
+    const localFromX = fromX - layer.x;
+    const localFromY = fromY - layer.y;
+    const localToX = toX - layer.x;
+    const localToY = toY - layer.y;
+
     ctx.strokeStyle = 'transparent';
     ctx.lineWidth = this.options.size;
     ctx.lineCap = 'round';
@@ -336,8 +355,8 @@ class EraserTool extends Tool {
     ctx.strokeStyle = '#000000';
 
     ctx.beginPath();
-    ctx.moveTo(fromX, fromY);
-    ctx.lineTo(toX, toY);
+    ctx.moveTo(localFromX, localFromY);
+    ctx.lineTo(localToX, localToY);
     ctx.stroke();
 
     ctx.globalCompositeOperation = 'source-over';

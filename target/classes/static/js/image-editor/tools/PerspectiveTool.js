@@ -34,8 +34,8 @@ class PerspectiveTool extends TransformTool {
   /**
    * 激活工具
    */
-  activate() {
-    super.activate();
+  activate(editor) {
+    super.activate(editor);
     this.showPerspectiveControls();
     this.showPerspectiveOptions();
   }

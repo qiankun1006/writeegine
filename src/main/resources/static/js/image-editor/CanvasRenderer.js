@@ -59,12 +59,16 @@ class CanvasRenderer {
       this._drawSelection();
     }
 
-    // 调用活跃工具的 render 方法（用于绘制工具特定的 UI，如裁剪框）
-    if (activeTool && typeof activeTool.render === 'function') {
-      activeTool.render(this.ctx, { renderer: this, document });
-    }
-
     this.ctx.restore();
+
+    // 调用活跃工具的 render 方法（用于绘制工具特定的 UI，如裁剪框）
+    // 注意：工具的 render 方法应该在坐标系恢复后调用，以便工具可以在屏幕坐标系中绘制
+    if (activeTool && typeof activeTool.render === 'function') {
+      const editor = window.editor || this._lastEditor;
+      if (editor) {
+        activeTool.render(this.ctx, editor);
+      }
+    }
 
     // 计算 FPS
     const endTime = performance.now();

@@ -70,6 +70,19 @@ function initializeEditor() {
   updateLayersList();
   updateHistoryList();
 
+  // 初始化骨骼动画系统
+  try {
+    console.log('🦴 初始化骨骼动画系统...');
+    if (typeof SkeletonAnimationEditor !== 'undefined') {
+      window.skeletonAnimationEditor = new SkeletonAnimationEditor(editor);
+      console.log('✓ 骨骼动画编辑器已初始化');
+    } else {
+      console.warn('⚠️ SkeletonAnimationEditor 类未定义，骨骼动画功能将不可用');
+    }
+  } catch (error) {
+    console.error('❌ 骨骼动画系统初始化失败:', error);
+  }
+
   console.log('Editor initialized successfully');
 }
 
@@ -267,6 +280,36 @@ function setupEventListeners() {
     e.preventDefault();
   });
 
+  // 骨骼编辑工具按钮
+  const boneEditBtn = document.getElementById('bone-edit-btn');
+  if (boneEditBtn) {
+    boneEditBtn.addEventListener('click', () => {
+      editor.activateTool('bone-edit');
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      boneEditBtn.classList.add('active');
+      console.log('✓ 骨骼编辑工具已激活');
+    });
+  }
+
+  // 切换动画编辑器按钮
+  const toggleAnimationPanelBtn = document.getElementById('toggle-animation-panel-btn');
+  if (toggleAnimationPanelBtn) {
+    toggleAnimationPanelBtn.addEventListener('click', () => {
+      if (window.skeletonAnimationEditor) {
+        window.skeletonAnimationEditor.toggle();
+        console.log('✓ 骨骼动画编辑器已切换');
+      } else {
+        console.warn('⚠️ 骨骼动画编辑器尚未初始化');
+        // 尝试初始化
+        if (typeof SkeletonAnimationEditor !== 'undefined') {
+          window.skeletonAnimationEditor = new SkeletonAnimationEditor(editor);
+          window.skeletonAnimationEditor.show();
+          console.log('✓ 骨骼动画编辑器已初始化并显示');
+        }
+      }
+    });
+  }
+
   // 菜单栏按钮 - 编辑菜单
   document.getElementById('menuEdit').addEventListener('click', () => {
     alert('编辑菜单 - 功能开发中');
@@ -282,6 +325,9 @@ function setupEventListeners() {
   });
   document.getElementById('menuFilter').addEventListener('click', () => {
     showFilterMenu();
+  });
+  document.getElementById('menuAnimation').addEventListener('click', () => {
+    alert('动画菜单 - 包含骨骼动画编辑器、补间动画等工具\n\n💡 提示：点击工具栏的🎬按钮打开骨骼动画编辑器');
   });
   document.getElementById('menuView').addEventListener('click', () => {
     alert('查看菜单 - 功能开发中');
@@ -542,9 +588,36 @@ function showGroundShadowFilterDialog() {
 
           <!-- 放射状投影参数 -->
           <div id="radialOptions" style="display: none;">
-            <div style="padding: 10px; background: #fff3cd; border-radius: 4px; border-left: 3px solid #ffc107; margin-bottom: 15px;">
-              <small style="color: #856404;">
-                放射状投影不使用光源位置，仅调整阴影形状和模糊。
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+                放射源 X 位置: <span id="radialCenterXValue">50</span>%
+              </label>
+              <input type="range" id="radialCenterX" min="0" max="100" value="50" step="1"
+                     style="width: 100%;" onchange="document.getElementById('radialCenterXValue').textContent = this.value">
+              <small style="color: #666;">放射源在图像中的水平位置（0%=左, 50%=中, 100%=右）</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+                放射源 Y 位置: <span id="radialCenterYValue">80</span>%
+              </label>
+              <input type="range" id="radialCenterY" min="0" max="100" value="80" step="1"
+                     style="width: 100%;" onchange="document.getElementById('radialCenterYValue').textContent = this.value">
+              <small style="color: #666;">放射源在图像中的垂直位置（0%=顶, 100%=底，通常设置在人物脚下）</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">
+                放射半径: <span id="radialRadiusValue">60</span>px
+              </label>
+              <input type="range" id="radialRadius" min="20" max="150" value="60" step="5"
+                     style="width: 100%;" onchange="document.getElementById('radialRadiusValue').textContent = this.value">
+              <small style="color: #666;">从放射源中心向外的阴影范围</small>
+            </div>
+
+            <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; border-left: 3px solid #999; margin-top: 10px;">
+              <small style="color: #666;">
+                💡 放射源：在指定位置产生均匀向外扩散的阴影，类似光源直接照射的效果
               </small>
             </div>
           </div>
@@ -636,6 +709,13 @@ function applyGroundShadowFilterFromDialog() {
     params.lightHeight = parseInt(document.getElementById('lightHeight').value);
   }
 
+  // 放射状投影参数
+  if (projectionMethod === 'radial') {
+    params.radialCenterX = parseInt(document.getElementById('radialCenterX').value) / 100;
+    params.radialCenterY = parseInt(document.getElementById('radialCenterY').value) / 100;
+    params.radialRadius = parseInt(document.getElementById('radialRadius').value);
+  }
+
   // 通用参数
   params.shadowWidth = parseInt(document.getElementById('shadowWidth').value);
   params.shadowLength = parseInt(document.getElementById('shadowLength').value);
@@ -707,27 +787,56 @@ function updateToolOptions(tool) {
   const optionsContainer = document.getElementById('toolOptions');
   optionsContainer.innerHTML = '';
 
+  // 参数说明字典
+  const paramHints = {
+    radiusX: '椭圆的水平半径，单位像素',
+    radiusY: '椭圆的垂直半径，单位像素',
+    feather: '边缘羽化（模糊）的宽度，值越大边缘越柔和',
+    opacity: '阴影的透明度，0=完全透明，1=完全不透明，推荐0.6-0.8',
+    hardness: '阴影中心的硬度，0=完全羽化（只有边缘），1=硬边界（中心完全不透明）',
+    color: '阴影的颜色，支持任意RGB色彩',
+    size: '圆的大小（直径）',
+  };
+
   if (tool && tool.options) {
     Object.entries(tool.options).forEach(([key, value]) => {
       const optionDiv = document.createElement('div');
       optionDiv.className = 'tool-option';
+      optionDiv.title = paramHints[key] || '';
 
       let inputHTML = '';
       if (typeof value === 'number') {
         if (key === 'opacity' || key === 'hardness') {
-          inputHTML = `<input type="range" min="0" max="1" step="0.1" value="${value}"
-                              onchange="editor.setToolOption('${key}', parseFloat(this.value))">`;
+          // 0-1 范围的参数使用滑块
+          inputHTML = `<input type="range" min="0" max="1" step="0.05" value="${value}"
+                                onchange="editor.setToolOption('${key}', parseFloat(this.value))"
+                                title="${paramHints[key] || ''}">`;
+        } else if (key === 'feather') {
+          // feather 是像素值 (0-50)
+          inputHTML = `<input type="range" min="0" max="50" step="1" value="${value}"
+                                onchange="editor.setToolOption('${key}', parseInt(this.value))"
+                                title="${paramHints[key] || ''}">`;
         } else {
-          inputHTML = `<input type="number" value="${value}"
-                              onchange="editor.setToolOption('${key}', parseInt(this.value))">`;
+          // 其他数字参数 (radiusX, radiusY 等)
+          inputHTML = `<input type="number" min="5" max="200" step="5" value="${value}"
+                              onchange="editor.setToolOption('${key}', parseInt(this.value))"
+                              title="${paramHints[key] || ''}">`;
         }
       } else if (typeof value === 'string') {
-        inputHTML = `<input type="text" value="${value}"
-                            onchange="editor.setToolOption('${key}', this.value)">`;
+        // 字符串参数：如果看起来是颜色，使用颜色选择器
+        if (key === 'color' || value.startsWith('#')) {
+          inputHTML = `<input type="color" value="${value}"
+                            onchange="editor.setToolOption('${key}', this.value)"
+                            title="${paramHints[key] || ''}">`;
+        } else {
+          inputHTML = `<input type="text" value="${value}"
+                            onchange="editor.setToolOption('${key}', this.value)"
+                            title="${paramHints[key] || ''}">`;
+        }
       }
 
       optionDiv.innerHTML = `
-        <label>${key}:</label>
+        <label title="${paramHints[key] || ''}">${key}:</label>
         ${inputHTML}
       `;
 

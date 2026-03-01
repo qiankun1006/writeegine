@@ -49,8 +49,8 @@ class ThreeDTransformTool extends TransformTool {
   /**
    * 激活工具
    */
-  activate() {
-    super.activate();
+  activate(editor) {
+    super.activate(editor);
 
     // 检查 Three.js 是否可用
     if (!this.checkThreeJS()) {

@@ -38,8 +38,8 @@ class CropTool extends Tool {
   /**
    * 激活工具
    */
-  activate() {
-    super.activate();
+  activate(editor) {
+    super.activate(editor);
     console.log('🔪 裁剪工具已激活');
     this.showCropUI();
   }
@@ -56,8 +56,8 @@ class CropTool extends Tool {
    * 鼠标按下事件
    */
   onMouseDown(e, editor) {
-    if (!editor.document || !editor.document.getActiveLayer()) {
-      console.warn('⚠️ 没有活跃图层');
+    if (!editor.document || !editor.document.getSelectedLayer()) {
+      console.warn('⚠️ 没有选中图层');
       return;
     }
 
@@ -87,7 +87,7 @@ class CropTool extends Tool {
    * 鼠标移动事件
    */
   onMouseMove(e, editor) {
-    if (!editor.document || !editor.document.getActiveLayer()) return;
+    if (!editor.document || !editor.document.getSelectedLayer()) return;
 
     const coords = editor.renderer.screenToWorldCoords(e.clientX, e.clientY);
 
@@ -264,12 +264,14 @@ class CropTool extends Tool {
       `;
       document.body.appendChild(panel);
 
-      // 绑定应用和取消按钮事件
+      // 绑定应用和取消按钮事件（使用箭头函数保持 this 上下文）
       document.getElementById('applyCropBtn').addEventListener('click', () => {
+        console.log('🔘 应用裁剪按钮被点击');
         this.applyCrop();
       });
 
       document.getElementById('cancelCropBtn').addEventListener('click', () => {
+        console.log('❌ 取消裁剪按钮被点击');
         this.cancelCrop();
       });
 
@@ -343,22 +345,39 @@ class CropTool extends Tool {
    * 应用裁剪操作（无损质量）
    */
   applyCrop() {
+    console.log('📋 applyCrop 方法被调用');
+
     if (!this.cropState.cropBox) {
       console.warn('⚠️ 没有选择裁剪区域');
       return;
     }
 
-    const editor = window.editor;
-    if (!editor) return;
+    console.log('✅ 裁剪框存在:', this.cropState.cropBox);
 
-    const layer = editor.document.getActiveLayer();
-    if (!layer) return;
+    const editor = window.editor;
+    console.log('📌 编辑器对象:', editor);
+
+    if (!editor) {
+      console.error('❌ 编辑器不存在');
+      return;
+    }
+
+    const layer = editor.document.getSelectedLayer();
+    console.log('📌 选中的图层:', layer);
+
+    if (!layer) {
+      console.error('❌ 没有选中的图层');
+      return;
+    }
 
     const box = this.cropState.cropBox;
     const x = Math.round(box.x);
     const y = Math.round(box.y);
     const w = Math.round(box.width);
     const h = Math.round(box.height);
+
+    console.log('📐 裁剪参数:', { x, y, w, h });
+    console.log('📦 原始图层尺寸:', { width: layer.width, height: layer.height });
 
     try {
       // 创建新的 canvas 用于裁剪内容
@@ -369,17 +388,38 @@ class CropTool extends Tool {
       const ctx = croppedCanvas.getContext('2d', { willReadFrequently: true });
 
       // 从原始图层 canvas 中提取指定区域（无损质量）
-      const imageData = layer.canvas.getContext('2d').getImageData(x, y, w, h);
+      const sourceCtx = layer.canvas.getContext('2d');
+      console.log('🎨 源 Canvas 尺寸:', { width: layer.canvas.width, height: layer.canvas.height });
+
+      const imageData = sourceCtx.getImageData(x, y, w, h);
+      console.log('📸 提取的图像数据:', { width: imageData.width, height: imageData.height });
+
       ctx.putImageData(imageData, 0, 0);
 
       // 更新图层内容
+      // 关键：调整图层位置以保持视觉位置不变
+      // 当我们裁剪掉左边 x 像素和上边 y 像素时，
+      // 需要将图层向右下移动相应距离以补偿
+
+      // 保存原始的裁剪偏移量，用于后续调整
+      const cropOffsetX = x;
+      const cropOffsetY = y;
+
       layer.canvas = croppedCanvas;
       layer.width = w;
       layer.height = h;
-      layer.x = layer.x + x;
-      layer.y = layer.y + y;
+      layer.x = layer.x + cropOffsetX;  // 向右移动裁剪的左边距离
+      layer.y = layer.y + cropOffsetY;  // 向下移动裁剪的上边距离
+
+      // 关键修复：保存裁剪偏移信息到图层，供后续绘制工具使用
+      // 绘制工具需要知道新图层坐标系相对于原图层的偏移
+      layer._cropOffsetX = cropOffsetX;
+      layer._cropOffsetY = cropOffsetY;
 
       console.log('✅ 裁剪成功:', { x, y, width: w, height: h });
+      console.log('📦 新图层尺寸:', { width: layer.width, height: layer.height });
+      console.log('📍 新图层位置:', { x: layer.x, y: layer.y });
+      console.log('📌 裁剪偏移:', { offsetX: cropOffsetX, offsetY: cropOffsetY });
 
       // 清空裁剪框并重新渲染
       this.cropState.cropBox = null;
@@ -390,6 +430,7 @@ class CropTool extends Tool {
 
     } catch (error) {
       console.error('❌ 裁剪失败:', error);
+      console.error('💥 错误堆栈:', error.stack);
       alert('裁剪失败: ' + error.message);
     }
   }
@@ -408,48 +449,72 @@ class CropTool extends Tool {
 
   /**
    * 自定义绘制（用于渲染裁剪框和控制点）
+   * 注意：此方法在屏幕坐标系中绘制（坐标系变换已恢复）
    */
   render(ctx, editor) {
     if (!this.cropState.cropBox) return;
 
     const box = this.cropState.cropBox;
+    const renderer = editor?.renderer;
+    const document = editor?.document;
+
+    if (!renderer || !document) return;
+
+    // 将世界坐标转换为屏幕坐标
+    const screenCoords = {
+      topLeft: renderer.worldToScreenCoords(box.x, box.y),
+      topRight: renderer.worldToScreenCoords(box.x + box.width, box.y),
+      bottomLeft: renderer.worldToScreenCoords(box.x, box.y + box.height),
+      bottomRight: renderer.worldToScreenCoords(box.x + box.width, box.y + box.height)
+    };
+
+    // 计算屏幕空间中的裁剪框
+    const minX = Math.min(screenCoords.topLeft.x, screenCoords.topRight.x, screenCoords.bottomLeft.x, screenCoords.bottomRight.x);
+    const maxX = Math.max(screenCoords.topLeft.x, screenCoords.topRight.x, screenCoords.bottomLeft.x, screenCoords.bottomRight.x);
+    const minY = Math.min(screenCoords.topLeft.y, screenCoords.topRight.y, screenCoords.bottomLeft.y, screenCoords.bottomRight.y);
+    const maxY = Math.max(screenCoords.topLeft.y, screenCoords.topRight.y, screenCoords.bottomLeft.y, screenCoords.bottomRight.y);
+
+    const screenBox = {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY
+    };
+
+    // 获取画布宽高
+    const canvasWidth = ctx.canvas.width;
+    const canvasHeight = ctx.canvas.height;
 
     // 绘制半透明遮罩
     ctx.save();
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
 
-    // 绘制四个角的遮罩区域
-    const canvasWidth = ctx.canvas.width;
-    const canvasHeight = ctx.canvas.height;
-
-    // 左上
-    ctx.fillRect(0, 0, box.x, canvasHeight);
-    // 右上
-    ctx.fillRect(box.x + box.width, 0, canvasWidth - (box.x + box.width), canvasHeight);
-    // 左下
-    ctx.fillRect(0, box.y, box.x, box.y + box.height);
-    // 右下
-    ctx.fillRect(box.x, box.y + box.height, box.width, canvasHeight - (box.y + box.height));
+    // 使用路径绘制遮罩（更清晰的方式）
+    ctx.beginPath();
+    ctx.rect(0, 0, canvasWidth, canvasHeight); // 外部矩形（整个屏幕）
+    ctx.rect(screenBox.x, screenBox.y, screenBox.width, screenBox.height); // 内部裁剪框（挖空）
+    ctx.fillRule = 'evenodd';
+    ctx.fill();
 
     // 绘制裁剪框边界
     ctx.strokeStyle = '#0099ff';
     ctx.lineWidth = 2;
-    ctx.strokeRect(box.x, box.y, box.width, box.height);
+    ctx.strokeRect(screenBox.x, screenBox.y, screenBox.width, screenBox.height);
 
-    // 绘制网格
+    // 绘制网格（三分构图）
     ctx.strokeStyle = 'rgba(0, 153, 255, 0.3)';
     ctx.lineWidth = 1;
-    const gridX = box.width / 3;
-    const gridY = box.height / 3;
+    const gridX = screenBox.width / 3;
+    const gridY = screenBox.height / 3;
     for (let i = 1; i < 3; i++) {
       ctx.beginPath();
-      ctx.moveTo(box.x + gridX * i, box.y);
-      ctx.lineTo(box.x + gridX * i, box.y + box.height);
+      ctx.moveTo(screenBox.x + gridX * i, screenBox.y);
+      ctx.lineTo(screenBox.x + gridX * i, screenBox.y + screenBox.height);
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.moveTo(box.x, box.y + gridY * i);
-      ctx.lineTo(box.x + box.width, box.y + gridY * i);
+      ctx.moveTo(screenBox.x, screenBox.y + gridY * i);
+      ctx.lineTo(screenBox.x + screenBox.width, screenBox.y + gridY * i);
       ctx.stroke();
     }
 
@@ -457,14 +522,14 @@ class CropTool extends Tool {
     ctx.fillStyle = '#0099ff';
     const pointSize = 5;
     const handles = [
-      { x: box.x, y: box.y },
-      { x: box.x + box.width / 2, y: box.y },
-      { x: box.x + box.width, y: box.y },
-      { x: box.x + box.width, y: box.y + box.height / 2 },
-      { x: box.x + box.width, y: box.y + box.height },
-      { x: box.x + box.width / 2, y: box.y + box.height },
-      { x: box.x, y: box.y + box.height },
-      { x: box.x, y: box.y + box.height / 2 }
+      { x: screenBox.x, y: screenBox.y },
+      { x: screenBox.x + screenBox.width / 2, y: screenBox.y },
+      { x: screenBox.x + screenBox.width, y: screenBox.y },
+      { x: screenBox.x + screenBox.width, y: screenBox.y + screenBox.height / 2 },
+      { x: screenBox.x + screenBox.width, y: screenBox.y + screenBox.height },
+      { x: screenBox.x + screenBox.width / 2, y: screenBox.y + screenBox.height },
+      { x: screenBox.x, y: screenBox.y + screenBox.height },
+      { x: screenBox.x, y: screenBox.y + screenBox.height / 2 }
     ];
 
     handles.forEach(handle => {

@@ -101,6 +101,12 @@ class CloneTool extends Tool {
     const ctx = layer.getContext();
     const source = layer.canvas;
 
+    // 关键修复：将世界坐标转换为图层本地坐标
+    const localToX = toX - layer.x;
+    const localToY = toY - layer.y;
+    const localSourceX = this.sourceX - layer.x;
+    const localSourceY = this.sourceY - layer.y;
+
     const dx = toX - fromX;
     const dy = toY - fromY;
 
@@ -110,14 +116,14 @@ class CloneTool extends Tool {
 
     // 从源点复制像素
     const sourceData = source.getContext('2d').getImageData(
-      Math.round(this.sourceX),
-      Math.round(this.sourceY),
+      Math.round(localSourceX),
+      Math.round(localSourceY),
       Math.round(this.options.size),
       Math.round(this.options.size)
     );
 
     // 绘制到目标位置
-    ctx.putImageData(sourceData, Math.round(toX - this.options.size / 2), Math.round(toY - this.options.size / 2));
+    ctx.putImageData(sourceData, Math.round(localToX - this.options.size / 2), Math.round(localToY - this.options.size / 2));
 
     ctx.globalAlpha = 1.0;
 
@@ -231,17 +237,23 @@ class HealingTool extends Tool {
     const ctx = layer.getContext();
     const size = Math.round(this.options.size);
 
+    // 关键修复：将世界坐标转换为图层本地坐标
+    const localToX = toX - layer.x;
+    const localToY = toY - layer.y;
+    const localSourceX = this.sourceX - layer.x;
+    const localSourceY = this.sourceY - layer.y;
+
     // 获取源区域和目标区域的像素数据
     const sourceImageData = ctx.getImageData(
-      Math.round(this.sourceX - size / 2),
-      Math.round(this.sourceY - size / 2),
+      Math.round(localSourceX - size / 2),
+      Math.round(localSourceY - size / 2),
       size,
       size
     );
 
     const targetImageData = ctx.getImageData(
-      Math.round(toX - size / 2),
-      Math.round(toY - size / 2),
+      Math.round(localToX - size / 2),
+      Math.round(localToY - size / 2),
       size,
       size
     );
@@ -270,7 +282,7 @@ class HealingTool extends Tool {
     }
 
     // 绘制修复结果
-    ctx.putImageData(sourceImageData, Math.round(toX - size / 2), Math.round(toY - size / 2));
+    ctx.putImageData(sourceImageData, Math.round(localToX - size / 2), Math.round(localToY - size / 2));
   }
 }
 
@@ -343,6 +355,11 @@ class SprayTool extends Tool {
     if (!layer) return;
 
     const coords = editor.renderer.screenToWorldCoords(e.clientX, e.clientY);
+
+    // 关键修复：将世界坐标转换为图层本地坐标
+    const localX = coords.x - layer.x;
+    const localY = coords.y - layer.y;
+
     const ctx = layer.getContext();
 
     ctx.fillStyle = this.options.color;
@@ -356,8 +373,8 @@ class SprayTool extends Tool {
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
       const distance = Math.random() * size / 2;
-      const px = coords.x + Math.cos(angle) * distance;
-      const py = coords.y + Math.sin(angle) * distance;
+      const px = localX + Math.cos(angle) * distance;
+      const py = localY + Math.sin(angle) * distance;
       const particleSize = Math.random() * 2 + 0.5;
 
       ctx.fillRect(px, py, particleSize, particleSize);

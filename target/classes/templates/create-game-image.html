@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图片编辑器 - WriteEngine</title>
   <link rel="stylesheet" href="/static/css/image-editor.css">
+  <link rel="stylesheet" href="/static/css/skeleton-animation.css">
 </head>
 <body>
 
@@ -37,6 +38,7 @@
         <button class="menu-btn" id="menuLayer">图层</button>
         <button class="menu-btn" id="menuSelect">选择</button>
         <button class="menu-btn" id="menuFilter">滤镜</button>
+        <button class="menu-btn" id="menuAnimation">动画</button>
         <button class="menu-btn" id="menuView">查看</button>
       </div>
 
@@ -82,6 +84,7 @@
           <button class="tool-btn" id="opacity-btn" data-tool="opacity" title="透明度 (O)">👻</button>
           <button class="tool-btn" id="shadow-btn" data-tool="shadow" title="落地阴影 (S)">🌑</button>
           <button class="tool-btn" id="ground-shadow-btn" data-tool="ground-shadow" title="地面阴影 (G)">⚫</button>
+          <button class="tool-btn" id="shadow-circle-btn" data-tool="shadow-circle" title="阴影圆 (J)">⭕</button>
         </div>
 
         <div class="tool-separator"></div>
@@ -89,6 +92,13 @@
         <div class="tool-group">
           <button class="tool-btn" id="perspective-btn" data-tool="perspective" title="透视变换 (P)">🔲</button>
           <button class="tool-btn" id="3d-transform-btn" data-tool="3d-transform" title="3D 变换 (3)">📦</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
+        <div class="tool-group">
+          <button class="tool-btn" id="bone-edit-btn" data-tool="bone-edit" title="骨骼编辑 (Shift+B)">🦴</button>
+          <button class="tool-btn" id="toggle-animation-panel-btn" title="骨骼动画编辑器">🎬</button>
         </div>
 
         <div class="tool-separator"></div>
@@ -241,6 +251,28 @@
   <!-- Phase 5 裁剪与透明度工具 -->
   <script src="/static/js/image-editor/tools/CropTool.js"></script>
   <script src="/static/js/image-editor/tools/OpacityTool.js"></script>
+
+  <!-- Phase 6 特殊效果工具 -->
+  <script src="/static/js/image-editor/tools/ShadowCircleTool.js"></script>
+
+  <!-- Phase 7 骨骼动画系统 - 核心模块 -->
+  <script src="/static/js/image-editor/skeleton/core/Matrix2D.js"></script>
+  <script src="/static/js/image-editor/skeleton/core/Bone.js"></script>
+  <script src="/static/js/image-editor/skeleton/core/Skeleton.js"></script>
+  <script src="/static/js/image-editor/skeleton/core/Keyframe.js"></script>
+  <script src="/static/js/image-editor/skeleton/core/Track.js"></script>
+  <script src="/static/js/image-editor/skeleton/core/Animation.js"></script>
+  <script src="/static/js/image-editor/skeleton/core/AnimationPlayer.js"></script>
+  <script src="/static/js/image-editor/skeleton/core/SkeletonCommands.js"></script>
+
+  <!-- Phase 7 骨骼动画系统 - UI 组件 -->
+  <script src="/static/js/image-editor/skeleton/ui/BoneHierarchyPanel.js"></script>
+  <script src="/static/js/image-editor/skeleton/ui/Timeline.js"></script>
+  <script src="/static/js/image-editor/skeleton/ui/BonePropertyPanel.js"></script>
+  <script src="/static/js/image-editor/skeleton/ui/SkeletonAnimationEditor.js"></script>
+
+  <!-- Phase 7 骨骼动画系统 - 工具 -->
+  <script src="/static/js/image-editor/skeleton/tools/BoneEditTool.js"></script>
 
   <script src="/static/js/image-editor/app.js"></script>
   <script src="/static/js/image-editor/filters-test.js"></script>

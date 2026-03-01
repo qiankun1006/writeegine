@@ -649,14 +649,19 @@ class GroundShadowFilter extends Filter {
   constructor(params = {}) {
     super(params);
     this.params = {
-      // 光源位置（相对于图像）
+      // 光源位置（相对于图像，仅在透视投影时使用）
       lightX: params.lightX || 0.5,     // 光源 X 位置（0-1，0.5=中心）
       lightY: params.lightY || 0.0,     // 光源 Y 位置（0-1，0=顶部）
       lightHeight: params.lightHeight || 200,  // 光源高度（像素）
 
+      // 放射源位置（仅在放射状投影时使用）
+      radialCenterX: params.radialCenterX || 0.5,  // 放射源 X 位置（0-1）
+      radialCenterY: params.radialCenterY || 0.8,  // 放射源 Y 位置（0-1，通常在底部）
+      radialRadius: params.radialRadius || 60,     // 放射半径（像素）
+
       // 阴影参数
-      shadowWidth: params.shadowWidth || 60,     // 阴影宽度（像素）
-      shadowLength: params.shadowLength || 40,    // 阴影长度（像素）
+      shadowWidth: params.shadowWidth || 60,     // 阴影宽度（像素，仅在透视投影时使用）
+      shadowLength: params.shadowLength || 40,    // 阴影长度（像素，仅在透视投影时使用）
       blurRadius: params.blurRadius || 12,       // 模糊半径
       opacity: params.opacity || 0.5,            // 不透明度
 
@@ -670,7 +675,7 @@ class GroundShadowFilter extends Filter {
     const data = imageData.data;
     const width = imageData.width;
     const height = imageData.height;
-    const { lightX, lightY, lightHeight, shadowWidth, shadowLength, blurRadius, opacity, projectionMethod } = this.params;
+    const { lightX, lightY, lightHeight, shadowWidth, shadowLength, blurRadius, opacity, projectionMethod, radialCenterX, radialCenterY, radialRadius } = this.params;
 
     // 计算阴影位置（基于光源位置的投影）
     const lightScreenX = lightX * width;
@@ -680,12 +685,16 @@ class GroundShadowFilter extends Filter {
     const shadowCenterX = width / 2;
     const shadowCenterY = height - 20;  // 距离底部20px
 
+    // 放射源中心点
+    const radialCenterScreenX = radialCenterX * width;
+    const radialCenterScreenY = radialCenterY * height;
+
     // 创建阴影层
     const shadowData = new Uint8ClampedArray(width * height * 4);
 
     if (projectionMethod === 'radial') {
-      // 放射状投影（适合点光源）
-      this._drawRadialShadow(shadowData, width, height, shadowCenterX, shadowCenterY, shadowWidth, shadowLength, opacity);
+      // 放射状投影（从指定放射源向外扩散）
+      this._drawRadialShadow(shadowData, width, height, radialCenterScreenX, radialCenterScreenY, radialRadius, blurRadius, opacity);
     } else {
       // 透视投影（适合平行光源）
       this._drawPerspectiveShadow(shadowData, width, height, lightScreenX, lightScreenY, lightHeight, shadowCenterX, shadowCenterY, shadowWidth, shadowLength, opacity);
@@ -714,23 +723,33 @@ class GroundShadowFilter extends Filter {
   }
 
   /**
-   * 绘制放射状阴影（适合点光源）
+   * 绘制放射状阴影（从放射源中心向外扩散）
+   * @param {Uint8ClampedArray} data - 阴影数据
+   * @param {number} width - 图像宽度
+   * @param {number} height - 图像高度
+   * @param {number} centerX - 放射源 X 坐标（像素）
+   * @param {number} centerY - 放射源 Y 坐标（像素）
+   * @param {number} radius - 放射半径（像素）
+   * @param {number} blurRadius - 模糊半径
+   * @param {number} opacity - 不透明度
    */
-  _drawRadialShadow(data, width, height, centerX, centerY, radiusX, radiusY, opacity) {
+  _drawRadialShadow(data, width, height, centerX, centerY, radius, blurRadius, opacity) {
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const idx = (y * width + x) * 4;
 
-        // 计算点到阴影中心的距离
-        const dx = (x - centerX) / radiusX;
-        const dy = (y - centerY) / radiusY;
-        const distanceSquared = dx * dx + dy * dy;
+        // 计算点到放射源中心的距离
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // 使用椭圆方程
-        if (distanceSquared <= 1) {
-          // 径向渐变，中心较暗，边缘渐隐
-          const gradient = 1 - Math.sqrt(distanceSquared);
-          const alpha = Math.round(gradient * gradient * opacity * 255);
+        // 如果在放射半径范围内
+        if (distance <= radius) {
+          // 径向渐变：中心最暗，边缘渐隐
+          // 使用二次衰减，使中心更暗
+          const normalizedDistance = distance / radius;
+          const gradient = 1 - (normalizedDistance * normalizedDistance);
+          const alpha = Math.round(gradient * opacity * 255);
 
           data[idx] = 0;
           data[idx + 1] = 0;
