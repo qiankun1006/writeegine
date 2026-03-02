@@ -111,6 +111,12 @@
 
         <div class="tool-separator"></div>
 
+        <div class="tool-group">
+          <button class="tool-btn" id="game-item-menu-btn" data-tool="game-item-menu" title="物品菜单 (M)">🎮</button>
+        </div>
+
+        <div class="tool-separator"></div>
+
         <div class="color-picker">
           <label>前景色</label>
           <input type="color" id="foregroundColor" value="#000000">
@@ -274,6 +280,12 @@
   <!-- Phase 7 骨骼动画系统 - 工具 -->
   <script src="/static/js/image-editor/skeleton/tools/BoneEditTool.js"></script>
 
+  <!-- Phase 8 游戏物品菜单系统 -->
+  <script src="/static/js/image-editor/renderer/ItemMenuRenderer.js"></script>
+  <script src="/static/js/image-editor/renderer/ItemMenuLayoutEngine.js"></script>
+  <script src="/static/js/image-editor/renderer/ItemMenuStylePresets.js"></script>
+  <script src="/static/js/image-editor/tools/GameItemMenuTool.js"></script>
+
   <script src="/static/js/image-editor/app.js"></script>
   <script src="/static/js/image-editor/filters-test.js"></script>
   <script src="/static/js/image-editor/transform-test.js"></script>
@@ -281,6 +293,10 @@
   <!-- 可选: 裁剪与透明度工具测试脚本（开发环境使用） -->
   <!-- 注: 在生产环境请注释掉此行 -->
   <script src="/static/js/image-editor/tools-test.js"></script>
+
+  <!-- 可选: 物品菜单工具测试脚本（开发环境使用） -->
+  <!-- 注: 在生产环境请注释掉此行 -->
+  <script src="/static/js/image-editor/game-item-menu-test.js"></script>
 </body>
 </html>
 

@@ -796,6 +796,10 @@ function updateToolOptions(tool) {
     hardness: '阴影中心的硬度，0=完全羽化（只有边缘），1=硬边界（中心完全不透明）',
     color: '阴影的颜色，支持任意RGB色彩',
     size: '圆的大小（直径）',
+    layout: '菜单布局类型：grid（网格）/ list（列表）/ sidebar（侧栏）',
+    style: '菜单风格：pixel（像素）/ dark（暗黑）/ cartoon（卡通）/ scifi（科幻）',
+    item_count: '菜单中的物品数量（1-12个）',
+    enable_animation: '是否启用菜单动画效果',
   };
 
   if (tool && tool.options) {
@@ -805,7 +809,34 @@ function updateToolOptions(tool) {
       optionDiv.title = paramHints[key] || '';
 
       let inputHTML = '';
-      if (typeof value === 'number') {
+
+      // 特殊处理菜单工具的选项
+      if (key === 'layout') {
+        inputHTML = `
+          <select onchange="editor.toolManager.getActiveTool().onOptionChange('${key}', this.value); editor.render();" title="${paramHints[key] || ''}">
+            <option value="grid" ${value === 'grid' ? 'selected' : ''}>网格布局</option>
+            <option value="list" ${value === 'list' ? 'selected' : ''}>列表布局</option>
+            <option value="sidebar" ${value === 'sidebar' ? 'selected' : ''}>侧栏布局</option>
+          </select>
+        `;
+      } else if (key === 'style') {
+        inputHTML = `
+          <select onchange="editor.toolManager.getActiveTool().onOptionChange('${key}', this.value); editor.render();" title="${paramHints[key] || ''}">
+            <option value="pixel" ${value === 'pixel' ? 'selected' : ''}>像素风</option>
+            <option value="dark" ${value === 'dark' ? 'selected' : ''}>暗黑风</option>
+            <option value="cartoon" ${value === 'cartoon' ? 'selected' : ''}>卡通风</option>
+            <option value="scifi" ${value === 'scifi' ? 'selected' : ''}>科幻风</option>
+          </select>
+        `;
+      } else if (key === 'item_count') {
+        inputHTML = `<input type="number" min="1" max="12" value="${value}"
+                              onchange="editor.toolManager.getActiveTool().onOptionChange('${key}', parseInt(this.value)); editor.render();"
+                              title="${paramHints[key] || ''}">`;
+      } else if (key === 'enable_animation') {
+        inputHTML = `<input type="checkbox" ${value ? 'checked' : ''}
+                              onchange="editor.toolManager.getActiveTool().onOptionChange('${key}', this.checked); editor.render();"
+                              title="${paramHints[key] || ''}">`;
+      } else if (typeof value === 'number') {
         if (key === 'opacity' || key === 'hardness') {
           // 0-1 范围的参数使用滑块
           inputHTML = `<input type="range" min="0" max="1" step="0.05" value="${value}"

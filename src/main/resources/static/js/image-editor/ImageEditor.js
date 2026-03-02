@@ -87,6 +87,12 @@ class ImageEditor {
       console.log('✓ 骨骼编辑工具已注册');
     }
 
+    // Phase 8 - 游戏物品菜单工具
+    if (typeof GameItemMenuTool !== 'undefined') {
+      this.toolManager.register(new GameItemMenuTool());
+      console.log('✓ 物品菜单工具已注册');
+    }
+
     // 激活画笔工具作为默认工具
     this.toolManager.activate('brush', this);
 
@@ -209,6 +215,13 @@ class ImageEditor {
       title: '骨骼动画编辑器',
       description: '打开骨骼动画编辑面板，进行关键帧动画制作、时间轴编辑、动画播放等操作',
       shortcut: 'Shift+A'
+    });
+
+    // 游戏物品菜单工具提示
+    this._registerTooltip('game-item-menu-btn', {
+      title: '物品菜单',
+      description: '游戏物品菜单设计工具，支持网格/列表/侧栏布局，像素/暗黑/卡通/科幻风格，实时预览和交互',
+      shortcut: 'M'
     });
 
     this._registerTooltip('menuAnimation', {
