@@ -147,3 +147,166 @@ const paramHints = {
 2. 在生成 HTML 时为标签和输入框都添加 `title` 属性
 3. 参数说明要清晰易懂，包含单位和推荐值
 4. 测试 hover 效果是否正常显示
+
+---
+
+## ⚠️ Thymeleaf Layout Fragment 脚本加载问题（2026-03-02）
+
+### 问题描述
+在 `create-game-asset.html` 中添加的 `<script>` 标签在 `<div layout:fragment="content">` 内部时，**脚本代码根本不会被执行**。这是 Thymeleaf Layout Dialect 的特性，会自动过滤 fragment 内的脚本标签。
+
+### 错误现象
+- 菜单项点击无反应
+- 控制台无任何错误（因为脚本从未加载）
+- 页面功能不工作（如战棋网格地图编辑器无法初始化）
+- 地址栏显示多余的 `#` 符号（href="#" 但没有 preventDefault）
+
+### 根本原因
+```html
+<!-- ❌ 这样写的脚本不会执行！ -->
+<div layout:fragment="content">
+    <script src="/static/js/game-asset-creator/app.js"></script>  <!-- 被过滤 -->
+</div>
+```
+
+### 解决方案 ✅
+**将所有脚本加载移到 `layout.html` 的 `<body>` 末尾**
+
+```html
+<!-- layout.html -->
+<body>
+    <main>
+        <div layout:fragment="content">
+            <!-- 这里的 fragment 内容被替换 -->
+        </div>
+    </main>
+
+    <!-- ✅ 脚本在 layout 中加载，所有使用该 layout 的页面都会自动加载 -->
+    <script src="/static/js/game-asset-creator/AssetManager.js"></script>
+    <script src="/static/js/game-asset-creator/AssetEditor.js"></script>
+    <script src="/static/js/game-asset-creator/CanvasUtils.js"></script>
+    <script src="/static/js/game-asset-creator/app.js"></script>
+    <script src="/static/js/tilemap-editor.js"></script>
+</body>
+```
+
+### 检查清单
+- [x] 从 `create-game-asset.html` 中移除所有 `<script>` 标签
+- [x] 将脚本加载添加到 `layout.html` 的 `<body>` 末尾
+- [x] 验证脚本加载顺序（依赖关系正确）
+- [x] 确认 DOMContentLoaded 事件正常触发
+- [x] 测试功能是否正常工作
+
+### 这个坑的重要性 ⭐⭐⭐
+**很容易被忽视！** 因为没有任何错误提示，脚本只是默默地不执行。开发者可能会浪费大量时间调试，以为是逻辑问题，实际上脚本根本没加载。
+
+---
+
+## Canvas 元素不存在导致的初始化错误（2026-03-02）
+
+### 问题描述
+多个 JavaScript 文件（如 `image-editor/app.js`、`tilemap-editor.js`）在 DOMContentLoaded 时尝试初始化 Canvas，但在某些页面上这些 Canvas 元素不存在，导致报错。
+
+### 错误现象
+```javascript
+// 错误日志
+TypeError: Cannot read properties of null (reading 'getContext')
+app.js:19 ❌ Canvas element not found
+```
+
+### 根本原因
+所有页面都加载了相同的脚本文件（如 layout.html 中加载），但并非所有页面都有这些 Canvas 元素。例如：
+- `create-game-asset.html` 有 `tilemap-canvas`，但没有 `editorCanvas`
+- `create-game-image.html` 有 `editorCanvas`，但没有 `tilemap-canvas`
+
+### 解决方案 ✅
+**在初始化前检查元素是否存在，不存在时优雅地跳过初始化**
+
+```javascript
+// image-editor/app.js
+function initializeEditor() {
+    const canvas = document.getElementById('editorCanvas');
+
+    if (!canvas) {
+        console.warn('⚠️ Canvas element not found - 可能这不是图片编辑器页面，跳过初始化');
+        return;  // 优雅地返回，不抛出错误
+    }
+
+    // 继续初始化...
+}
+
+// tilemap-editor.js
+function initTilemapEditor() {
+    const canvas = document.getElementById('tilemap-canvas');
+    console.log('🗺️ Tilemap 初始化检查 - Canvas:', canvas ? '✓ 存在' : '✗ 不存在');
+
+    if (!canvas) {
+        console.log('⚠️ 未在当前页面找到 tilemap-canvas，跳过 Tilemap 编辑器初始化');
+        return;
+    }
+
+    // 继续初始化...
+}
+```
+
+### 最佳实践
+1. **始终检查元素存在性** 在任何初始化逻辑之前
+2. **使用 console.warn 而不是 console.error** 这样不会显示为真正的错误
+3. **提供清晰的日志信息** 帮助调试，示意这是预期的行为而不是 bug
+4. **添加 try-catch 包裹** 关键初始化代码，防止某个模块失败影响其他模块
+
+---
+
+## Canvas 元素找不到且隐藏面板导致的初始化时序问题（2026-03-02）
+
+### 问题描述
+`tilemap-canvas` 存在于 DOM 中（在 `map-grid-panel` 内），但当用户首次加载页面时，该面板是隐藏的（`display: none`），导致 Canvas 虽然存在但尚未真正渲染完成。
+
+### 解决方案 ✅
+**延迟初始化并支持动态初始化**
+
+```javascript
+// tilemap-editor.js - 将初始化提取为独立函数
+function initTilemapEditor() {
+    const canvas = document.getElementById('tilemap-canvas');
+    if (!canvas) {
+        console.log('⚠️ 未在当前页面找到 tilemap-canvas，跳过初始化');
+        return;
+    }
+
+    try {
+        if (!window.editor) {
+            window.editor = new TilemapEditor();
+            console.log('✓ Tilemap 编辑器已初始化');
+        }
+    } catch (error) {
+        console.error('编辑器初始化失败:', error);
+    }
+}
+
+// DOMContentLoaded 时延迟 100ms 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initTilemapEditor, 100);  // 给 DOM 完全渲染的时间
+});
+```
+
+```javascript
+// game-asset-creator/app.js - 在菜单项点击时手动初始化
+switchPanel(category, menuItem = null) {
+    // ...面板激活代码...
+
+    // 特殊处理：在切换到 map-grid 时确保 Tilemap 初始化
+    if (category === 'map-grid' && typeof initTilemapEditor === 'function') {
+        console.log('🗺️ 初始化 Tilemap 编辑器...');
+        initTilemapEditor();
+    }
+
+    // ...其他代码...
+}
+```
+
+### 关键要点
+1. 将初始化逻辑提取为可重复调用的函数
+2. 在 DOMContentLoaded 时延迟 100ms 执行
+3. 在相关操作（如菜单项点击）时手动调用，确保初始化完成
+4. 使用 `if (!window.editor)` 防止重复初始化

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Java 代码编辑器</title>
+    <link rel="stylesheet" th:href="@{/static/css/code-editor.css}">
+    <!-- Monaco Editor -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main"
+          href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.min.css">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="code-editor-wrapper">
+            <!-- 页面头部 -->
+            <div class="code-editor-header">
+                <div class="header-left">
+                    <h1>💻 Java 代码编辑器</h1>
+                    <a href="/create-game" class="back-button">← 返回</a>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" id="save-btn">💾 保存</button>
+                    <button class="btn btn-secondary" id="format-btn">✨ 格式化</button>
+                    <button class="btn btn-secondary" id="clear-btn">🗑️ 清空</button>
+                </div>
+            </div>
+
+            <!-- 主容器 -->
+            <div class="editor-container">
+                <!-- 左侧编辑器 -->
+                <div class="editor-main">
+                    <div class="editor-tabs">
+                        <div class="tab active" data-file="Main.java">
+                            <span>Main.java</span>
+                            <button class="tab-close" data-file="Main.java">✕</button>
+                        </div>
+                        <button class="tab-add" id="add-file-btn">+ 新文件</button>
+                    </div>
+                    <div id="monaco-editor" class="monaco-container"></div>
+                </div>
+
+                <!-- 右侧侧栏 -->
+                <div class="editor-sidebar">
+                    <!-- 文件管理 -->
+                    <div class="sidebar-panel">
+                        <div class="panel-header" onclick="document.querySelector('.file-explorer').classList.toggle('collapsed')">
+                            📁 文件浏览
+                        </div>
+                        <div class="file-explorer">
+                            <div class="file-tree" id="file-tree">
+                                <div class="file-item" data-file="Main.java">
+                                    <span class="file-icon">☕</span>
+                                    <span class="file-name">Main.java</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 代码索引 -->
+                    <div class="sidebar-panel">
+                        <div class="panel-header" onclick="document.querySelector('.code-outline').classList.toggle('collapsed')">
+                            🔍 代码索引
+                        </div>
+                        <div class="code-outline">
+                            <div class="search-box">
+                                <input type="text" id="outline-search" placeholder="搜索类/方法..." class="outline-search">
+                            </div>
+                            <div class="outline-tree" id="outline-tree">
+                                <div class="outline-loading">扫描代码中...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速操作 -->
+                    <div class="sidebar-panel">
+                        <div class="panel-header">⚡ 快速操作</div>
+                        <div class="quick-actions">
+                            <button class="action-btn" id="insert-class">新建类</button>
+                            <button class="action-btn" id="insert-method">新建方法</button>
+                            <button class="action-btn" id="insert-main">新建 main</button>
+                            <button class="action-btn" id="insert-comment">注释块</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span id="status-line">行: 1</span>
+                <span id="status-col">列: 1</span>
+                <span id="status-file">文件: Main.java</span>
+                <span id="status-encoding">编码: UTF-8</span>
+                <span id="status-language">语言: Java</span>
+            </div>
+
+            <!-- 新文件对话框 -->
+            <div class="dialog" id="new-file-dialog">
+                <div class="dialog-content">
+                    <div class="dialog-header">新建 Java 文件</div>
+                    <div class="dialog-body">
+                        <label>文件名:</label>
+                        <input type="text" id="new-filename" placeholder="输入文件名 (不含.java)">
+                    </div>
+                    <div class="dialog-footer">
+                        <button class="btn btn-secondary" onclick="closeDialog('new-file-dialog')">取消</button>
+                        <button class="btn btn-primary" onclick="createNewFile()">创建</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷键提示 -->
+            <div class="keyboard-hint">
+                <span>💡 按 Ctrl+K 查看快捷键 | Ctrl+S 保存 | Ctrl+/ 注释</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monaco Editor 脚本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <script th:src="@{/static/js/code-editor/app.js}"></script>
+</body>
+</html>
+

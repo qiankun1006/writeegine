@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>游戏素材创作</title>
+    <link rel="stylesheet" th:href="@{/static/css/game-asset-creator.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="asset-creator-wrapper">
+            <!-- 页面头部 -->
+            <div class="asset-header">
+                <h1>🎨 游戏素材创作系统</h1>
+                <a href="/create-game" class="back-button">← 返回</a>
+            </div>
+
+            <!-- 主容器 -->
+            <div class="asset-container">
+                <!-- 左侧导航菜单 -->
+                <div class="asset-sidebar">
+                    <div class="sidebar-section">
+                        <h3>一、角色相关</h3>
+                        <ul class="menu-list">
+                            <li><a href="#" class="menu-item" data-category="character-portrait">🎭 角色立绘</a></li>
+                            <li><a href="#" class="menu-item" data-category="character-sd">🤏 Q版/SD战棋</a></li>
+                            <li><a href="#" class="menu-item" data-category="character-animation">⚔️ 战斗动画</a></li>
+                            <li><a href="#" class="menu-item" data-category="character-avatar">👤 角色头像</a></li>
+                            <li><a href="#" class="menu-item" data-category="character-job">💼 职业转职</a></li>
+                            <li><a href="#" class="menu-item" data-category="character-skill-icon">✨ 技能图标</a></li>
+                            <li><a href="#" class="menu-item" data-category="character-status-icon">🌡️ 状态图标</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>二、地图与场景</h3>
+                        <ul class="menu-list">
+                            <li><a href="#" class="menu-item" data-category="map-grid">🗺️ 战棋网格地图</a></li>
+                            <li><a href="#" class="menu-item" data-category="map-terrain">🧱 地形块素材</a></li>
+                            <li><a href="#" class="menu-item" data-category="map-obstacle">🪵 障碍物</a></li>
+                            <li><a href="#" class="menu-item" data-category="map-decoration">🌸 地图装饰</a></li>
+                            <li><a href="#" class="menu-item" data-category="map-background">🎪 战场背景</a></li>
+                            <li><a href="#" class="menu-item" data-category="map-loading">⏳ 关卡载入图</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>三、UI 界面类</h3>
+                        <ul class="menu-list">
+                            <li><a href="#" class="menu-item" data-category="ui-main-menu">🏠 主菜单 UI</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-level-select">📋 关卡选择</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-dialog">💬 剧情对话</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-battle-range">🎯 范围提示</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-battle-hud">❤️ 战斗HUD</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-character-panel">📊 人物属性</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-inventory">🎒 物品装备</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-skill">✊ 技能魔法</a></li>
+                            <li><a href="#" class="menu-item" data-category="ui-battle-result">🏆 战斗结算</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>四、特效与动画</h3>
+                        <ul class="menu-list">
+                            <li><a href="#" class="menu-item" data-category="effect-movement">➡️ 移动轨迹</a></li>
+                            <li><a href="#" class="menu-item" data-category="effect-attack">⚡ 攻击特效</a></li>
+                            <li><a href="#" class="menu-item" data-category="effect-magic">🔥 魔法特效</a></li>
+                            <li><a href="#" class="menu-item" data-category="effect-heal">💚 治愈特效</a></li>
+                            <li><a href="#" class="menu-item" data-category="effect-critical">💥 暴击特效</a></li>
+                            <li><a href="#" class="menu-item" data-category="effect-status">✔️ 命中/闪避</a></li>
+                            <li><a href="#" class="menu-item" data-category="effect-levelup">⭐ 升级特效</a></li>
+                            <li><a href="#" class="menu-item" data-category="effect-trap">🪤 地形陷阱</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>五、文字与图标</h3>
+                        <ul class="menu-list">
+                            <li><a href="#" class="menu-item" data-category="font-numbers">🔢 数字字体</a></li>
+                            <li><a href="#" class="menu-item" data-category="icon-button">🔘 按钮图标</a></li>
+                            <li><a href="#" class="menu-item" data-category="icon-job">💼 职业图标</a></li>
+                            <li><a href="#" class="menu-item" data-category="icon-attribute">⚔️ 属性图标</a></li>
+                            <li><a href="#" class="menu-item" data-category="icon-quest">🎯 任务图标</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>六、剧情与过场</h3>
+                        <ul class="menu-list">
+                            <li><a href="#" class="menu-item" data-category="story-portrait">🎬 剧情立绘</a></li>
+                            <li><a href="#" class="menu-item" data-category="story-dialog-box">💬 对话框</a></li>
+                            <li><a href="#" class="menu-item" data-category="story-transition">🌅 过场背景</a></li>
+                            <li><a href="#" class="menu-item" data-category="story-avatar">👥 剧情头像</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 右侧工作区 -->
+                <div class="asset-workspace">
+                    <!-- 工具栏 -->
+                    <div class="workspace-toolbar">
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="new-asset-btn" title="新建素材">➕ 新建</button>
+                            <button class="toolbar-btn" id="import-asset-btn" title="导入素材">📁 导入</button>
+                            <button class="toolbar-btn" id="export-asset-btn" title="导出素材">📤 导出</button>
+                        </div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="preview-btn" title="预览">👁️ 预览</button>
+                            <button class="toolbar-btn" id="publish-btn" title="发布">🚀 发布</button>
+                        </div>
+                    </div>
+
+                    <!-- 内容区域 -->
+                    <div class="workspace-content">
+                        <!-- 欢迎界面 -->
+                        <div class="content-panel active" id="welcome-panel">
+                            <div class="welcome-container">
+                                <h2>欢迎使用游戏素材创作系统</h2>
+                                <p>在左侧选择要创建的素材类型，开始创作您的游戏资源吧！</p>
+                                <div class="quick-links">
+                                    <a href="#" class="quick-link" data-category="character-portrait">
+                                        <span class="icon">🎭</span>
+                                        <span class="text">创建角色立绘</span>
+                                    </a>
+                                    <a href="#" class="quick-link" data-category="map-grid">
+                                        <span class="icon">🗺️</span>
+                                        <span class="text">设计地图</span>
+                                    </a>
+                                    <a href="#" class="quick-link" data-category="ui-main-menu">
+                                        <span class="icon">🏠</span>
+                                        <span class="text">设计UI</span>
+                                    </a>
+                                    <a href="#" class="quick-link" data-category="effect-magic">
+                                        <span class="icon">🔥</span>
+                                        <span class="text">创建特效</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 角色立绘编辑器 -->
+                        <div class="content-panel" id="character-portrait-panel">
+                            <h3>🎭 角色立绘编辑</h3>
+                            <div class="editor-container">
+                                <canvas id="portrait-canvas" width="400" height="600"></canvas>
+                                <div class="editor-controls">
+                                    <div class="control-group">
+                                        <label>立绘类型</label>
+                                        <select id="portrait-type">
+                                            <option value="full">全身</option>
+                                            <option value="half">半身</option>
+                                            <option value="head">头像</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <label>背景</label>
+                                        <input type="color" id="portrait-bg-color">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q版/SD战棋编辑器 -->
+                        <div class="content-panel" id="character-sd-panel">
+                            <h3>🤏 Q版/SD战棋模型编辑</h3>
+                            <div class="editor-container">
+                                <canvas id="sd-canvas" width="300" height="300"></canvas>
+                                <div class="editor-controls">
+                                    <div class="control-group">
+                                        <label>模型大小</label>
+                                        <input type="range" id="sd-scale" min="1" max="5" value="2">
+                                    </div>
+                                    <div class="control-group">
+                                        <label>颜色主题</label>
+                                        <input type="color" id="sd-color">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 战斗动画编辑器 -->
+                        <div class="content-panel" id="character-animation-panel">
+                            <h3>⚔️ 角色战斗动画编辑</h3>
+                            <div class="animation-editor">
+                                <div class="animation-preview">
+                                    <canvas id="animation-canvas" width="400" height="400"></canvas>
+                                </div>
+                                <div class="animation-timeline">
+                                    <div class="timeline-header">
+                                        <h4>动画帧序列</h4>
+                                        <button id="add-frame-btn">➕ 添加帧</button>
+                                    </div>
+                                    <div class="frame-list" id="frame-list"></div>
+                                </div>
+                                <div class="animation-controls">
+                                    <select id="animation-type">
+                                        <option value="idle">待机</option>
+                                        <option value="move">移动</option>
+                                        <option value="attack">攻击</option>
+                                        <option value="skill">技能</option>
+                                        <option value="hit">被击</option>
+                                        <option value="dead">倒地</option>
+                                    </select>
+                                    <button id="play-animation-btn">▶️ 播放</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 战棋网格地图编辑器 -->
+                        <div class="content-panel" id="map-grid-panel">
+                            <!-- 嵌入 Tilemap 编辑器片段 -->
+                            <div th:replace="~{tilemap-editor :: content}"></div>
+                        </div>
+
+                        <!-- UI编辑器 -->
+                        <div class="content-panel" id="ui-main-menu-panel">
+                            <h3>🏠 主菜单UI设计</h3>
+                            <div class="ui-designer">
+                                <div class="ui-preview">
+                                    <canvas id="ui-canvas" width="600" height="400"></canvas>
+                                </div>
+                                <div class="ui-components">
+                                    <h4>UI组件</h4>
+                                    <div class="component-palette">
+                                        <button class="component-btn" data-component="button">🔘 按钮</button>
+                                        <button class="component-btn" data-component="panel">📦 面板</button>
+                                        <button class="component-btn" data-component="text">📝 文本</button>
+                                        <button class="component-btn" data-component="image">🖼️ 图像</button>
+                                        <button class="component-btn" data-component="progress">📊 进度条</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 特效编辑器 -->
+                        <div class="content-panel" id="effect-magic-panel">
+                            <h3>🔥 魔法特效编辑</h3>
+                            <div class="effect-editor">
+                                <div class="effect-preview">
+                                    <canvas id="effect-canvas" width="500" height="500"></canvas>
+                                </div>
+                                <div class="effect-controls">
+                                    <div class="control-group">
+                                        <label>特效类型</label>
+                                        <select id="effect-type">
+                                            <option value="fire">🔥 火焰</option>
+                                            <option value="ice">❄️ 冰冻</option>
+                                            <option value="lightning">⚡ 闪电</option>
+                                            <option value="holy">✨ 光</option>
+                                            <option value="dark">🌑 暗</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <label>特效强度</label>
+                                        <input type="range" id="effect-intensity" min="1" max="10" value="5">
+                                    </div>
+                                    <button id="preview-effect-btn">▶️ 预览特效</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 资源库 -->
+                        <div class="content-panel" id="asset-library-panel">
+                            <h3>📚 素材资源库</h3>
+                            <div class="asset-library">
+                                <div class="library-filter">
+                                    <input type="text" placeholder="搜索素材...">
+                                    <select id="library-sort">
+                                        <option value="recent">最近使用</option>
+                                        <option value="name">按名称</option>
+                                        <option value="size">按大小</option>
+                                    </select>
+                                </div>
+                                <div class="asset-grid" id="asset-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

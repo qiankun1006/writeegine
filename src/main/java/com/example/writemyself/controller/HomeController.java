@@ -79,6 +79,53 @@ public class HomeController {
     }
 
     /**
+     * 游戏素材创作页面
+     * 提供完整的游戏资源编辑系统：角色、地图、UI、特效等
+     */
+    @GetMapping("/create-game/asset")
+    public String createGameAsset(Model model) {
+        model.addAttribute("title", "游戏素材创作 - 创作游戏");
+
+        // 为嵌入的 Tilemap 编辑器准备数据（用于战棋网格地图编辑）
+        List<String> tileImages = new ArrayList<>(Arrays.asList(
+            "brown.png",           // 棕色地块
+            "green.png",           // 绿色地块
+            "green2.png",          // 绿色地块2
+            "obstacle.png",        // 障碍物
+            "stone-wall.png",      // 石墙
+            "stone.png",           // 石头
+            "stone2.png"           // 石头2
+        ));
+
+        // 定义对应的图块显示名称（中文）
+        List<String> tileNames = new ArrayList<>(Arrays.asList(
+            "棕色地块",
+            "绿色地块",
+            "绿色地块2",
+            "障碍物",
+            "石墙",
+            "石头",
+            "石头2"
+        ));
+
+        model.addAttribute("tileImages", tileImages);
+        model.addAttribute("tileNames", tileNames);
+        model.addAttribute("defaultGridSize", 16);
+
+        return "create-game-asset";
+    }
+
+    /**
+     * Java 代码编辑器页面
+     * 在线代码编辑、文件管理、代码索引功能
+     */
+    @GetMapping("/create-game/code")
+    public String createGameCode(Model model) {
+        model.addAttribute("title", "Java 代码编辑器 - 创作游戏");
+        return "create-game-code";
+    }
+
+    /**
      * 我的游戏列表
      */
     @GetMapping("/my-games")

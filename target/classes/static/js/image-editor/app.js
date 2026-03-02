@@ -16,7 +16,7 @@ function initializeEditor() {
   console.log('📍 Canvas 元素:', canvas);
 
   if (!canvas) {
-    console.error('❌ Canvas element not found');
+    console.warn('⚠️ Canvas element not found - 可能这不是图片编辑器页面，跳过初始化');
     return;
   }
 

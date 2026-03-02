@@ -27,7 +27,7 @@
     </footer>
 
     <script th:src="@{/static/js/main.js}"></script>
-    <script src="/static/js/tilemap-editor.js"></script>
+    <!-- 图片编辑器脚本（仅在需要的页面加载） -->
     <script src="/static/js/image-editor/EventBus.js"></script>
     <script src="/static/js/image-editor/CommandHistory.js"></script>
     <script src="/static/js/image-editor/Layer.js"></script>
@@ -38,6 +38,15 @@
     <script src="/static/js/image-editor/tools/PaintingTools.js"></script>
     <script src="/static/js/image-editor/app.js"></script>
     <script src="/static/js/image-editor/MenuManager.js"></script>
+
+    <!-- 游戏素材创作系统脚本（用于 create-game-asset 页面） -->
+    <script src="/static/js/game-asset-creator/AssetManager.js"></script>
+    <script src="/static/js/game-asset-creator/AssetEditor.js"></script>
+    <script src="/static/js/game-asset-creator/CanvasUtils.js"></script>
+    <script src="/static/js/game-asset-creator/app.js"></script>
+
+    <!-- Tilemap 编辑器脚本 -->
+    <script src="/static/js/tilemap-editor.js"></script>
 </body>
 </html>
 

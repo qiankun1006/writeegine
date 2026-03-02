@@ -608,12 +608,33 @@ class Dialog {
 }
 
 // 页面加载完成后初始化编辑器和布局管理器
-document.addEventListener('DOMContentLoaded', () => {
+function initTilemapEditor() {
+    // 检查 tilemap-canvas 是否存在
+    const canvas = document.getElementById('tilemap-canvas');
+    console.log('🗺️ Tilemap 初始化检查 - Canvas:', canvas ? '✓ 存在' : '✗ 不存在');
+
+    if (!canvas) {
+        console.log('⚠️ 未在当前页面找到 tilemap-canvas，跳过 Tilemap 编辑器初始化');
+        return;
+    }
+
     try {
-        window.editor = new TilemapEditor();
-        window.resizableLayout = new ResizableLayoutManager();
+        if (!window.editor) {
+            window.editor = new TilemapEditor();
+            console.log('✓ Tilemap 编辑器已初始化');
+        }
+        if (!window.resizableLayout) {
+            window.resizableLayout = new ResizableLayoutManager();
+            console.log('✓ ResizableLayoutManager 已初始化');
+        }
     } catch (error) {
         console.error('编辑器初始化失败:', error);
     }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📋 DOMContentLoaded 触发，延迟初始化 Tilemap');
+    // 延迟 100ms 确保所有 DOM 都已渲染
+    setTimeout(initTilemapEditor, 100);
 });
 
