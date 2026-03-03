@@ -25,6 +25,7 @@
                             <li><a href="#" class="menu-item" data-category="character-portrait">🎭 角色立绘</a></li>
                             <li><a href="#" class="menu-item" data-category="character-sd">🤏 Q版/SD战棋</a></li>
                             <li><a href="#" class="menu-item" data-category="character-animation">⚔️ 战斗动画</a></li>
+                            <li><a href="#" class="menu-item" data-category="character-frame-sequence">🎬 动画帧序列</a></li>
                             <li><a href="#" class="menu-item" data-category="character-avatar">👤 角色头像</a></li>
                             <li><a href="#" class="menu-item" data-category="character-job">💼 职业转职</a></li>
                             <li><a href="#" class="menu-item" data-category="character-skill-icon">✨ 技能图标</a></li>
@@ -112,6 +113,11 @@
 
                     <!-- 内容区域 -->
                     <div class="workspace-content">
+                        <!-- 调试信息 -->
+                        <div id="debug-info" style="background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 12px; margin-bottom: 10px;">
+                            当前激活面板: <span id="current-panel">welcome-panel</span>
+                        </div>
+
                         <!-- 欢迎界面 -->
                         <div class="content-panel active" id="welcome-panel">
                             <div class="welcome-container">
@@ -206,6 +212,13 @@
                             </div>
                         </div>
 
+                        <!-- 骨骼动画帧序列编辑器 -->
+                        <div class="content-panel full-height" id="character-frame-sequence-panel">
+                            <div class="skeleton-animation-editor" id="skeleton-animation-editor">
+                                <!-- 骨骼动画编辑器将由 JS 动态初始化 -->
+                            </div>
+                        </div>
+
                         <!-- 战棋网格地图编辑器 -->
                         <div class="content-panel" id="map-grid-panel">
                             <!-- 嵌入 Tilemap 编辑器片段 -->
@@ -274,11 +287,44 @@
                                 <div class="asset-grid" id="asset-grid"></div>
                             </div>
                         </div>
+
+                        <!-- 通用占位符面板 -->
+                        <div class="content-panel" id="placeholder-panel">
+                            <div class="placeholder-container">
+                                <h3 id="placeholder-title">功能开发中</h3>
+                                <p id="placeholder-desc">该功能正在开发中，敬请期待！</p>
+                                <div class="placeholder-icon">🚧</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .placeholder-container {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .placeholder-container h3 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #666;
+        }
+
+        .placeholder-container p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .placeholder-icon {
+            font-size: 64px;
+            opacity: 0.5;
+        }
+    </style>
 </body>
 </html>
 

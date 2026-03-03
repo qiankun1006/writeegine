@@ -126,9 +126,12 @@ class GameAssetCreatorApp {
      * 切换面板
      */
     switchPanel(category, menuItem = null) {
+        console.log(`[DEBUG] 切换面板: ${category}`);
+
         // 移除所有active类
         document.querySelectorAll('.content-panel').forEach(panel => {
             panel.classList.remove('active');
+            console.log(`[DEBUG] 移除active类: ${panel.id}`);
         });
 
         document.querySelectorAll('.menu-item').forEach(item => {
@@ -148,12 +151,27 @@ class GameAssetCreatorApp {
 
         if (panel) {
             panel.classList.add('active');
+            console.log(`[DEBUG] 添加active类: ${panelId}`);
+
+            // 更新调试信息
+            const debugInfo = document.getElementById('current-panel');
+            if (debugInfo) {
+                debugInfo.textContent = panelId;
+            }
+
             this.currentCategory = category;
 
             // 特殊处理：Tilemap 编辑器初始化
             if (category === 'map-grid' && typeof initTilemapEditor === 'function') {
                 console.log('🗺️ 初始化 Tilemap 编辑器...');
                 initTilemapEditor();
+            }
+
+            // 特殊处理：骨骼动画帧序列编辑器
+            if (category === 'character-frame-sequence') {
+                console.log('🎬 激活骨骼动画帧序列编辑器...');
+                // 骨骼动画编辑器已经在 FrameSequenceEditor.js 中自动初始化
+                // 这里只需要确保它显示出来
             }
 
             // 根据分类创建或编辑资源
@@ -164,7 +182,29 @@ class GameAssetCreatorApp {
 
             console.log(`📂 切换到: ${category}`);
         } else {
-            console.warn(`⚠️ 找不到面板: ${panelId}`);
+            console.warn(`⚠️ 找不到面板: ${panelId}，显示占位符面板`);
+
+            // 显示占位符面板
+            const placeholderPanel = document.getElementById('placeholder-panel');
+            if (placeholderPanel) {
+                placeholderPanel.classList.add('active');
+
+                // 获取菜单项的文本
+                const menuItem = document.querySelector(`.menu-item[data-category="${category}"]`);
+                const menuText = menuItem ? menuItem.textContent.trim() : category;
+
+                // 更新占位符内容
+                const title = document.getElementById('placeholder-title');
+                const desc = document.getElementById('placeholder-desc');
+                if (title) title.textContent = `${menuText} - 功能开发中`;
+                if (desc) desc.textContent = '该功能正在开发中，敬请期待！';
+
+                // 更新调试信息
+                const debugInfo = document.getElementById('current-panel');
+                if (debugInfo) {
+                    debugInfo.textContent = `placeholder (${category})`;
+                }
+            }
         }
     }
 
@@ -190,6 +230,16 @@ class GameAssetCreatorApp {
                 this.assetEditor.initCanvas('animation-canvas', 400, 400);
                 this.assetEditor.drawGrid(40);
                 this.drawAnimationFrame();
+                break;
+
+            case 'character-frame-sequence':
+                // 初始化骨骼动画编辑器
+                if (typeof window.initFrameSequenceEditor === 'function') {
+                    console.log('🎬 初始化骨骼动画帧序列编辑器...');
+                    window.initFrameSequenceEditor();
+                } else {
+                    console.warn('⚠️ initFrameSequenceEditor 函数未准备好');
+                }
                 break;
 
             case 'map-grid':
@@ -224,6 +274,7 @@ class GameAssetCreatorApp {
             'character-portrait': 'portrait-canvas',
             'character-sd': 'sd-canvas',
             'character-animation': 'animation-canvas',
+            'character-frame-sequence': 'skeleton-canvas',  // 骨骼动画画布
             'map-grid': 'tilemap-canvas',
             'ui-main-menu': 'ui-canvas',
             'effect-magic': 'effect-canvas'

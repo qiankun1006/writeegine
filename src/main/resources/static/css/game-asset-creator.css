@@ -146,8 +146,9 @@
 /* 内容区域 */
 .workspace-content {
     flex: 1;
-    overflow-y: auto;
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .content-panel {
@@ -157,6 +158,25 @@
 
 .content-panel.active {
     display: block;
+}
+
+/* 普通面板的处理 */
+.content-panel:not(.full-height).active {
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* 特殊处理：full-height面板（如地图编辑器和骨骼编辑器） */
+.content-panel.full-height {
+    display: none;
+}
+
+.content-panel.full-height.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
 }
 
 @keyframes fadeIn {
@@ -498,6 +518,16 @@ canvas {
     border-color: #667eea;
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
     transform: translateY(-2px);
+}
+
+/* Tilemap编辑器嵌入容器 */
+#map-grid-panel .tilemap-editor-wrapper {
+    height: 100%;
+}
+
+/* 骨骼动画编辑器嵌入容器 */
+#character-frame-sequence-panel .skeleton-animation-editor {
+    height: 100%;
 }
 
 /* 滚动条美化 */

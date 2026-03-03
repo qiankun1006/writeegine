@@ -12,6 +12,7 @@ class SkeletonAnimationEditor {
     this.skeleton = new Skeleton('Character');
     this.animation = new Animation('Walk', 24, 60);
     this.animationPlayer = new AnimationPlayer(this.skeleton, this.animation);
+    this.skin = new Skin();  // 皮肤网格
 
     // UI 组件
     this.boneEditTool = null;
@@ -239,7 +240,13 @@ class SkeletonAnimationEditor {
    * 渲染
    */
   render(ctx) {
-    // 由工具负责渲染骨骼结构
+    // 先渲染皮肤网格（如果在后面）
+    if (this.skin) {
+      this.skin.update(this.skeleton);
+      this.skin.render(ctx);
+    }
+
+    // 然后渲染骨骼结构
     if (this.boneEditTool && this.boneEditTool.render) {
       this.boneEditTool.render(ctx);
     }
@@ -251,7 +258,8 @@ class SkeletonAnimationEditor {
   serialize() {
     return {
       skeleton: this.skeleton.serialize(),
-      animation: this.animation.serialize()
+      animation: this.animation.serialize(),
+      skin: this.skin.serialize()
     };
   }
 
@@ -266,6 +274,9 @@ class SkeletonAnimationEditor {
     if (data.animation) {
       editor.animation = Animation.deserialize(data.animation);
       editor.animationPlayer.animation = editor.animation;
+    }
+    if (data.skin) {
+      editor.skin = Skin.deserialize(data.skin);
     }
     return editor;
   }

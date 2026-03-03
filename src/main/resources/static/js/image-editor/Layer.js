@@ -53,6 +53,11 @@ class Layer {
     // 图层锁定状态
     this.locked = options.locked !== undefined ? options.locked : false;
     this.lockAlpha = options.lockAlpha !== undefined ? options.lockAlpha : false;
+
+    // 骨骼动画数据
+    this.skeletonData = options.skeletonData || null;       // 骨骼系统
+    this.animationData = options.animationData || null;      // 动画数据
+    this.isSkeletonLayer = options.isSkeletonLayer || false; // 标记为骨骼动画层
   }
 
   /**
@@ -385,7 +390,7 @@ class Layer {
    * 将图层转换为 JSON
    */
   toJSON() {
-    return {
+    const json = {
       id: this.id,
       name: this.name,
       type: this.type,
@@ -405,6 +410,19 @@ class Layer {
       // 保存是否启用了 Alpha 通道
       hasAlphaChannel: this._hasAlphaChannel || false
     };
+
+    // 如果是骨骼动画层，序列化骨骼和动画数据
+    if (this.isSkeletonLayer) {
+      json.isSkeletonLayer = true;
+      if (this.skeletonData) {
+        json.skeletonData = this.skeletonData.serialize();
+      }
+      if (this.animationData) {
+        json.animationData = this.animationData.serialize();
+      }
+    }
+
+    return json;
   }
 
   /**
@@ -434,12 +452,23 @@ class Layer {
           locked: json.locked,
           lockAlpha: json.lockAlpha,
           canvas: canvas,
-          effects: json.effects
+          effects: json.effects,
+          isSkeletonLayer: json.isSkeletonLayer || false
         });
 
         // 恢复 Alpha 通道状态
         if (json.hasAlphaChannel) {
           layer._hasAlphaChannel = true;
+        }
+
+        // 恢复骨骼动画数据
+        if (json.isSkeletonLayer && typeof Skeleton !== 'undefined' && typeof Animation !== 'undefined') {
+          if (json.skeletonData) {
+            layer.skeletonData = Skeleton.deserialize(json.skeletonData);
+          }
+          if (json.animationData) {
+            layer.animationData = Animation.deserialize(json.animationData);
+          }
         }
 
         resolve(layer);

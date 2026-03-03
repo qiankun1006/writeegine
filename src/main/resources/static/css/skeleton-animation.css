@@ -419,3 +419,221 @@
   }
 }
 
+/* ==================== 帧序列编辑器布局 ==================== */
+.skeleton-animation-editor {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: #1a1a1a;
+}
+
+.skeleton-animation-editor.initialized {
+  display: flex;
+}
+
+.skeleton-editor-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #444;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.skeleton-editor-toolbar .toolbar-group {
+  display: flex;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid #444;
+}
+
+.skeleton-editor-toolbar .toolbar-group:last-child {
+  border-right: none;
+}
+
+.skeleton-editor-toolbar button {
+  padding: 6px 12px;
+  background-color: #3a3a3a;
+  color: #ccc;
+  border: 1px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.skeleton-editor-toolbar button:hover {
+  background-color: #4a4a4a;
+  color: #fff;
+  border-color: #666;
+}
+
+.skeleton-editor-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.skeleton-editor-left {
+  width: 220px;
+  background-color: #2a2a2a;
+  border-right: 1px solid #444;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-editor-center {
+  flex: 1;
+  background-color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.skeleton-editor-right {
+  width: 260px;
+  background-color: #2a2a2a;
+  border-left: 1px solid #444;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-editor-bottom {
+  height: 220px;
+  background-color: #2a2a2a;
+  border-top: 1px solid #444;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.panel-header {
+  padding: 8px 12px;
+  background-color: #3a3a3a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 1px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.panel-header-actions button {
+  padding: 2px 6px;
+  background-color: #4a4a4a;
+  color: #ccc;
+  border: 1px solid #555;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.panel-header-actions button:hover {
+  background-color: #5a5a5a;
+  color: #fff;
+}
+
+#skeleton-canvas {
+  flex: 1;
+  background-color: #0a0a0a;
+  cursor: grab;
+}
+
+#skeleton-canvas:active {
+  cursor: grabbing;
+}
+
+.canvas-controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background-color: #2a2a2a;
+  border-top: 1px solid #444;
+  justify-content: center;
+}
+
+.canvas-controls button {
+  padding: 6px 16px;
+  background-color: #3a3a3a;
+  color: #ccc;
+  border: 1px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.canvas-controls button:hover {
+  background-color: #4a4a4a;
+  color: #fff;
+}
+
+/* 确保内容面板中的编辑器有正确的高度 */
+.content-panel#character-frame-sequence-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.content-panel#character-frame-sequence-panel .skeleton-animation-editor {
+  height: 100%;
+}
+
+/* 响应式调整 */
+@media (max-width: 1024px) {
+  .skeleton-editor-left {
+    width: 180px;
+  }
+
+  .skeleton-editor-right {
+    width: 200px;
+  }
+
+  .skeleton-editor-bottom {
+    height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .skeleton-editor-main {
+    flex-direction: column;
+  }
+
+  .skeleton-editor-left,
+  .skeleton-editor-right {
+    width: 100%;
+    height: 150px;
+    border-right: none;
+    border-left: none;
+    border-bottom: 1px solid #444;
+  }
+
+  .skeleton-editor-bottom {
+    height: 150px;
+  }
+
+  .skeleton-editor-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .skeleton-editor-toolbar .toolbar-group {
+    border-right: none;
+  }
+}
+

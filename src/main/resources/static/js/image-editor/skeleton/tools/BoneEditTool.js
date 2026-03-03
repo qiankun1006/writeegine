@@ -222,7 +222,117 @@ class BoneEditTool extends Tool {
       ctx.font = '12px Arial';
       ctx.textAlign = 'left';
       ctx.fillText(bone.name, startX + this.jointRadius + 4, startY - 4);
+
+      // 绘制骨骼轴（调试用）
+      this._drawBoneAxes(ctx, bone, startX, startY);
+
+      // 绘制骨骼边界框（调试用）
+      this._drawBoneBoundingBox(ctx, bone, startX, startY, end.x, end.y);
     });
+  }
+
+  /**
+   * 绘制骨骼轴（调试用）
+   */
+  _drawBoneAxes(ctx, bone, x, y) {
+    const axisLength = 30 * this.scale;
+    const lineWidth = 2 * this.scale;
+
+    // X 轴（红色）- 表示骨骼的向前方向
+    const endX = x + Math.cos(bone.rotation) * axisLength;
+    const endY = y + Math.sin(bone.rotation) * axisLength;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(endX, endY);
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+
+    // 绘制箭头
+    const arrowSize = 5 * this.scale;
+    ctx.beginPath();
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(
+      endX - arrowSize * Math.cos(bone.rotation - 0.3),
+      endY - arrowSize * Math.sin(bone.rotation - 0.3)
+    );
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(
+      endX - arrowSize * Math.cos(bone.rotation + 0.3),
+      endY - arrowSize * Math.sin(bone.rotation + 0.3)
+    );
+    ctx.stroke();
+
+    // Y 轴（绿色）- 表示骨骼的向上方向（垂直于 X 轴）
+    const perpRotation = bone.rotation + Math.PI / 2;
+    const perpEndX = x + Math.cos(perpRotation) * (axisLength * 0.7);
+    const perpEndY = y + Math.sin(perpRotation) * (axisLength * 0.7);
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(perpEndX, perpEndY);
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+  }
+
+  /**
+   * 绘制骨骼边界框（调试用）
+   */
+  _drawBoneBoundingBox(ctx, bone, startX, startY, endX, endY) {
+    // 计算骨骼的包围盒
+    const padding = 5 * this.scale;
+
+    // 找出最小和最大坐标
+    const minX = Math.min(startX, endX) - padding;
+    const maxX = Math.max(startX, endX) + padding;
+    const minY = Math.min(startY, endY) - padding;
+    const maxY = Math.max(startY, endY) + padding;
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // 绘制边界框
+    ctx.save();
+    ctx.strokeStyle = bone === this.selectedBone ? '#ff8800' : '#ffff00';
+    ctx.lineWidth = 1 * this.scale;
+    ctx.setLineDash([5, 3]); // 虚线
+    ctx.strokeRect(minX, minY, width, height);
+
+    // 绘制边界框的角落标记
+    const cornerSize = 4 * this.scale;
+    ctx.setLineDash([]);
+
+    // 左上角
+    ctx.beginPath();
+    ctx.moveTo(minX, minY + cornerSize);
+    ctx.lineTo(minX, minY);
+    ctx.lineTo(minX + cornerSize, minY);
+    ctx.stroke();
+
+    // 右上角
+    ctx.beginPath();
+    ctx.moveTo(maxX - cornerSize, minY);
+    ctx.lineTo(maxX, minY);
+    ctx.lineTo(maxX, minY + cornerSize);
+    ctx.stroke();
+
+    // 右下角
+    ctx.beginPath();
+    ctx.moveTo(maxX, maxY - cornerSize);
+    ctx.lineTo(maxX, maxY);
+    ctx.lineTo(maxX - cornerSize, maxY);
+    ctx.stroke();
+
+    // 左下角
+    ctx.beginPath();
+    ctx.moveTo(minX + cornerSize, maxY);
+    ctx.lineTo(minX, maxY);
+    ctx.lineTo(minX, maxY - cornerSize);
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   /**

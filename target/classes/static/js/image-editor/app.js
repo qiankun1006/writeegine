@@ -70,12 +70,17 @@ function initializeEditor() {
   updateLayersList();
   updateHistoryList();
 
-  // 初始化骨骼动画系统
+  // 初始化骨骼动画系统（仅在图片编辑器页面中初始化）
   try {
-    console.log('🦴 初始化骨骼动画系统...');
-    if (typeof SkeletonAnimationEditor !== 'undefined') {
+    // 检查是否在游戏素材创作页面中，如果是则跳过骨骼动画编辑器的初始化
+    const isGameAssetPage = window.location.pathname.includes('create-game-asset');
+
+    if (!isGameAssetPage && typeof SkeletonAnimationEditor !== 'undefined') {
+      console.log('🦴 初始化骨骼动画系统...');
       window.skeletonAnimationEditor = new SkeletonAnimationEditor(editor);
       console.log('✓ 骨骼动画编辑器已初始化');
+    } else if (isGameAssetPage) {
+      console.log('⏭️ 检测到游戏素材创作页面，跳过骨骼动画编辑器初始化');
     } else {
       console.warn('⚠️ SkeletonAnimationEditor 类未定义，骨骼动画功能将不可用');
     }
