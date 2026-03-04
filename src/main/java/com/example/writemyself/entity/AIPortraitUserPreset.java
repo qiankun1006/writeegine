@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "ai_portrait_user_preset", indexes = {
-        @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name = "idx_is_favorite", columnList = "is_favorite"),
-        @Index(name = "idx_created_at", columnList = "created_at")
+        @Index(name = "idx_user_id", columnList = "userId"),
+        @Index(name = "idx_is_favorite", columnList = "isFavorite"),
+        @Index(name = "idx_created_at", columnList = "createdAt")
 })
 @Data
 @NoArgsConstructor

@@ -1,17 +1,17 @@
 package com.example.writemyself.controller;
 
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 /**
  * 错误处理控制器
  * 处理自定义的/handle-error请求，提供用户友好的错误页面
  */
-@Controller
+//@Controller
 public class ErrorHandlingController {
 
     /**

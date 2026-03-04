@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "ai_portrait_model_config", indexes = {
-        @Index(name = "idx_model_name", columnList = "model_name"),
+        @Index(name = "idx_model_name", columnList = "modelName"),
         @Index(name = "idx_provider", columnList = "provider"),
-        @Index(name = "idx_is_active", columnList = "is_active"),
-        @Index(name = "idx_is_default", columnList = "is_default")
+        @Index(name = "idx_is_active", columnList = "isActive"),
+        @Index(name = "idx_is_default", columnList = "isDefault")
 })
 @Data
 @NoArgsConstructor

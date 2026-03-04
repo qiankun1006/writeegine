@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "ai_portrait_resource_library", indexes = {
-        @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name = "idx_generation_id", columnList = "generation_id"),
+        @Index(name = "idx_user_id", columnList = "userId"),
+        @Index(name = "idx_generation_id", columnList = "generationId"),
         @Index(name = "idx_category", columnList = "category"),
-        @Index(name = "idx_is_public", columnList = "is_public"),
-        @Index(name = "idx_created_at", columnList = "created_at")
+        @Index(name = "idx_is_public", columnList = "isPublic"),
+        @Index(name = "idx_created_at", columnList = "createdAt")
 })
 @Data
 @NoArgsConstructor
