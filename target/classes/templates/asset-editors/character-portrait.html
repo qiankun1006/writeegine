@@ -66,28 +66,53 @@
                     const response = await fetch('/static/ai-portrait-generator/dist/index.html');
                     const html = await response.text();
 
-                    // 提取 script 标签中的 src
-                    const scriptMatch = html.match(/<script[^>]*src="([^"]*)"[^>]*><\/script>/);
-                    if (scriptMatch && scriptMatch[1]) {
-                        const scriptPath = scriptMatch[1];
-                        console.log('✓ 加载应用脚本:', scriptPath);
+                    // 提取 CSS 链接
+                    const cssMatch = html.match(/<link[^>]*href="([^"]*\.css)"[^>]*>/);
+                    if (cssMatch && cssMatch[1]) {
+                        const cssPath = cssMatch[1];
+                        console.log('✓ 加载样式文件:', cssPath);
 
-                        // 创建并追加脚本元素
-                        const script = document.createElement('script');
-                        script.type = 'module';
-                        script.src = scriptPath;
-                        script.onload = () => console.log('✓ Vue 应用加载成功');
-                        script.onerror = (err) => {
-                            console.error('✗ 应用脚本加载失败:', err);
-                            showError('脚本加载失败: ' + scriptPath);
+                        // 加载 CSS
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = cssPath;
+                        link.onload = () => {
+                            console.log('✓ 样式文件加载成功');
+                            loadScript(html);
                         };
-                        document.body.appendChild(script);
+                        link.onerror = (err) => {
+                            console.error('✗ 样式文件加载失败:', err);
+                            loadScript(html); // 即使 CSS 失败也继续加载脚本
+                        };
+                        document.head.appendChild(link);
                     } else {
-                        showError('无法从 index.html 中提取脚本路径');
+                        loadScript(html);
                     }
                 } catch (err) {
                     console.error('✗ 应用加载失败:', err);
-                    showError(err.message);
+                    showError('获取配置文件失败: ' + err.message);
+                }
+            }
+
+            function loadScript(html) {
+                // 提取 script 标签中的 src
+                const scriptMatch = html.match(/<script[^>]*src="([^"]*)"[^>]*><\/script>/);
+                if (scriptMatch && scriptMatch[1]) {
+                    const scriptPath = scriptMatch[1];
+                    console.log('✓ 加载应用脚本:', scriptPath);
+
+                    // 创建并追加脚本元素
+                    const script = document.createElement('script');
+                    script.type = 'module';
+                    script.src = scriptPath;
+                    script.onload = () => console.log('✓ Vue 应用加载成功');
+                    script.onerror = (err) => {
+                        console.error('✗ 应用脚本加载失败:', err);
+                        showError('脚本加载失败: ' + scriptPath);
+                    };
+                    document.body.appendChild(script);
+                } else {
+                    showError('无法从 index.html 中提取脚本路径');
                 }
             }
 
