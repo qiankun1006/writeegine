@@ -3,10 +3,18 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig({
+  base: '/static/ai-portrait-generator/dist/',
   plugins: [vue()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "@/styles/theme.scss";`,
+      },
     },
   },
   server: {

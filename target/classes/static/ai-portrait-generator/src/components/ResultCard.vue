@@ -64,17 +64,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Download, DocumentCopy, Share } from '@element-plus/icons-vue'
-import type { GenerationResult } from '@/stores/portraitStore'
+import {ref} from 'vue'
+import {ElMessage} from 'element-plus'
+import {DocumentCopy, Download, Share} from '@element-plus/icons-vue'
+import type {GenerationResult} from '@/stores/portraitStore'
 
 interface Props {
   result: GenerationResult
   index: number
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const isCopied = ref(false)
 
@@ -130,12 +130,9 @@ const formatTime = (dateString: string) => {
     minute: '2-digit',
   })
 }
-
-const props = defineProps<Props>()
 </script>
 
 <style scoped lang="scss">
-@import '@/styles/theme.scss';
 
 .result-card {
   display: flex;

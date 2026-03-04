@@ -152,7 +152,6 @@ const formatFileSize = (bytes: number) => {
 </script>
 
 <style scoped lang="scss">
-@import '@/styles/theme.scss';
 
 .reference-image-upload {
   display: flex;

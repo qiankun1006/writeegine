@@ -209,7 +209,6 @@ const handleReset = () => {
 </script>
 
 <style scoped lang="scss">
-@import '@/styles/theme.scss';
 
 .core-params-panel {
   display: flex;

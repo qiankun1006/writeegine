@@ -90,7 +90,6 @@ const clearResults = () => {
 </script>
 
 <style scoped lang="scss">
-@import '@/styles/theme.scss';
 
 .results-panel {
   height: 100%;

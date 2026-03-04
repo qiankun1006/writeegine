@@ -158,7 +158,6 @@ const randomSeed = () => {
 </script>
 
 <style scoped lang="scss">
-@import '@/styles/theme.scss';
 
 .advanced-params-panel {
   margin-top: $spacing-lg;

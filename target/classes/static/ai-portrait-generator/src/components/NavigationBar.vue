@@ -38,7 +38,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-@import '@/styles/theme.scss';
 
 .navigation-bar {
   position: fixed;
