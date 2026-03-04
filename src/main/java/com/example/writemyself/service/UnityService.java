@@ -40,8 +40,8 @@ public class UnityService {
 
         // 摄像机配置
         Map<String, Object> camera = new HashMap<>();
-        camera.put("position", Map.of("x", 0.0, "y", 5.0, "z", 10.0));
-        camera.put("target", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
+        camera.put("position", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 5.0); put("z", 10.0); }});
+        camera.put("target", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
         camera.put("fov", 60.0);
         camera.put("type", "perspective");
         sampleScene.put("camera", camera);
@@ -59,7 +59,7 @@ public class UnityService {
         directionalLight.put("type", "directional");
         directionalLight.put("color", "#ffffff");
         directionalLight.put("intensity", 0.8);
-        directionalLight.put("position", Map.of("x", 10.0, "y", 10.0, "z", 10.0));
+        directionalLight.put("position", new HashMap<String, Object>() {{ put("x", 10.0); put("y", 10.0); put("z", 10.0); }});
         lights.add(directionalLight);
 
         sampleScene.put("lights", lights);
@@ -77,22 +77,22 @@ public class UnityService {
         cube.put("name", "立方体");
         cube.put("type", "cube");
         cube.put("sceneId", "scene_1");
-        cube.put("position", Map.of("x", -2.0, "y", 1.0, "z", 0.0));
-        cube.put("rotation", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
-        cube.put("scale", Map.of("x", 1.0, "y", 1.0, "z", 1.0));
-        cube.put("material", Map.of(
-            "type", "standard",
-            "color", "#ff0000",
-            "metalness", 0.5,
-            "roughness", 0.5
-        ));
-        cube.put("physics", Map.of(
-            "enabled", true,
-            "bodyType", "dynamic",
-            "mass", 1.0,
-            "friction", 0.5,
-            "restitution", 0.3
-        ));
+        cube.put("position", new HashMap<String, Object>() {{ put("x", -2.0); put("y", 1.0); put("z", 0.0); }});
+        cube.put("rotation", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
+        cube.put("scale", new HashMap<String, Object>() {{ put("x", 1.0); put("y", 1.0); put("z", 1.0); }});
+        cube.put("material", new HashMap<String, Object>() {{
+            put("type", "standard");
+            put("color", "#ff0000");
+            put("metalness", 0.5);
+            put("roughness", 0.5);
+        }});
+        cube.put("physics", new HashMap<String, Object>() {{
+            put("enabled", true);
+            put("bodyType", "dynamic");
+            put("mass", 1.0);
+            put("friction", 0.5);
+            put("restitution", 0.3);
+        }});
         objectStore.put("obj_1", cube);
 
         // 球体
@@ -101,22 +101,22 @@ public class UnityService {
         sphere.put("name", "球体");
         sphere.put("type", "sphere");
         sphere.put("sceneId", "scene_1");
-        sphere.put("position", Map.of("x", 0.0, "y", 1.0, "z", 0.0));
-        sphere.put("rotation", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
-        sphere.put("scale", Map.of("x", 1.0, "y", 1.0, "z", 1.0));
-        sphere.put("material", Map.of(
-            "type", "standard",
-            "color", "#00ff00",
-            "metalness", 0.3,
-            "roughness", 0.7
-        ));
-        sphere.put("physics", Map.of(
-            "enabled", true,
-            "bodyType", "dynamic",
-            "mass", 0.5,
-            "friction", 0.3,
-            "restitution", 0.8
-        ));
+        sphere.put("position", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 1.0); put("z", 0.0); }});
+        sphere.put("rotation", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
+        sphere.put("scale", new HashMap<String, Object>() {{ put("x", 1.0); put("y", 1.0); put("z", 1.0); }});
+        sphere.put("material", new HashMap<String, Object>() {{
+            put("type", "standard");
+            put("color", "#00ff00");
+            put("metalness", 0.3);
+            put("roughness", 0.7);
+        }});
+        sphere.put("physics", new HashMap<String, Object>() {{
+            put("enabled", true);
+            put("bodyType", "dynamic");
+            put("mass", 0.5);
+            put("friction", 0.3);
+            put("restitution", 0.8);
+        }});
         objectStore.put("obj_2", sphere);
 
         // 平面（地面）
@@ -125,22 +125,22 @@ public class UnityService {
         plane.put("name", "地面");
         plane.put("type", "plane");
         plane.put("sceneId", "scene_1");
-        plane.put("position", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
-        plane.put("rotation", Map.of("x", -90.0, "y", 0.0, "z", 0.0));
-        plane.put("scale", Map.of("x", 10.0, "y", 10.0, "z", 1.0));
-        plane.put("material", Map.of(
-            "type", "standard",
-            "color", "#888888",
-            "metalness", 0.1,
-            "roughness", 0.9
-        ));
-        plane.put("physics", Map.of(
-            "enabled", true,
-            "bodyType", "static",
-            "mass", 0.0,
-            "friction", 0.7,
-            "restitution", 0.1
-        ));
+        plane.put("position", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
+        plane.put("rotation", new HashMap<String, Object>() {{ put("x", -90.0); put("y", 0.0); put("z", 0.0); }});
+        plane.put("scale", new HashMap<String, Object>() {{ put("x", 10.0); put("y", 10.0); put("z", 1.0); }});
+        plane.put("material", new HashMap<String, Object>() {{
+            put("type", "standard");
+            put("color", "#888888");
+            put("metalness", 0.1);
+            put("roughness", 0.9);
+        }});
+        plane.put("physics", new HashMap<String, Object>() {{
+            put("enabled", true);
+            put("bodyType", "static");
+            put("mass", 0.0);
+            put("friction", 0.7);
+            put("restitution", 0.1);
+        }});
         objectStore.put("obj_3", plane);
     }
 
@@ -205,8 +205,8 @@ public class UnityService {
 
         if (!newScene.containsKey("camera")) {
             Map<String, Object> camera = new HashMap<>();
-            camera.put("position", Map.of("x", 0.0, "y", 5.0, "z", 10.0));
-            camera.put("target", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
+            camera.put("position", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 5.0); put("z", 10.0); }});
+            camera.put("target", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
             camera.put("fov", 60.0);
             camera.put("type", "perspective");
             newScene.put("camera", camera);
@@ -225,7 +225,7 @@ public class UnityService {
             directionalLight.put("type", "directional");
             directionalLight.put("color", "#ffffff");
             directionalLight.put("intensity", 0.8);
-            directionalLight.put("position", Map.of("x", 10.0, "y", 10.0, "z", 10.0));
+            directionalLight.put("position", new HashMap<String, Object>() {{ put("x", 10.0); put("y", 10.0); put("z", 10.0); }});
             lights.add(directionalLight);
 
             newScene.put("lights", lights);
@@ -303,34 +303,34 @@ public class UnityService {
 
         // 设置默认值
         if (!newObject.containsKey("position")) {
-            newObject.put("position", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
+            newObject.put("position", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
         }
 
         if (!newObject.containsKey("rotation")) {
-            newObject.put("rotation", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
+            newObject.put("rotation", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
         }
 
         if (!newObject.containsKey("scale")) {
-            newObject.put("scale", Map.of("x", 1.0, "y", 1.0, "z", 1.0));
+            newObject.put("scale", new HashMap<String, Object>() {{ put("x", 1.0); put("y", 1.0); put("z", 1.0); }});
         }
 
         if (!newObject.containsKey("material")) {
-            newObject.put("material", Map.of(
-                "type", "standard",
-                "color", "#ffffff",
-                "metalness", 0.5,
-                "roughness", 0.5
-            ));
+            newObject.put("material", new HashMap<String, Object>() {{
+                put("type", "standard");
+                put("color", "#ffffff");
+                put("metalness", 0.5);
+                put("roughness", 0.5);
+            }});
         }
 
         if (!newObject.containsKey("physics")) {
-            newObject.put("physics", Map.of(
-                "enabled", false,
-                "bodyType", "static",
-                "mass", 1.0,
-                "friction", 0.5,
-                "restitution", 0.3
-            ));
+            newObject.put("physics", new HashMap<String, Object>() {{
+                put("enabled", false);
+                put("bodyType", "static");
+                put("mass", 1.0);
+                put("friction", 0.5);
+                put("restitution", 0.3);
+            }});
         }
 
         objectStore.put(objectId, newObject);

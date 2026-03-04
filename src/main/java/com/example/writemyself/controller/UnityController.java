@@ -110,20 +110,24 @@ public class UnityController {
 
         // 默认摄像机配置
         Map<String, Object> camera = new HashMap<>();
-        camera.put("position", Map.of("x", 0.0, "y", 5.0, "z", 10.0));
-        camera.put("target", Map.of("x", 0.0, "y", 0.0, "z", 0.0));
+        camera.put("position", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 5.0); put("z", 10.0); }});
+        camera.put("target", new HashMap<String, Object>() {{ put("x", 0.0); put("y", 0.0); put("z", 0.0); }});
         camera.put("fov", 60.0);
         camera.put("type", "perspective");
         scene.put("camera", camera);
 
         // 默认光照配置
         Map<String, Object> lights = new HashMap<>();
-        lights.put("ambient", Map.of("color", "#ffffff", "intensity", 0.5));
-        lights.put("directional", Map.of(
-            "color", "#ffffff",
-            "intensity", 0.8,
-            "position", Map.of("x", 10.0, "y", 10.0, "z", 10.0)
-        ));
+        lights.put("ambient", new HashMap<String, Object>() {{ put("color", "#ffffff"); put("intensity", 0.5); }});
+        lights.put("directional", new HashMap<String, Object>() {{
+            put("color", "#ffffff");
+            put("intensity", 0.8);
+            put("position", new HashMap<String, Object>() {{
+                put("x", 10.0);
+                put("y", 10.0);
+                put("z", 10.0);
+            }});
+        }});
         scene.put("lights", lights);
 
         return scene;

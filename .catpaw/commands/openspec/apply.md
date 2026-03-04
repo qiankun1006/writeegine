@@ -11,7 +11,7 @@ tags: [openspec, apply]
 - Refer to `openspec/AGENTS.md` (located inside the `openspec/` directory—run `ls openspec` or `openspec update` if you don't see it) if you need additional OpenSpec conventions or clarifications.
 - 不要自动commit！！！
 - 不要自动commit！！！
-- 不要自动commit！！！
+- java后端代码用jdk8语法！！！不要用高版本语法！！！
 
 **Steps**
 Track these steps as TODOs and complete them one by one.
