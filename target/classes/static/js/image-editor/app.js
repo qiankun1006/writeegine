@@ -73,7 +73,8 @@ function initializeEditor() {
   // 初始化骨骼动画系统（仅在图片编辑器页面中初始化）
   try {
     // 检查是否在游戏素材创作页面中，如果是则跳过骨骼动画编辑器的初始化
-    const isGameAssetPage = window.location.pathname.includes('create-game-asset');
+    const isGameAssetPage = window.location.pathname.includes('create-game-asset') ||
+                            window.location.pathname.includes('asset-editors');
 
     if (!isGameAssetPage && typeof SkeletonAnimationEditor !== 'undefined') {
       console.log('🦴 初始化骨骼动画系统...');

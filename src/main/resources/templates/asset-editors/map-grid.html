@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layout}">
+<head>
+    <title>战棋网格地图编辑</title>
+    <link rel="stylesheet" th:href="@{/static/css/tilemap-editor.css}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- 嵌入完整的 Tilemap 编辑器 -->
+        <div th:replace="~{tilemap-editor :: content}"></div>
+    </div>
+
+    <!-- 额外的返回按钮 -->
+    <script>
+        // 添加返回按钮到 Tilemap 编辑器
+        window.addEventListener('load', function() {
+            const header = document.querySelector('.tilemap-header');
+            if (header && !document.querySelector('.tilemap-back-btn')) {
+                const backBtn = document.createElement('a');
+                backBtn.href = '/create-game/asset';
+                backBtn.className = 'tilemap-back-btn';
+                backBtn.innerHTML = '← 返回素材中心';
+                backBtn.style.cssText = 'position: absolute; right: 120px; padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 4px; font-size: 14px;';
+                header.appendChild(backBtn);
+            }
+        });
+    </script>
+</body>
+</html>
+

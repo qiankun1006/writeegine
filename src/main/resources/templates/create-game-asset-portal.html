@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>游戏素材创作 - 功能导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .portal-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: auto;
+        }
+
+        /* 头部 */
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+
+        .portal-header h1 {
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 主容器 */
+        .portal-container {
+            flex: 1;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+
+        /* 功能分组 */
+        .function-group {
+            margin-bottom: 50px;
+        }
+
+        .group-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 4px solid white;
+        }
+
+        /* 功能卡片容器 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        /* 功能卡片 */
+        .function-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .function-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            background: #f8f9ff;
+        }
+
+        .function-card:active {
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 页脚 */
+        .portal-footer {
+            padding: 20px 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .cards-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .portal-header {
+                padding: 15px 20px;
+            }
+
+            .portal-header h1 {
+                font-size: 24px;
+            }
+
+            .portal-container {
+                padding: 20px;
+            }
+
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .card-icon {
+                font-size: 36px;
+            }
+
+            .card-title {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="portal-wrapper">
+            <!-- 头部 -->
+            <div class="portal-header">
+                <h1>🎨 游戏素材创作系统</h1>
+                <a href="/create-game" class="back-button">← 返回</a>
+            </div>
+
+            <!-- 主容器 -->
+            <div class="portal-container">
+                <!-- 角色相关 -->
+                <div class="function-group">
+                    <div class="group-title">一、角色相关</div>
+                    <div class="cards-grid">
+                        <a href="/create-game/asset/character-portrait" class="function-card">
+                            <div class="card-icon">🎭</div>
+                            <div class="card-title">角色立绘</div>
+                            <div class="card-desc">创建全身/半身立绘</div>
+                        </a>
+                        <a href="/create-game/asset/character-sd" class="function-card">
+                            <div class="card-icon">🤏</div>
+                            <div class="card-title">Q版/SD战棋</div>
+                            <div class="card-desc">Q版模型设计</div>
+                        </a>
+                        <a href="/create-game/asset/character-animation" class="function-card">
+                            <div class="card-icon">⚔️</div>
+                            <div class="card-title">战斗动画</div>
+                            <div class="card-desc">制作战斗动画</div>
+                        </a>
+                        <a href="/create-game/asset/character-frame-sequence" class="function-card">
+                            <div class="card-icon">🎬</div>
+                            <div class="card-title">动画帧序列</div>
+                            <div class="card-desc">骨骼动画编辑</div>
+                        </a>
+                        <a href="/create-game/asset/character-avatar" class="function-card">
+                            <div class="card-icon">👤</div>
+                            <div class="card-title">角色头像</div>
+                            <div class="card-desc">头像制作</div>
+                        </a>
+                        <a href="/create-game/asset/character-job" class="function-card">
+                            <div class="card-icon">💼</div>
+                            <div class="card-title">职业转职</div>
+                            <div class="card-desc">转职形态设计</div>
+                        </a>
+                        <a href="/create-game/asset/character-skill-icon" class="function-card">
+                            <div class="card-icon">✨</div>
+                            <div class="card-title">技能图标</div>
+                            <div class="card-desc">技能图标设计</div>
+                        </a>
+                        <a href="/create-game/asset/character-status-icon" class="function-card">
+                            <div class="card-icon">🌡️</div>
+                            <div class="card-title">状态图标</div>
+                            <div class="card-desc">状态图标设计</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 地图与场景 -->
+                <div class="function-group">
+                    <div class="group-title">二、地图与场景</div>
+                    <div class="cards-grid">
+                        <a href="/create-game/asset/map-grid" class="function-card">
+                            <div class="card-icon">🗺️</div>
+                            <div class="card-title">战棋网格地图</div>
+                            <div class="card-desc">网格地图编辑</div>
+                        </a>
+                        <a href="/create-game/asset/map-terrain" class="function-card">
+                            <div class="card-icon">🧱</div>
+                            <div class="card-title">地形块素材</div>
+                            <div class="card-desc">地形元素设计</div>
+                        </a>
+                        <a href="/create-game/asset/map-obstacle" class="function-card">
+                            <div class="card-icon">🪵</div>
+                            <div class="card-title">障碍物</div>
+                            <div class="card-desc">障碍物设计</div>
+                        </a>
+                        <a href="/create-game/asset/map-decoration" class="function-card">
+                            <div class="card-icon">🌸</div>
+                            <div class="card-title">地图装饰</div>
+                            <div class="card-desc">装饰元素</div>
+                        </a>
+                        <a href="/create-game/asset/map-background" class="function-card">
+                            <div class="card-icon">🎪</div>
+                            <div class="card-title">战场背景</div>
+                            <div class="card-desc">战斗场景背景</div>
+                        </a>
+                        <a href="/create-game/asset/map-loading" class="function-card">
+                            <div class="card-icon">⏳</div>
+                            <div class="card-title">关卡载入图</div>
+                            <div class="card-desc">加载界面图片</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- UI 界面类 -->
+                <div class="function-group">
+                    <div class="group-title">三、UI 界面类</div>
+                    <div class="cards-grid">
+                        <a href="/create-game/asset/ui-main-menu" class="function-card">
+                            <div class="card-icon">🏠</div>
+                            <div class="card-title">主菜单 UI</div>
+                            <div class="card-desc">主菜单设计</div>
+                        </a>
+                        <a href="/create-game/asset/ui-level-select" class="function-card">
+                            <div class="card-icon">📋</div>
+                            <div class="card-title">关卡选择</div>
+                            <div class="card-desc">关卡选择界面</div>
+                        </a>
+                        <a href="/create-game/asset/ui-dialog" class="function-card">
+                            <div class="card-icon">💬</div>
+                            <div class="card-title">剧情对话</div>
+                            <div class="card-desc">对话框设计</div>
+                        </a>
+                        <a href="/create-game/asset/ui-battle-range" class="function-card">
+                            <div class="card-icon">🎯</div>
+                            <div class="card-title">范围提示</div>
+                            <div class="card-desc">范围提示UI</div>
+                        </a>
+                        <a href="/create-game/asset/ui-battle-hud" class="function-card">
+                            <div class="card-icon">❤️</div>
+                            <div class="card-title">战斗HUD</div>
+                            <div class="card-desc">战斗信息显示</div>
+                        </a>
+                        <a href="/create-game/asset/ui-character-panel" class="function-card">
+                            <div class="card-icon">📊</div>
+                            <div class="card-title">人物属性</div>
+                            <div class="card-desc">属性面板设计</div>
+                        </a>
+                        <a href="/create-game/asset/ui-inventory" class="function-card">
+                            <div class="card-icon">🎒</div>
+                            <div class="card-title">物品装备</div>
+                            <div class="card-desc">物品栏设计</div>
+                        </a>
+                        <a href="/create-game/asset/ui-skill" class="function-card">
+                            <div class="card-icon">✊</div>
+                            <div class="card-title">技能魔法</div>
+                            <div class="card-desc">技能菜单设计</div>
+                        </a>
+                        <a href="/create-game/asset/ui-battle-result" class="function-card">
+                            <div class="card-icon">🏆</div>
+                            <div class="card-title">战斗结算</div>
+                            <div class="card-desc">结算界面设计</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 特效与动画 -->
+                <div class="function-group">
+                    <div class="group-title">四、特效与动画</div>
+                    <div class="cards-grid">
+                        <a href="/create-game/asset/effect-movement" class="function-card">
+                            <div class="card-icon">➡️</div>
+                            <div class="card-title">移动轨迹</div>
+                            <div class="card-desc">移动特效</div>
+                        </a>
+                        <a href="/create-game/asset/effect-attack" class="function-card">
+                            <div class="card-icon">⚡</div>
+                            <div class="card-title">攻击特效</div>
+                            <div class="card-desc">攻击动画特效</div>
+                        </a>
+                        <a href="/create-game/asset/effect-magic" class="function-card">
+                            <div class="card-icon">🔥</div>
+                            <div class="card-title">魔法特效</div>
+                            <div class="card-desc">魔法动画特效</div>
+                        </a>
+                        <a href="/create-game/asset/effect-heal" class="function-card">
+                            <div class="card-icon">💚</div>
+                            <div class="card-title">治愈特效</div>
+                            <div class="card-desc">治愈动画特效</div>
+                        </a>
+                        <a href="/create-game/asset/effect-critical" class="function-card">
+                            <div class="card-icon">💥</div>
+                            <div class="card-title">暴击特效</div>
+                            <div class="card-desc">暴击动画特效</div>
+                        </a>
+                        <a href="/create-game/asset/effect-status" class="function-card">
+                            <div class="card-icon">✔️</div>
+                            <div class="card-title">命中/闪避</div>
+                            <div class="card-desc">命中闪避特效</div>
+                        </a>
+                        <a href="/create-game/asset/effect-levelup" class="function-card">
+                            <div class="card-icon">⭐</div>
+                            <div class="card-title">升级特效</div>
+                            <div class="card-desc">升级动画特效</div>
+                        </a>
+                        <a href="/create-game/asset/effect-trap" class="function-card">
+                            <div class="card-icon">🪤</div>
+                            <div class="card-title">地形陷阱</div>
+                            <div class="card-desc">陷阱特效</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 文字与图标 -->
+                <div class="function-group">
+                    <div class="group-title">五、文字与图标</div>
+                    <div class="cards-grid">
+                        <a href="/create-game/asset/font-numbers" class="function-card">
+                            <div class="card-icon">🔢</div>
+                            <div class="card-title">数字字体</div>
+                            <div class="card-desc">数字字体设计</div>
+                        </a>
+                        <a href="/create-game/asset/icon-button" class="function-card">
+                            <div class="card-icon">🔘</div>
+                            <div class="card-title">按钮图标</div>
+                            <div class="card-desc">按钮图标设计</div>
+                        </a>
+                        <a href="/create-game/asset/icon-job" class="function-card">
+                            <div class="card-icon">💼</div>
+                            <div class="card-title">职业图标</div>
+                            <div class="card-desc">职业图标设计</div>
+                        </a>
+                        <a href="/create-game/asset/icon-attribute" class="function-card">
+                            <div class="card-icon">⚔️</div>
+                            <div class="card-title">属性图标</div>
+                            <div class="card-desc">属性图标设计</div>
+                        </a>
+                        <a href="/create-game/asset/icon-quest" class="function-card">
+                            <div class="card-icon">🎯</div>
+                            <div class="card-title">任务图标</div>
+                            <div class="card-desc">任务图标设计</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 剧情与过场 -->
+                <div class="function-group">
+                    <div class="group-title">六、剧情与过场</div>
+                    <div class="cards-grid">
+                        <a href="/create-game/asset/story-portrait" class="function-card">
+                            <div class="card-icon">🎬</div>
+                            <div class="card-title">剧情立绘</div>
+                            <div class="card-desc">故事立绘</div>
+                        </a>
+                        <a href="/create-game/asset/story-dialog-box" class="function-card">
+                            <div class="card-icon">💬</div>
+                            <div class="card-title">对话框</div>
+                            <div class="card-desc">对话框设计</div>
+                        </a>
+                        <a href="/create-game/asset/story-transition" class="function-card">
+                            <div class="card-icon">🌅</div>
+                            <div class="card-title">过场背景</div>
+                            <div class="card-desc">过场背景图</div>
+                        </a>
+                        <a href="/create-game/asset/story-avatar" class="function-card">
+                            <div class="card-icon">👥</div>
+                            <div class="card-title">剧情头像</div>
+                            <div class="card-desc">故事头像</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 页脚 -->
+            <div class="portal-footer">
+                <p>💡 提示：点击任何卡片进入对应的编辑器</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

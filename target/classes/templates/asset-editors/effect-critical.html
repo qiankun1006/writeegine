@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layout}">
+<head>
+    <title>编辑器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .editor-wrapper { display: flex; flex-direction: column; height: 100vh; background: #f5f5f5; overflow: hidden; }
+        .editor-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .editor-header h1 { font-size: 24px; font-weight: 600; }
+        .header-buttons { display: flex; gap: 10px; }
+        .back-button, .save-button { padding: 8px 16px; background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .back-button:hover, .save-button:hover { background: rgba(255, 255, 255, 0.3); }
+        .save-button { background: rgba(76, 175, 80, 0.3); }
+        .editor-container { display: flex; flex: 1; overflow: hidden; }
+        .editor-workspace { flex: 1; display: flex; align-items: center; justify-content: center; background: white; padding: 40px; }
+        .placeholder-container { text-align: center; padding: 60px 40px; }
+        .placeholder-icon { font-size: 80px; margin-bottom: 20px; opacity: 0.6; }
+        .placeholder-title { font-size: 28px; font-weight: 600; color: #333; margin-bottom: 12px; }
+        .action-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 30px; }
+        .action-btn { padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="editor-wrapper">
+            <div class="editor-header">
+                <h1>编辑器</h1>
+                <div class="header-buttons">
+                    <button class="save-button" onclick="saveAsset()">💾 保存</button>
+                    <a href="/create-game/asset" class="back-button">← 返回</a>
+                </div>
+            </div>
+            <div class="editor-container">
+                <div class="editor-workspace">
+                    <div class="placeholder-container">
+                        <div class="placeholder-icon">🚧</div>
+                        <div class="placeholder-title">编辑器开发中</div>
+                        <div class="placeholder-desc">该功能正在开发中，敬请期待！</div>
+                        <div class="action-buttons">
+                            <a href="/create-game/asset" class="action-btn">← 返回素材中心</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function saveAsset() { alert('编辑器开发中！'); }
+    </script>
+</body>
+</html>
