@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {ElMessage} from 'element-plus'
-import {Download, DocumentCopy, Share} from '@element-plus/icons-vue'
+import {DocumentCopy, Download, Share} from '@element-plus/icons-vue'
 import type {GenerationResult} from '@/stores/portraitStore'
 
 interface Props {

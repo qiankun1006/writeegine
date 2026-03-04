@@ -2,8 +2,8 @@
  * API 工具 - 与后端 API 通信
  */
 
-import axios, { AxiosInstance, AxiosResponse } from 'axios'
-import type { PortraitParams, GenerationResult } from '@/stores/portraitStore'
+import axios from 'axios'
+import type {GenerationResult, PortraitParams} from '@/stores/portraitStore'
 
 const apiBase = axios.create({
   baseURL: '/api',
