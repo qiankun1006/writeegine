@@ -310,3 +310,36 @@ switchPanel(category, menuItem = null) {
 2. 在 DOMContentLoaded 时延迟 100ms 执行
 3. 在相关操作（如菜单项点击）时手动调用，确保初始化完成
 4. 使用 `if (!window.editor)` 防止重复初始化
+
+---
+
+## AI 立绘生成器后端 - Java 8 + 国内大模型适配（2026-03-04）
+
+⚠️ **重要约束：后端代码统一使用 Java 8！！！**
+
+### 项目背景
+为 AI 立绘生成器实现**完整的、生产级别的后端系统**，支持 **Java 8 环境**和**国内大模型**（阿里云通义、百度文心等）。
+
+### 核心约束条件（必须遵守！）
+
+- **🔴 Java 版本**: **Java 8 (JDK 1.8)** - 后端代码必须 100% 兼容
+  - ✅ 支持: Lambda, Stream API, java.time, Optional, Base64
+  - ❌ 禁用: var 关键字, List.of(), String.strip(), Stream.toList()
+
+- **🔴 Spring Boot**: **2.7.14** - Java 8 的最高支持版本
+  - Spring Boot 3.x 要求 Java 17+，不能使用
+
+- **数据库**: MySQL 5.7+
+- **大模型**: 国内服务（优先阿里云通义）
+
+### Java 8 兼容性处理
+
+| 特性 | Java 8 | 解决方案 |
+|------|--------|---------|
+| Lambda 表达式 | 支持 | 直接使用 |
+| Stream API | 支持 | 直接使用 |
+| var 关键字 | 不支持 (Java 10+) | 显式声明类型 |
+| List.of() | 不支持 (Java 9+) | 使用 Collections.singletonList() |
+| String.strip() | 不支持 (Java 11+) | 使用 trim() |
+| java.time | 支持 | LocalDateTime 原生支持 |
+| Base64 编码 | 支持 | java.util.Base64 原生支持 |
