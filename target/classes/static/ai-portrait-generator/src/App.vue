@@ -47,19 +47,24 @@ onMounted(() => {
 
 .main-container {
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .layout-wrapper {
-  display: flex;
+  display: grid;
+  grid-template-columns: 320px 1fr;
   height: 100%;
   gap: $spacing-md;
   padding: $spacing-md;
-  overflow: hidden;
+  overflow: visible;
+  width: 100%;
+  max-width: 100%;
 
-  @include responsive-wide {
+  @media (min-width: 1440px) {
+    grid-template-columns: 320px 320px 1fr;
     padding: $spacing-lg;
     gap: $spacing-lg;
   }
@@ -114,6 +119,8 @@ onMounted(() => {
   padding: $spacing-lg;
   overflow-y: auto;
   box-shadow: $shadow-md;
+  min-width: 0; // 允许 grid 内容收缩
+  width: 100%; // 填充剩余空间
 
   @include responsive-mobile {
     width: 100%;
@@ -121,29 +128,10 @@ onMounted(() => {
   }
 }
 
-// 宽屏（≥1440px）：三栏网格布局
-@include responsive-wide {
-  .layout-wrapper {
-    display: grid;
-    grid-template-columns: 320px 320px 1fr;
-    gap: $spacing-lg;
-    padding: $spacing-lg;
-    overflow: hidden;
-  }
-}
-
-// 桌面端（1024-1439px）：两栏网格布局，隐藏高级参数面板
-@include responsive-desktop {
-  .layout-wrapper {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: $spacing-lg;
-    padding: $spacing-lg;
-    overflow: hidden;
-
-    .advanced-params-panel {
-      display: none; // 高级参数折叠在核心参数中
-    }
+// 所有屏幕<1440px时：隐藏高级参数面板
+@media (max-width: 1439px) {
+  .advanced-params-panel {
+    display: none !important; // 高级参数折叠在核心参数中
   }
 }
 
