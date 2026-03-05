@@ -4,8 +4,13 @@
     <main class="main-container">
       <div class="layout-wrapper">
         <!-- 左侧核心参数面板 -->
-        <aside class="params-panel">
+        <aside class="core-params-panel">
           <CoreParamsPanel />
+        </aside>
+
+        <!-- 中间高级参数面板 -->
+        <aside class="advanced-params-panel">
+          <AdvancedParamsPanel />
         </aside>
 
         <!-- 右侧结果展示面板 -->
@@ -21,6 +26,7 @@
 import {onMounted} from 'vue'
 import NavigationBar from '@/components/NavigationBar.vue'
 import CoreParamsPanel from '@/components/CoreParamsPanel.vue'
+import AdvancedParamsPanel from '@/components/AdvancedParamsPanel.vue'
 import ResultsPanel from '@/components/ResultsPanel.vue'
 
 onMounted(() => {
@@ -59,8 +65,8 @@ onMounted(() => {
   }
 }
 
-// PC 端（≥1024px）：三栏布局
-.params-panel {
+// 核心参数面板
+.core-params-panel {
   width: 320px;
   background-color: $white;
   border-radius: $radius-lg;
@@ -68,6 +74,28 @@ onMounted(() => {
   overflow-y: auto;
   box-shadow: $shadow-md;
   flex-shrink: 0;
+  max-height: calc(100vh - 80px); // 减去导航栏高度
+
+  @include responsive-tablet {
+    width: 280px;
+    padding: $spacing-md;
+  }
+
+  @include responsive-mobile {
+    display: none;
+  }
+}
+
+// 高级参数面板
+.advanced-params-panel {
+  width: 320px;
+  background-color: $white;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  overflow-y: auto;
+  box-shadow: $shadow-md;
+  flex-shrink: 0;
+  max-height: calc(100vh - 80px);
 
   @include responsive-tablet {
     width: 280px;
@@ -93,14 +121,41 @@ onMounted(() => {
   }
 }
 
-// 平板端（768-1023px）：两栏自适应
+// 宽屏（≥1440px）：三栏网格布局
+@include responsive-wide {
+  .layout-wrapper {
+    display: grid;
+    grid-template-columns: 320px 320px 1fr;
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+    overflow: hidden;
+  }
+}
+
+// 桌面端（1024-1439px）：两栏网格布局，隐藏高级参数面板
+@include responsive-desktop {
+  .layout-wrapper {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+    overflow: hidden;
+
+    .advanced-params-panel {
+      display: none; // 高级参数折叠在核心参数中
+    }
+  }
+}
+
+// 平板端（768-1023px）：两栏堆叠
 @include responsive-tablet {
   .layout-wrapper {
     flex-direction: column;
     gap: $spacing-md;
   }
 
-  .params-panel {
+  .core-params-panel,
+  .advanced-params-panel {
     width: 100%;
     max-height: 40%;
   }

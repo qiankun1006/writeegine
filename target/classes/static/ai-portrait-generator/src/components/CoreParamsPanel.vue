@@ -103,8 +103,6 @@
       <p class="param-hint">选择尺寸：{{ store.params.width }}×{{ store.params.height }}</p>
     </div>
 
-    <!-- 高级参数折叠面板 -->
-    <AdvancedParamsPanel />
 
     <!-- 生成按钮 -->
     <el-button
@@ -147,7 +145,6 @@ import {usePortraitStore} from '@/stores/portraitStore'
 import {ElMessage} from 'element-plus'
 import {Warning} from '@element-plus/icons-vue'
 import ReferenceImageUpload from './ReferenceImageUpload.vue'
-import AdvancedParamsPanel from './AdvancedParamsPanel.vue'
 
 const store = usePortraitStore()
 
