@@ -94,5 +94,11 @@ public class GeneratePortraitRequest {
      */
     @Size(max = 100, message = "模型名称长度不能超过 100 字")
     private String modelName;
+
+    /**
+     * 模型版本 - 可选
+     */
+    @Size(max = 50, message = "模型版本长度不能超过 50 字")
+    private String modelVersion;
 }
 
