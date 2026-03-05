@@ -53,34 +53,36 @@
   function initFrameSequenceEditor() {
     console.log('🎬 初始化骨骼动画帧序列编辑器...');
 
-    // 检查必要的类是否已加载
-    if (typeof SkeletonAnimationEditor === 'undefined') {
-      console.error('❌ SkeletonAnimationEditor 类未找到，请确保骨骼动画系统脚本已正确加载');
-      return;
-    }
-
-    // 检查容器是否存在
-    const container = document.getElementById('skeleton-animation-editor');
-    if (!container) {
-      console.error('❌ 骨骼动画编辑器容器不存在');
-      return;
-    }
-
-    // 创建适配器
-    const adapter = new ImageEditorAdapter(null);
-
-    // 创建骨骼动画编辑器实例
     try {
+      // 检查必要的类是否已加载
+      if (typeof SkeletonAnimationEditor === 'undefined') {
+        console.error('❌ SkeletonAnimationEditor 类未找到，请确保骨骼动画系统脚本已正确加载');
+        return;
+      }
+
+      // 检查容器是否存在
+      const editorContainer = document.getElementById('skeleton-animation-editor');
+      if (!editorContainer) {
+        console.error('❌ 骨骼动画编辑器容器不存在');
+        return;
+      }
+
+      // 创建适配器
+      const adapter = new ImageEditorAdapter(null);
+
+      // 创建骨骼动画编辑器实例
       window.skeletonEditor = new SkeletonAnimationEditor(adapter);
 
       // 修改编辑器的初始化行为，使其不在 body 中创建容器
       // 而是使用我们提供的容器
-      window.skeletonEditor._createPanelContainer = function() {
-        // 清空现有容器
-        this.panelContainer = container;
+      // 创建一个立即调用的闭包，传入容器参数
+      const setupContainer = (function(container) {
+        return function() {
+          // 清空现有容器
+          this.panelContainer = container;
 
-        // 创建编辑器UI结构
-        container.innerHTML = `
+          // 创建编辑器UI结构
+          container.innerHTML = `
           <div class="skeleton-editor-toolbar">
             <div class="toolbar-group">
               <button id="skeleton-new-bone" title="新建骨骼">🦴 新建骨骼</button>
@@ -121,9 +123,13 @@
           </div>
         `;
 
-        // 重新初始化编辑器，使用新的容器结构
-        this._initializeComponents();
-      };
+          // 重新初始化编辑器，使用新的容器结构
+          this._initializeComponents();
+        };
+      })(editorContainer);
+
+      // 将创建的闭包函数赋值给编辑器实例
+      window.skeletonEditor._createPanelContainer = setupContainer;
 
       // 添加组件初始化方法
       window.skeletonEditor._initializeComponents = function() {
@@ -540,9 +546,8 @@
       window.skeletonEditor.init();
 
       // 标记骨骼动画编辑器容器已初始化，用于 CSS 显示
-      const container = document.getElementById('skeleton-animation-editor');
-      if (container) {
-        container.classList.add('initialized');
+      if (editorContainer) {
+        editorContainer.classList.add('initialized');
       }
 
       console.log('✅ 骨骼动画帧序列编辑器初始化完成');
@@ -552,17 +557,10 @@
     }
   }
 
-  // 等待 DOM 加载完成后注册初始化函数
-  // 只在用户点击"动画帧序列"菜单项时才初始化
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      // 注册初始化函数到全局作用域，供菜单点击事件调用
-      window.initFrameSequenceEditor = initFrameSequenceEditor;
-    });
-  } else {
-    // 注册初始化函数到全局作用域，供菜单点击事件调用
-    window.initFrameSequenceEditor = initFrameSequenceEditor;
-  }
+  // 立即注册初始化函数到全局作用域
+  // 这样可以在任何时候（菜单点击、页面加载等）调用
+  window.initFrameSequenceEditor = initFrameSequenceEditor;
+  console.log('✓ initFrameSequenceEditor 已导出到全局作用域');
 
 })();
 

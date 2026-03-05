@@ -5,6 +5,38 @@
 <head>
     <title>动画帧序列编辑</title>
     <link rel="stylesheet" th:href="@{/static/css/skeleton-animation.css}">
+
+    <!-- 骨骼动画编辑器页面初始化 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎬 【动画帧序列编辑】页面加载完成，开始初始化骨骼动画编辑器...');
+
+            // 检查骨骼动画编辑器页面初始化函数是否存在
+            if (typeof initFrameSequenceEditor === 'function') {
+                console.log('✓ initFrameSequenceEditor 函数已加载');
+                initFrameSequenceEditor();
+            } else {
+                console.error('❌ initFrameSequenceEditor 函数未找到，请检查 FrameSequenceEditor.js 是否正确加载');
+            }
+        });
+
+        // 全局保存函数
+        window.saveAsset = function() {
+            console.log('💾 保存动画资源...');
+            if (window.skeletonEditor && typeof window.skeletonEditor.save === 'function') {
+                try {
+                    window.skeletonEditor.save();
+                    alert('✓ 动画已保存！');
+                } catch (error) {
+                    console.error('保存失败:', error);
+                    alert('✗ 保存失败，请查看控制台日志');
+                }
+            } else {
+                alert('⏳ 编辑器还在加载中，请稍候...');
+            }
+        };
+    </script>
+
     <style>
         .editor-wrapper {
             display: flex;
@@ -85,29 +117,5 @@
             </div>
         </div>
     </div>
-
-    <!-- 加载骨骼动画编辑器脚本 -->
-    <script th:src="@{/static/js/skeleton-animation/SkeletonAnimationEditor.js}"></script>
-    <script>
-        let skeletonEditor = null;
-
-        window.addEventListener('load', function() {
-            // 初始化骨骼动画编辑器
-            const container = document.getElementById('skeleton-animation-editor');
-            if (container && typeof SkeletonAnimationEditor !== 'undefined') {
-                skeletonEditor = new SkeletonAnimationEditor(container);
-                skeletonEditor.init();
-            }
-        });
-
-        function saveAsset() {
-            if (skeletonEditor) {
-                skeletonEditor.save();
-                alert('动画已保存！');
-            } else {
-                alert('编辑器还在加载中，请稍候...');
-            }
-        }
-    </script>
 </body>
 </html>

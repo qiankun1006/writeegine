@@ -461,7 +461,13 @@ class GameAssetCreatorApp {
 
 // 页面加载完成后初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new GameAssetCreatorApp();
-    console.log('🎮 游戏素材创作系统已就绪');
+    // 只有在存在 welcome-panel 的页面才初始化游戏素材创作系统
+    // 这个检查确保在其他页面（如骨骼动画编辑器页面）不会误初始化
+    if (document.getElementById('welcome-panel')) {
+        window.app = new GameAssetCreatorApp();
+        console.log('🎮 游戏素材创作系统已就绪');
+    } else {
+        console.log('⏭️ 当前页面不需要游戏素材创作系统，跳过初始化');
+    }
 });
 
