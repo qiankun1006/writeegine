@@ -43,6 +43,8 @@ export async function generatePortrait(params: PortraitParams): Promise<string> 
       modelWeight: params.modelWeight,
       width: params.width,
       height: params.height,
+      provider: params.provider,
+      modelVersion: params.modelVersion,
       imageStrength: params.imageStrength,
       generateCount: params.generateCount,
       sampler: params.sampler,

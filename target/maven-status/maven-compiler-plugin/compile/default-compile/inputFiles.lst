@@ -1,11 +1,15 @@
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/ImageGenerationService.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/config/AsyncConfig.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/AIModelServiceFactory.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/model/Game.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/VolcengineException.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitTaskRepository.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/controller/GameController.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/AliyunTongYiService.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/FileStorageService.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitGenerationRepository.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitTask.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/VolcengineService.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitResourceLibrary.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitGeneration.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/controller/AIPortraitController.java
@@ -14,6 +18,7 @@
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/repository/GameRepository.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/controller/TilemapEditorController.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/AIPortraitService.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/VolcengineHealthIndicator.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/dto/GameDTO.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/UnityService.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/AssetService.java

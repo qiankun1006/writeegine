@@ -8,6 +8,11 @@
           <CoreParamsPanel />
         </aside>
 
+        <!-- 模型选择面板 -->
+        <aside class="model-selection-panel">
+          <ModelSelectionPanel />
+        </aside>
+
         <!-- 中间高级参数面板 -->
         <aside class="advanced-params-panel">
           <AdvancedParamsPanel />
@@ -26,6 +31,7 @@
 import {onMounted} from 'vue'
 import NavigationBar from '@/components/NavigationBar.vue'
 import CoreParamsPanel from '@/components/CoreParamsPanel.vue'
+import ModelSelectionPanel from '@/components/ModelSelectionPanel.vue'
 import AdvancedParamsPanel from '@/components/AdvancedParamsPanel.vue'
 import ResultsPanel from '@/components/ResultsPanel.vue'
 
@@ -64,7 +70,7 @@ onMounted(() => {
   max-width: 100%;
 
   @media (min-width: 1440px) {
-    grid-template-columns: 320px 320px 1fr;
+    grid-template-columns: 320px 320px 320px 1fr;
     padding: $spacing-lg;
     gap: $spacing-lg;
   }
@@ -80,6 +86,27 @@ onMounted(() => {
   box-shadow: $shadow-md;
   flex-shrink: 0;
   max-height: calc(100vh - 80px); // 减去导航栏高度
+
+  @include responsive-tablet {
+    width: 280px;
+    padding: $spacing-md;
+  }
+
+  @include responsive-mobile {
+    display: none;
+  }
+}
+
+// 模型选择面板
+.model-selection-panel {
+  width: 320px;
+  background-color: $white;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  overflow-y: auto;
+  box-shadow: $shadow-md;
+  flex-shrink: 0;
+  max-height: calc(100vh - 80px);
 
   @include responsive-tablet {
     width: 280px;

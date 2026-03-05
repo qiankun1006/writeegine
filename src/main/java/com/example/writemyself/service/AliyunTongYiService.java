@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class AliyunTongYiService {
+public class AliyunTongYiService implements ImageGenerationService {
 
     @Value("${aliyun.dashscope.api.key:}")
     private String apiKey;

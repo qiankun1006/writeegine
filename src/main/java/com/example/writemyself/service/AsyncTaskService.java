@@ -24,7 +24,7 @@ public class AsyncTaskService {
 
     private final AIPortraitGenerationRepository generationRepository;
     private final AIPortraitTaskRepository taskRepository;
-    private final AliyunTongYiService aliyunTongYiService;
+    private final AIModelServiceFactory modelServiceFactory;
     private final FileStorageService fileStorageService;
 
     /**
@@ -58,7 +58,15 @@ public class AsyncTaskService {
             // 调用模型生成图片
             long startTime = System.currentTimeMillis();
 
-            List<String> imageUrls = aliyunTongYiService.generateImage(
+            // 获取对应的AI模型服务
+            ImageGenerationService aiService = modelServiceFactory
+                    .getService(generation.getModelVersion());
+
+            List<String> imageUrls = aiService.generateImage(
+            ImageGenerationService aiService = modelServiceFactory
+                    .getService(generation.getModelVersion());
+
+            List<String> imageUrls = aiService.generateImage(
                     generation.getPrompt(),
                     generation.getWidth(),
                     generation.getHeight(),

@@ -11,6 +11,10 @@ export interface PortraitParams {
   width: number
   height: number
 
+  // 模型选择
+  provider: 'aliyun' | 'volcengine'
+  modelVersion: string
+
   // 高级参数
   imageStrength: number
   generateCount: number
@@ -39,6 +43,9 @@ export const usePortraitStore = defineStore('portrait', () => {
     modelWeight: 0.8,
     width: 768,
     height: 512,
+
+    provider: 'aliyun',
+    modelVersion: 'wanx-v1',
 
     imageStrength: 0.6,
     generateCount: 1,
@@ -97,6 +104,8 @@ export const usePortraitStore = defineStore('portrait', () => {
       modelWeight: params.modelWeight,
       width: params.width,
       height: params.height,
+      provider: params.provider,
+      modelVersion: params.modelVersion,
       imageStrength: params.imageStrength,
       generateCount: params.generateCount,
       sampler: params.sampler,
@@ -118,6 +127,8 @@ export const usePortraitStore = defineStore('portrait', () => {
     params.modelWeight = 0.8
     params.width = 768
     params.height = 512
+    params.provider = 'aliyun'
+    params.modelVersion = 'wanx-v1'
     params.imageStrength = 0.6
     params.generateCount = 1
     params.sampler = 'euler'
