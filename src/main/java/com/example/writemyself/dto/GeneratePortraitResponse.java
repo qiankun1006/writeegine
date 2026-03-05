@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
  * 生成立绘响应 DTO
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class GeneratePortraitResponse {
 
     /**

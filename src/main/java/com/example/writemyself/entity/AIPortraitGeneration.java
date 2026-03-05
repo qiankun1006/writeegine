@@ -6,123 +6,98 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * AI 立绘生成记录表
- * 存储所有的生成请求和结果
+ * AI肖像生成记录实体
  */
 @Entity
-@Table(name = "ai_portrait_generation", indexes = {
-        @Index(name = "idx_user_id", columnList = "userId"),
-        @Index(name = "idx_task_id", columnList = "taskId"),
-        @Index(name = "idx_status", columnList = "status"),
-        @Index(name = "idx_created_at", columnList = "createdAt"),
-        @Index(name = "idx_provider", columnList = "provider")
-})
+@Table(name = "ai_portrait_generation")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AIPortraitGeneration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 基础信息
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(nullable = false, unique = true, length = 64)
+    @Column(name = "task_id", nullable = false, unique = true, length = 64)
     private String taskId;
 
-    // 输入参数
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "prompt", columnDefinition = "TEXT", nullable = false)
     private String prompt;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "negative_prompt", columnDefinition = "TEXT")
     private String negativePrompt;
 
-    @Column(length = 255)
+    @Column(name = "reference_image_url", length = 512)
     private String referenceImageUrl;
 
-    @Column(precision = 3, scale = 2)
-    private BigDecimal modelWeight;
-
-    // 模型选择
-    @Column(length = 50, nullable = false)
-    @Builder.Default
-    private String provider = "aliyun";
-
-    @Column(length = 100)
-    @Builder.Default
-    private String modelVersion = "v1";
-
-    // 尺寸信息
-    @Column(nullable = false)
+    @Column(name = "width", nullable = false)
     private Integer width;
 
-    @Column(nullable = false)
+    @Column(name = "height", nullable = false)
     private Integer height;
 
-    // 高级参数
-    @Column(precision = 3, scale = 2)
-    private BigDecimal imageStrength;
+    @Column(name = "model_name", length = 100, nullable = false)
+    private String modelName;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer generationCount = 1;
+    @Column(name = "model_version", length = 50)
+    private String modelVersion;
 
-    @Column(length = 50)
-    private String samplerName;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer inferenceSteps = 30;
-
-    @Column(length = 50)
+    @Column(name = "style_preset", length = 50)
     private String stylePreset;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Long seed = -1L;
+    @Column(name = "inference_steps")
+    private Integer inferenceSteps;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean enableFaceFix = true;
+    @Column(name = "sampler_name", length = 50)
+    private String samplerName;
 
-    @Column(length = 10)
-    @Builder.Default
-    private String outputFormat = "PNG";
+    @Column(name = "seed")
+    private Long seed;
 
-    // 输出结果
-    @Column(length = 20, nullable = false)
-    @Builder.Default
-    private String status = "PENDING";
+    @Column(name = "count")
+    private Integer count = 1;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "generation_count")
+    private Integer generationCount = 1;
+
+    @Column(name = "generated_image_urls", columnDefinition = "TEXT")
     private String generatedImageUrls;
 
-    @Column(length = 500)
+    @Column(name = "status", length = 20, nullable = false)
+    private String status; // PENDING, PROCESSING, SUCCESS, FAILED
+
+    @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
-    // 性能指标
-    private Long generationTime;
+    @Column(name = "generation_time")
+    private Integer generationTime; // 生成耗时（秒）
 
-    private Long queueWaitTime;
+    @Column(name = "queue_wait_time")
+    private Integer queueWaitTime; // 排队等待时间（秒）
 
-    // 时间戳
-    @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
+    @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
 
     @PreUpdate
     protected void onUpdate() {

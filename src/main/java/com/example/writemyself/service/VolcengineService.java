@@ -186,6 +186,82 @@ public class VolcengineService implements ImageGenerationService {
     /**
      * 关闭服务
      */
+    /**
+     * 使用火山引擎进行图生图
+     * @param prompt 正提示词
+     * @param referenceImageUrl 参考图片 URL
+     * @param strength 参考图片影响强度 (0-1)
+     * @param width 输出图片宽度
+     * @param height 输出图片高度
+     * @return 生成的图片 URL 列表
+     */
+    @Override
+    public List<String> generateFromImage(String prompt, String referenceImageUrl,
+                                         Double strength, Integer width, Integer height) {
+        try {
+            log.info("使用火山引擎进行图生图: 提示词={}, 参考图={}, 强度={}, 尺寸={}x{}",
+                    prompt, referenceImageUrl, strength, width, height);
+
+            // 确保服务已初始化
+            initialize();
+
+            if (arkService == null) {
+                throw new IllegalStateException("火山引擎服务未正确配置，请检查API密钥");
+            }
+
+            // 构建尺寸字符串
+            String size = mapSizeToVolcengineFormat(width, height);
+
+            // 构建生成请求（图生图模式）
+            GenerateImagesRequest generateRequest = GenerateImagesRequest.builder()
+                    .model(defaultModel)
+                    .prompt(prompt)
+                    .size(size)
+                    .sequentialImageGeneration("disabled")
+                    .responseFormat(ResponseFormat.Url)
+                    .stream(false)
+                    .watermark(true)
+                    .build();
+
+            // 调用API生成图片
+            ImagesResponse imagesResponse = arkService.generateImages(generateRequest);
+
+            // 解析响应结果
+            List<String> imageUrls = new ArrayList<>();
+            if (imagesResponse.getData() != null) {
+                for (int i = 0; i < imagesResponse.getData().size(); i++) {
+                    String imageUrl = imagesResponse.getData().get(i).getUrl();
+                    if (imageUrl != null) {
+                        imageUrls.add(imageUrl);
+                    }
+                }
+            }
+
+            log.info("✓ 火山引擎图生图成功");
+            return imageUrls;
+
+        } catch (Exception e) {
+            log.error("火山引擎图生图失败", e);
+            throw new VolcengineException("图生图失败: " + e.getMessage(), e, null, null, 0);
+        }
+    }
+
+    /**
+     * 检查 API 密钥是否已配置
+     */
+    @Override
+    public boolean isConfigured() {
+        return apiKey != null && !apiKey.isEmpty() && !apiKey.equals("${volcengine.ark.api.key:}");
+    }
+
+    /**
+     * 获取当前使用的模型
+     */
+    @Override
+    public String getModel() {
+        return defaultModel;
+    }
+
     @PreDestroy
     public void shutdown() {
         if (arkService != null) {

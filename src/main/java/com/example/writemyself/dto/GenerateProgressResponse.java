@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * 生成进度查询响应 DTO
+ * 生成进度响应 DTO
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class GenerateProgressResponse {
 
     /**
@@ -22,7 +22,7 @@ public class GenerateProgressResponse {
     private String taskId;
 
     /**
-     * 当前状态
+     * 当前状态：PENDING, PROCESSING, SUCCESS, FAILED
      */
     private String status;
 
@@ -32,32 +32,22 @@ public class GenerateProgressResponse {
     private Integer progress;
 
     /**
-     * 状态描述
+     * 状态描述信息
      */
-    private String statusDescription;
+    private String message;
 
     /**
-     * 生成的图片 URLs（仅当完成时显示）
+     * 生成耗时（秒）
      */
-    private List<String> imageUrls;
+    private Integer generationTime;
 
     /**
-     * 错误信息（仅当失败时显示）
+     * 排队等待时间（秒）
      */
-    private String errorMessage;
+    private Integer queueWaitTime;
 
     /**
-     * 生成耗时（毫秒）
-     */
-    private Long generationTime;
-
-    /**
-     * 队列等待时间（毫秒）
-     */
-    private Long queueWaitTime;
-
-    /**
-     * 是否完成
+     * 是否已完成
      */
     private Boolean completed;
 
@@ -65,5 +55,15 @@ public class GenerateProgressResponse {
      * 是否失败
      */
     private Boolean failed;
+
+    /**
+     * 生成的图片URL列表（仅在成功时返回）
+     */
+    private List<String> imageUrls;
+
+    /**
+     * 错误信息（仅在失败时返回）
+     */
+    private String errorMessage;
 }
 

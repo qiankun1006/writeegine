@@ -63,10 +63,6 @@ public class AsyncTaskService {
                     .getService(generation.getModelVersion());
 
             List<String> imageUrls = aiService.generateImage(
-            ImageGenerationService aiService = modelServiceFactory
-                    .getService(generation.getModelVersion());
-
-            List<String> imageUrls = aiService.generateImage(
                     generation.getPrompt(),
                     generation.getWidth(),
                     generation.getHeight(),
@@ -74,7 +70,7 @@ public class AsyncTaskService {
                     generation.getSeed()
             );
 
-            long generationTime = System.currentTimeMillis() - startTime;
+            Integer generationTime = (int)(System.currentTimeMillis() - startTime);
 
             // 更新进度
             task.setProgress(80);

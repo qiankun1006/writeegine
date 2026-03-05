@@ -6,112 +6,62 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * AI 立绘模型配置表
- * 存储各个 AI 模型的配置和统计信息
+ * AI肖像模型配置实体
  */
 @Entity
-@Table(name = "ai_portrait_model_config", indexes = {
-        @Index(name = "idx_model_name", columnList = "modelName"),
-        @Index(name = "idx_provider", columnList = "provider"),
-        @Index(name = "idx_is_active", columnList = "isActive"),
-        @Index(name = "idx_is_default", columnList = "isDefault")
-})
+@Table(name = "ai_portrait_model_config")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AIPortraitModelConfig {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 模型信息
-    @Column(nullable = false, length = 100)
+    @Column(name = "model_name", nullable = false, unique = true, length = 100)
     private String modelName;
 
-    @Column(nullable = false, length = 50)
-    private String modelType;
+    @Column(name = "display_name", nullable = false, length = 100)
+    private String displayName;
 
-    @Column(nullable = false, length = 50)
-    private String provider;
+    @Column(name = "provider", nullable = false, length = 50)
+    private String provider; // VOLCENGINE, ALIYUN
 
-    @Column(nullable = false, length = 255)
-    private String apiEndpoint;
+    @Column(name = "endpoint_url", length = 255)
+    private String endpointUrl;
 
-    @Column(nullable = false, length = 500)
-    private String apiKey;
-
-    // 模型参数
-    @Column(length = 50)
-    private String defaultSampler;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer maxSteps = 50;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer minSteps = 10;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer maxImageSize = 2048;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer minImageSize = 256;
-
-    // 微调参数
-    @Column(length = 50)
-    private String baseModelVersion;
-
-    @Column(length = 255)
-    private String tuningDataset;
-
-    private Integer tuningEpochs;
-
-    @Column(precision = 10, scale = 6)
-    private BigDecimal tuningLearningRate;
-
-    // 使用统计
-    @Column(nullable = false)
-    @Builder.Default
-    private Long totalRequests = 0L;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Long totalSuccess = 0L;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Long totalFailed = 0L;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Long avgResponseTime = 0L;
-
-    // 配置状态
-    @Column(nullable = false)
-    @Builder.Default
+    @Column(name = "is_active")
     private Boolean isActive = true;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean isDefault = false;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
-    // 时间戳
-    @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "supported_styles", columnDefinition = "TEXT")
+    private String supportedStyles; // JSON数组
 
-    @Column(nullable = false)
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "max_width")
+    private Integer maxWidth = 2048;
+
+    @Column(name = "max_height")
+    private Integer maxHeight = 2048;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
 
     @PreUpdate
     protected void onUpdate() {

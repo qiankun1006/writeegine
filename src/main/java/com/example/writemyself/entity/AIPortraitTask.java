@@ -9,68 +9,59 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * AI 立绘异步任务表
- * 追踪每个生成任务的执行状态
+ * AI肖像任务实体
  */
 @Entity
-@Table(name = "ai_portrait_task", indexes = {
-        @Index(name = "idx_task_id", columnList = "taskId"),
-        @Index(name = "idx_generation_id", columnList = "generationId"),
-        @Index(name = "idx_user_id", columnList = "userId"),
-        @Index(name = "idx_status", columnList = "status"),
-        @Index(name = "idx_created_at", columnList = "createdAt")
-})
+@Table(name = "ai_portrait_task")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AIPortraitTask {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 64)
+    @Column(name = "task_id", nullable = false, unique = true, length = 64)
     private String taskId;
 
-    @Column(nullable = false)
+    @Column(name = "generation_id", nullable = false)
     private Long generationId;
 
-    @Column(nullable = false)
-    private Long userId;
+    @Column(name = "status", length = 20, nullable = false)
+    private String status; // PENDING, PROCESSING, SUCCESS, FAILED
 
-    // 任务状态
-    @Column(nullable = false, length = 20)
-    private String status;
+    @Column(name = "progress")
+    private Integer progress = 0; // 进度百分比
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer progress = 0;
+    @Column(name = "retry_count")
+    private Integer retryCount = 0; // 重试次数
 
-    // 重试信息
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer retryCount = 0;
+    @Column(name = "max_retries")
+    private Integer maxRetries = 3; // 最大重试次数
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer maxRetries = 3;
+    @Column(name = "last_error", columnDefinition = "TEXT")
+    private String lastError; // 最后一次错误信息
 
-    @Column(length = 500)
-    private String lastError;
-
-    // 时间戳
-    @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(nullable = false)
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
+    @Column(name = "started_at")
     private LocalDateTime startedAt;
 
+    @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
 
     @PreUpdate
     protected void onUpdate() {

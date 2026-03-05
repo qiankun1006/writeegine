@@ -8,34 +8,29 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * AI 立绘模型配置 Repository
+ * AI肖像模型配置仓库
  */
 @Repository
 public interface AIPortraitModelConfigRepository extends JpaRepository<AIPortraitModelConfig, Long> {
 
     /**
-     * 根据模型名称查询配置
+     * 根据模型名称查找配置
      */
     Optional<AIPortraitModelConfig> findByModelName(String modelName);
 
     /**
-     * 根据提供商和状态查询所有模型
+     * 查找所有活跃的模型配置
      */
-    List<AIPortraitModelConfig> findByProviderAndIsActive(String provider, Boolean isActive);
+    List<AIPortraitModelConfig> findByIsActiveTrue();
 
     /**
-     * 查询所有启用的模型
+     * 根据提供商查找模型配置
      */
-    List<AIPortraitModelConfig> findByIsActive(Boolean isActive);
+    List<AIPortraitModelConfig> findByProviderAndIsActiveTrue(String provider);
 
     /**
-     * 查询默认模型
+     * 检查模型名称是否存在
      */
-    Optional<AIPortraitModelConfig> findByIsDefault(Boolean isDefault);
-
-    /**
-     * 查询指定提供商的所有模型
-     */
-    List<AIPortraitModelConfig> findByProvider(String provider);
+    boolean existsByModelName(String modelName);
 }
 

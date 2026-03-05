@@ -19,6 +19,7 @@
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/controller/TilemapEditorController.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/AIPortraitService.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/VolcengineHealthIndicator.java
+/Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/dto/SaveResultRequest.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/dto/GameDTO.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/UnityService.java
 /Users/qiankun96/Desktop/meituan/writeengine/src/main/java/com/example/writemyself/service/AssetService.java

@@ -6,15 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.*;
-import java.math.BigDecimal;
 
 /**
  * 生成立绘请求 DTO
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class GeneratePortraitRequest {
 
     /**
@@ -88,43 +87,9 @@ public class GeneratePortraitRequest {
     private Long seed = -1L;
 
     /**
-     * 图生图强度 - 可选，范围 0-1
+     * 模型名称 - 可选
      */
-    @DecimalMin(value = "0.0", message = "图生图强度最小值为 0")
-    @DecimalMax(value = "1.0", message = "图生图强度最大值为 1")
-    private BigDecimal imageStrength;
-
-    /**
-     * 模型权重 - 可选，范围 0-1
-     */
-    @DecimalMin(value = "0.0", message = "模型权重最小值为 0")
-    @DecimalMax(value = "1.0", message = "模型权重最大值为 1")
-    private BigDecimal modelWeight;
-
-    /**
-     * 是否启用面部修复 - 默认 true
-     */
-    @Builder.Default
-    private Boolean enableFaceFix = true;
-
-    /**
-     * 输出格式 - 默认 PNG
-     */
-    @Size(max = 10, message = "输出格式长度不能超过 10 字")
-    @Builder.Default
-    private String outputFormat = "PNG";
-
-    /**
-     * 模型提供商 - 默认 aliyun
-     */
-    @Size(max = 50, message = "模型提供商长度不能超过 50 字")
-    @Builder.Default
-    private String provider = "aliyun";
-
-    /**
-     * 模型版本 - 可选
-     */
-    @Size(max = 100, message = "模型版本长度不能超过 100 字")
-    private String modelVersion;
+    @Size(max = 100, message = "模型名称长度不能超过 100 字")
+    private String modelName;
 }
 

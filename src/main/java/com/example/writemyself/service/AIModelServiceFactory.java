@@ -19,7 +19,7 @@ public class AIModelServiceFactory {
      */
     public ImageGenerationService getService(String modelName) {
         if (modelName == null) {
-            return aliyunTongYiService; // 默认使用阿里云
+            return volcengineService; // 默认使用火山引擎
         }
 
         // 火山引擎模型
@@ -32,8 +32,23 @@ public class AIModelServiceFactory {
             return aliyunTongYiService;
         }
 
-        // 默认回退到阿里云
-        return aliyunTongYiService;
+        // 默认回退到火山引擎
+        return volcengineService;
+    }
+
+    /**
+     * 获取默认服务（火山引擎）
+     */
+    public ImageGenerationService getDefaultService() {
+        return volcengineService;
+    }
+
+    /**
+     * 检查指定模型是否可用
+     */
+    public boolean isModelAvailable(String modelName) {
+        ImageGenerationService service = getService(modelName);
+        return service.isConfigured();
     }
 }
 

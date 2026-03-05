@@ -1,78 +1,85 @@
 package com.example.writemyself.controller;
 
+import com.example.writemyself.service.VolcengineException;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器
- * 使用@ControllerAdvice注解，统一处理应用中所有控制器的异常
  */
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     /**
-     * 处理所有未被捕获的异常
-     *
-     * @param ex 捕获到的异常对象
-     * @return ModelAndView对象，返回error视图
+     * 处理火山引擎异常
+     */
+    @ExceptionHandler(VolcengineException.class)
+    public ResponseEntity<ErrorResponse> handleVolcengineException(VolcengineException e) {
+        log.error("火山引擎异常: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(new ErrorResponse("VOLCENGINE_ERROR", e.getUserFriendlyMessage()));
+    }
+
+    /**
+     * 处理参数验证异常
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+        List<String> errors = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.toList());
+
+        String message = String.join("; ", errors);
+        log.warn("参数验证失败: {}", message);
+
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse("VALIDATION_ERROR", message));
+    }
+
+    /**
+     * 处理运行时异常
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
+        log.error("运行时异常: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("INTERNAL_ERROR", "服务器内部错误，请稍后重试"));
+    }
+
+    /**
+     * 处理其他未捕获异常
      */
     @ExceptionHandler(Exception.class)
-    public ModelAndView handleException(Exception ex) {
-        // 创建ModelAndView对象，指定视图名称为"error"
-        ModelAndView mav = new ModelAndView("error");
-
-        // 向视图传递错误信息
-        mav.addObject("status", 500);
-        mav.addObject("error", "服务器错误");
-        mav.addObject("message", ex.getMessage() != null ? ex.getMessage() : "应用处理请求时发生错误");
-        mav.addObject("timestamp", new Date());
-
-        return mav;
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("未捕获异常: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("UNKNOWN_ERROR", "未知错误，请稍后重试"));
     }
 
     /**
-     * 处理空指针异常
-     * 这是一个具体的异常处理方法，优先级高于通用的Exception处理
-     *
-     * @param ex 捕获到的NullPointerException
-     * @return ModelAndView对象，返回error视图
+     * 错误响应类
      */
-    @ExceptionHandler(NullPointerException.class)
-    public ModelAndView handleNullPointerException(NullPointerException ex) {
-        // 创建ModelAndView对象，指定视图名称为"error"
-        ModelAndView mav = new ModelAndView("error");
+    @Data
+    public static class ErrorResponse {
+        private final String code;
+        private final String message;
+        private final long timestamp;
 
-        // 向视图传递错误信息
-        mav.addObject("status", 500);
-        mav.addObject("error", "服务器错误");
-        mav.addObject("message", "处理请求时发生了一个内部错误");
-        mav.addObject("timestamp", new Date());
-
-        return mav;
-    }
-
-    /**
-     * 处理数字格式异常
-     * 当参数无法转换为数字类型时触发
-     *
-     * @param ex 捕获到的NumberFormatException
-     * @return ModelAndView对象，返回error视图
-     */
-    @ExceptionHandler(NumberFormatException.class)
-    public ModelAndView handleNumberFormatException(NumberFormatException ex) {
-        // 创建ModelAndView对象，指定视图名称为"error"
-        ModelAndView mav = new ModelAndView("error");
-
-        // 向视图传递错误信息
-        mav.addObject("status", 400);
-        mav.addObject("error", "请求错误");
-        mav.addObject("message", "提供的参数格式不正确");
-        mav.addObject("timestamp", new Date());
-
-        return mav;
+        public ErrorResponse(String code, String message) {
+            this.code = code;
+            this.message = message;
+            this.timestamp = System.currentTimeMillis();
+        }
     }
 }
 

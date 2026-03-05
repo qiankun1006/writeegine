@@ -11,41 +11,42 @@ import com.example.writemyself.repository.AIPortraitModelConfigRepository;
 import com.example.writemyself.repository.AIPortraitTaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * AI 立绘生成核心服务
+ * AI肖像生成服务
  */
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class AIPortraitService {
 
     private final AIPortraitGenerationRepository generationRepository;
     private final AIPortraitTaskRepository taskRepository;
     private final AIPortraitModelConfigRepository modelConfigRepository;
-    private final AsyncTaskService asyncTaskService;
+    private final AIModelServiceFactory modelServiceFactory;
 
     /**
      * 创建生成任务
-     * @param userId 用户 ID
-     * @param request 生成请求
-     * @return 生成响应，包含任务 ID
      */
     @Transactional
     public GeneratePortraitResponse createGenerationTask(Long userId, GeneratePortraitRequest request) {
         try {
             log.info("创建生成任务: userId={}, prompt={}", userId, request.getPrompt());
 
-            // 生成任务 ID
-            String taskId = UUID.randomUUID().toString();
+            // 生成唯一任务ID
+            String taskId = "task_" + UUID.randomUUID().toString().replace("-", "");
+
+            // 确定使用的模型
+            String modelName = request.getModelName() != null ? request.getModelName() : "doubao-seedream-5-0-260128";
 
             // 创建生成记录
             AIPortraitGeneration generation = AIPortraitGeneration.builder()
@@ -54,63 +55,133 @@ public class AIPortraitService {
                     .prompt(request.getPrompt())
                     .negativePrompt(request.getNegativePrompt())
                     .referenceImageUrl(request.getReferenceImageUrl())
-                    .modelWeight(request.getModelWeight())
-                    .provider(request.getProvider())
-                    .modelVersion(request.getModelVersion())
                     .width(request.getWidth())
                     .height(request.getHeight())
-                    .imageStrength(request.getImageStrength())
-                    .generationCount(request.getCount())
-                    .samplerName(request.getSamplerName())
-                    .inferenceSteps(request.getInferenceSteps())
+                    .modelName(modelName)
                     .stylePreset(request.getStylePreset())
+                    .inferenceSteps(request.getInferenceSteps())
+                    .samplerName(request.getSamplerName())
                     .seed(request.getSeed())
-                    .enableFaceFix(request.getEnableFaceFix())
-                    .outputFormat(request.getOutputFormat())
+                    .count(request.getCount())
                     .status("PENDING")
-                    .createdAt(LocalDateTime.now())
                     .build();
 
-            AIPortraitGeneration savedGeneration = generationRepository.save(generation);
+            generation = generationRepository.save(generation);
 
             // 创建任务记录
             AIPortraitTask task = AIPortraitTask.builder()
                     .taskId(taskId)
-                    .generationId(savedGeneration.getId())
-                    .userId(userId)
+                    .generationId(generation.getId())
                     .status("PENDING")
                     .progress(0)
-                    .retryCount(0)
-                    .maxRetries(3)
-                    .createdAt(LocalDateTime.now())
                     .build();
 
-            AIPortraitTask savedTask = taskRepository.save(task);
+            task = taskRepository.save(task);
 
-            log.info("✓ 生成任务已创建: taskId={}, generationId={}", taskId, savedGeneration.getId());
+            // 异步执行生成任务
+            processGenerationTaskAsync(generation.getId(), taskId);
 
-            // 异步执行任务
-            asyncTaskService.processTask(taskId);
+            // 构建响应
+            LocalDateTime estimatedCompletion = LocalDateTime.now().plusMinutes(2); // 预估2分钟完成
 
             return GeneratePortraitResponse.builder()
                     .taskId(taskId)
-                    .generationId(savedGeneration.getId())
+                    .generationId(generation.getId())
                     .status("PENDING")
                     .progress(0)
-                    .message("任务已创建，开始生成中...")
-                    .createdAt(LocalDateTime.now())
+                    .message("任务已提交，正在排队等待处理")
+                    .createdAt(generation.getCreatedAt())
+                    .estimatedCompletionTime(estimatedCompletion)
                     .build();
 
         } catch (Exception e) {
             log.error("创建生成任务失败", e);
-            throw new RuntimeException("创建任务失败: " + e.getMessage(), e);
+            throw new RuntimeException("创建生成任务失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 异步处理生成任务
+     */
+    @Async
+    public void processGenerationTaskAsync(Long generationId, String taskId) {
+        try {
+            log.info("开始异步处理生成任务: taskId={}", taskId);
+
+            // 获取生成记录
+            AIPortraitGeneration generation = generationRepository.findById(generationId)
+                    .orElseThrow(() -> new RuntimeException("生成记录不存在"));
+
+            // 更新任务状态为处理中
+            taskRepository.updateTaskStart(taskId, LocalDateTime.now(), LocalDateTime.now());
+
+            // 获取AI模型服务
+            ImageGenerationService modelService = modelServiceFactory.getService(generation.getModelName());
+
+            if (!modelService.isConfigured()) {
+                throw new RuntimeException("AI模型服务未配置");
+            }
+
+            // 更新进度
+            taskRepository.updateTaskStatus(taskId, "PROCESSING", 10, LocalDateTime.now());
+
+            // 调用AI模型生成图片
+            List<String> imageUrls;
+            if (generation.getReferenceImageUrl() != null && !generation.getReferenceImageUrl().isEmpty()) {
+                // 图生图模式
+                imageUrls = modelService.generateFromImage(
+                        generation.getPrompt(),
+                        generation.getReferenceImageUrl(),
+                        0.6, // 默认强度
+                        generation.getWidth(),
+                        generation.getHeight()
+                );
+            } else {
+                // 文本到图像模式
+                imageUrls = modelService.generateImage(
+                        generation.getPrompt(),
+                        generation.getWidth(),
+                        generation.getHeight(),
+                        generation.getCount(),
+                        generation.getSeed()
+                );
+            }
+
+            // 更新进度到90%
+            taskRepository.updateTaskStatus(taskId, "PROCESSING", 90, LocalDateTime.now());
+
+            // 保存生成结果
+            generation.setGeneratedImageUrls(String.join(",", imageUrls));
+            generation.setStatus("SUCCESS");
+            generation.setGenerationTime(120); // 假设生成耗时2分钟
+            generationRepository.save(generation);
+
+            // 更新任务状态为完成
+            taskRepository.updateTaskCompletion(taskId, "SUCCESS", LocalDateTime.now(), LocalDateTime.now());
+
+            log.info("✓ 生成任务完成: taskId={}, 生成 {} 张图片", taskId, imageUrls.size());
+
+        } catch (Exception e) {
+            log.error("生成任务处理失败: taskId={}", taskId, e);
+
+            // 更新任务状态为失败
+            taskRepository.updateTaskStatus(taskId, "FAILED", 0, LocalDateTime.now());
+
+            // 更新生成记录状态
+            try {
+                AIPortraitGeneration generation = generationRepository.findByTaskId(taskId)
+                        .orElseThrow(() -> new RuntimeException("生成记录不存在"));
+                generation.setStatus("FAILED");
+                generation.setErrorMessage(e.getMessage());
+                generationRepository.save(generation);
+            } catch (Exception ex) {
+                log.error("更新生成记录状态失败", ex);
+            }
         }
     }
 
     /**
      * 查询生成进度
-     * @param taskId 任务 ID
-     * @return 进度信息
      */
     @Transactional(readOnly = true)
     public GenerateProgressResponse getGenerationProgress(String taskId) {
@@ -126,16 +197,16 @@ public class AIPortraitService {
                     .taskId(taskId)
                     .status(task.getStatus())
                     .progress(task.getProgress())
+                    .message(getStatusDescription(task.getStatus()))
                     .generationTime(generation.getGenerationTime())
                     .queueWaitTime(generation.getQueueWaitTime())
                     .completed(task.getStatus().equals("SUCCESS"))
                     .failed(task.getStatus().equals("FAILED"))
-                    .statusDescription(getStatusDescription(task.getStatus()))
                     .build();
 
-            // 如果完成，返回图片 URL
+            // 如果完成，返回图片URL
             if (response.getCompleted() && generation.getGeneratedImageUrls() != null) {
-                List<String> imageUrls = Arrays.stream(generation.getGeneratedImageUrls().split(","))
+                List<String> imageUrls = java.util.Arrays.stream(generation.getGeneratedImageUrls().split(","))
                         .collect(Collectors.toList());
                 response.setImageUrls(imageUrls);
             }
@@ -156,12 +227,11 @@ public class AIPortraitService {
 
     /**
      * 获取可用的模型列表
-     * @return 模型配置列表
      */
     @Transactional(readOnly = true)
     public List<AIPortraitModelConfig> getAvailableModels() {
         try {
-            List<AIPortraitModelConfig> models = modelConfigRepository.findByIsActive(true);
+            List<AIPortraitModelConfig> models = modelConfigRepository.findByIsActiveTrue();
             log.info("✓ 获取 {} 个可用模型", models.size());
             return models;
 
@@ -173,14 +243,12 @@ public class AIPortraitService {
 
     /**
      * 获取用户的生成历史
-     * @param userId 用户 ID
-     * @param limit 返回记录数
-     * @return 生成历史列表
      */
     @Transactional(readOnly = true)
     public List<AIPortraitGeneration> getGenerationHistory(Long userId, int limit) {
         try {
-            List<AIPortraitGeneration> history = generationRepository.findRecentByUserId(userId, limit);
+            List<AIPortraitGeneration> history = generationRepository.findRecentByUserId(userId,
+                    org.springframework.data.domain.PageRequest.of(0, limit));
             log.info("✓ 获取用户 {} 的 {} 条生成历史", userId, history.size());
             return history;
 
@@ -192,9 +260,6 @@ public class AIPortraitService {
 
     /**
      * 保存生成结果到资源库
-     * @param taskId 任务 ID
-     * @param resourceName 资源名称
-     * @return 保存成功的消息
      */
     @Transactional
     public String saveGenerationResult(String taskId, String resourceName) {
@@ -203,6 +268,7 @@ public class AIPortraitService {
                     .orElseThrow(() -> new RuntimeException("生成记录不存在"));
 
             // TODO: 实现保存到资源库的逻辑
+            // 这里可以集成文件系统、数据库或其他存储服务
 
             log.info("✓ 生成结果已保存到资源库: taskId={}, resourceName={}", taskId, resourceName);
             return "生成结果已保存";
@@ -219,9 +285,9 @@ public class AIPortraitService {
     private String getStatusDescription(String status) {
         switch (status) {
             case "PENDING":
-                return "等待处理中...";
+                return "任务排队中，请稍候...";
             case "PROCESSING":
-                return "生成中，请稍候...";
+                return "正在生成中...";
             case "SUCCESS":
                 return "生成完成";
             case "FAILED":

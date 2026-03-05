@@ -3,6 +3,7 @@ package com.example.writemyself.controller;
 import com.example.writemyself.dto.GeneratePortraitRequest;
 import com.example.writemyself.dto.GeneratePortraitResponse;
 import com.example.writemyself.dto.GenerateProgressResponse;
+import com.example.writemyself.dto.SaveResultRequest;
 import com.example.writemyself.entity.AIPortraitGeneration;
 import com.example.writemyself.entity.AIPortraitModelConfig;
 import com.example.writemyself.service.AIPortraitService;
@@ -103,16 +104,15 @@ public class AIPortraitController {
     @PostMapping("/save")
     public ResponseEntity<Map<String, String>> save(
             @RequestHeader("X-User-Id") Long userId,
-            @RequestParam String taskId,
-            @RequestParam String resourceName) {
+            @Valid @RequestBody SaveResultRequest request) {
         try {
-            log.info("保存结果: userId={}, taskId={}, resourceName={}", userId, taskId, resourceName);
+            log.info("保存结果: userId={}, taskId={}, name={}", userId, request.getTaskId(), request.getName());
 
-            String result = aiPortraitService.saveGenerationResult(taskId, resourceName);
+            String result = aiPortraitService.saveGenerationResult(request.getTaskId(), request.getName());
 
             Map<String, String> response = new HashMap<>();
             response.put("message", result);
-            response.put("taskId", taskId);
+            response.put("taskId", request.getTaskId());
 
             return ResponseEntity.ok(response);
 
@@ -171,6 +171,7 @@ public class AIPortraitController {
         Map<String, String> response = new HashMap<>();
         response.put("status", "ok");
         response.put("service", "AI Portrait Generator");
+        response.put("timestamp", String.valueOf(System.currentTimeMillis()));
         return ResponseEntity.ok(response);
     }
 }
