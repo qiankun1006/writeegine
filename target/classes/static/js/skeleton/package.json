@@ -1,0 +1,39 @@
+{
+  "name": "skeleton-animation-system",
+  "version": "1.0.0",
+  "description": "2D骨骼动画系统 - 用于替代现有的character-frame-sequence功能",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "dev": "webpack --mode=development --watch",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "skeleton",
+    "animation",
+    "2d",
+    "dragonbones",
+    "game"
+  ],
+  "author": "Meituan",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.0.0",
+    "typescript": "^4.5.0",
+    "webpack": "^5.60.0",
+    "webpack-cli": "^4.9.0",
+    "ts-loader": "^9.2.0",
+    "jest": "^27.0.0",
+    "@types/jest": "^27.0.0",
+    "ts-jest": "^27.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/webgl2": "^0.0.6"
+  }
+}
+
