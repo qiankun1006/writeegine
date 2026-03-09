@@ -167,7 +167,7 @@ public class HomeController {
      */
     @GetMapping("/create-game/asset/map-grid")
     public String createMapGrid(Model model) {
-        model.addAttribute("title", "战棋网格地图 - 游戏素材创作");
+        model.addAttribute("title", "游戏地图 - 游戏素材创作");
         List<String> tileImages = new ArrayList<>(Arrays.asList(
             "brown.png", "green.png", "green2.png", "obstacle.png",
             "stone-wall.png", "stone.png", "stone2.png"

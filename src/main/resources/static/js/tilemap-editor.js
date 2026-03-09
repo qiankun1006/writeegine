@@ -176,12 +176,19 @@ class TilemapEditor {
         return { x: gridX, y: gridY };
     }
 
-    placeTile(x, y) {
+    placeTile(x, y, tileIndex = this.selectedTileIndex) {
         if (!this.isValidCoordinate(x, y)) return;
-        this.gridData[y][x] = this.selectedTileIndex;
+
+        const oldValue = this.gridData[y][x];
+        if (oldValue === tileIndex) return;
+
+        this.gridData[y][x] = tileIndex;
         this.updatePlacedCount();
         this.saveHistory();
         this.render();
+
+        // 触发变化事件
+        this.triggerChange();
     }
 
     isValidCoordinate(x, y) {
@@ -251,6 +258,10 @@ class TilemapEditor {
                 this.updatePlacedCount();
                 this.updateButtonStates();
                 this.render();
+
+                // 触发变化事件
+                this.triggerChange();
+
                 Dialog.alert({
                     title: '成功',
                     message: '画布已清空',
@@ -352,6 +363,180 @@ class TilemapEditor {
         link.href = dataUrl;
         link.download = `tilemap-${Date.now()}.png`;
         link.click();
+    }
+
+    /**
+     * 导出草图数据（用于AI地图生成）
+     * @returns {Object} 草图数据对象
+     */
+    exportSketchData() {
+        try {
+            // 获取画布数据
+            const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+
+            // 创建草图数据结构
+            const sketchData = {
+                version: '1.0',
+                gridSize: this.gridSize,
+                canvasWidth: this.canvas.width,
+                canvasHeight: this.canvas.height,
+                gridData: this.gridData,
+                tiles: this.tiles.map((tile, index) => ({
+                    index: index,
+                    name: tile.name,
+                    image: tile.image ? tile.image.src : ''
+                })),
+                placedTiles: this.getPlacedTiles(),
+                metadata: {
+                    exportedAt: new Date().toISOString(),
+                    totalPlaced: this.getPlacedCount(),
+                    gridDimensions: {
+                        rows: this.gridData.length,
+                        cols: this.gridData[0] ? this.gridData[0].length : 0
+                    }
+                }
+            };
+
+            return sketchData;
+        } catch (error) {
+            console.error('导出草图数据失败:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 获取已放置的图块信息
+     * @returns {Array} 已放置的图块数组
+     */
+    getPlacedTiles() {
+        const placedTiles = [];
+
+        for (let y = 0; y < this.gridData.length; y++) {
+            for (let x = 0; x < this.gridData[y].length; x++) {
+                const tileIndex = this.gridData[y][x];
+                if (tileIndex !== -1) {
+                    placedTiles.push({
+                        x: x,
+                        y: y,
+                        tileIndex: tileIndex,
+                        tileName: this.tiles[tileIndex]?.name || '未知'
+                    });
+                }
+            }
+        }
+
+        return placedTiles;
+    }
+
+    /**
+     * 获取已放置图块数量
+     * @returns {number} 已放置图块数量
+     */
+    getPlacedCount() {
+        let count = 0;
+
+        for (let y = 0; y < this.gridData.length; y++) {
+            for (let x = 0; x < this.gridData[y].length; x++) {
+                if (this.gridData[y][x] !== -1) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * 获取草图数据的JSON字符串
+     * @returns {string} JSON格式的草图数据
+     */
+    exportSketchDataAsJSON() {
+        const sketchData = this.exportSketchData();
+        return sketchData ? JSON.stringify(sketchData, null, 2) : null;
+    }
+
+    /**
+     * 获取草图数据的简化版本（用于AI处理）
+     * @returns {string} 简化后的草图数据
+     */
+    exportSimplifiedSketchData() {
+        try {
+            const sketchData = this.exportSketchData();
+            if (!sketchData) return null;
+
+            // 创建简化版本，只包含必要信息
+            const simplified = {
+                gridSize: sketchData.gridSize,
+                placedTiles: sketchData.placedTiles.map(tile => ({
+                    x: tile.x,
+                    y: tile.y,
+                    tileIndex: tile.tileIndex
+                })),
+                tileTypes: sketchData.tiles.length,
+                boundingBox: this.calculateBoundingBox(sketchData.placedTiles)
+            };
+
+            return JSON.stringify(simplified);
+        } catch (error) {
+            console.error('导出简化草图数据失败:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 计算草图的边界框
+     * @param {Array} placedTiles 已放置的图块数组
+     * @returns {Object} 边界框对象
+     */
+    calculateBoundingBox(placedTiles) {
+        if (placedTiles.length === 0) {
+            return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+        }
+
+        let minX = placedTiles[0].x;
+        let maxX = placedTiles[0].x;
+        let minY = placedTiles[0].y;
+        let maxY = placedTiles[0].y;
+
+        for (const tile of placedTiles) {
+            minX = Math.min(minX, tile.x);
+            maxX = Math.max(maxX, tile.x);
+            minY = Math.min(minY, tile.y);
+            maxY = Math.max(maxY, tile.y);
+        }
+
+        return {
+            minX: minX * this.gridSize,
+            minY: minY * this.gridSize,
+            maxX: (maxX + 1) * this.gridSize,
+            maxY: (maxY + 1) * this.gridSize
+        };
+    }
+
+    /**
+     * 添加变化监听器
+     * @param {Function} callback 变化回调函数
+     */
+    onChange(callback) {
+        if (typeof callback === 'function') {
+            this.changeCallbacks = this.changeCallbacks || [];
+            this.changeCallbacks.push(callback);
+        }
+    }
+
+    /**
+     * 触发变化事件
+     */
+    triggerChange() {
+        if (this.changeCallbacks) {
+            this.changeCallbacks.forEach(callback => {
+                try {
+                    callback();
+                } catch (error) {
+                    console.error('变化回调执行失败:', error);
+                }
+            });
+        }
     }
 }
 

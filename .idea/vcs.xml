@@ -2,6 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/main/resources/templates/不是本项目功能，只是用来参考和学习的开源代码，不要改动" vcs="Git" />
   </component>
 </project>
