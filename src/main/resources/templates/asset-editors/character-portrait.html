@@ -63,29 +63,74 @@
                 try {
                     // 获取 dist 目录中的 index.html 来获取正确的文件名
                     const response = await fetch('/static/ai-portrait-generator/dist/index.html');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
                     const html = await response.text();
+                    console.log('✓ 已获取 index.html，内容长度:', html.length);
 
-                    // 提取 CSS 链接
-                    const cssMatch = html.match(/<link[^>]*href="([^"]*\.css)"[^>]*>/);
-                    if (cssMatch && cssMatch[1]) {
-                        const cssPath = cssMatch[1];
-                        console.log('✓ 加载样式文件:', cssPath);
+                    // 提取 CSS 链接 - 更可靠的正则表达式
+                    const cssRegex = /<link[^>]*href="([^"]*\.css)"[^>]*>/g;
+                    const cssMatches = [];
+                    let match;
+                    while ((match = cssRegex.exec(html)) !== null) {
+                        cssMatches.push(match[1]);
+                    }
 
-                        // 加载 CSS
-                        const link = document.createElement('link');
-                        link.rel = 'stylesheet';
-                        link.href = cssPath;
-                        link.onload = () => {
-                            console.log('✓ 样式文件加载成功');
-                            loadScript(html);
-                        };
-                        link.onerror = (err) => {
-                            console.error('✗ 样式文件加载失败:', err);
-                            loadScript(html); // 即使 CSS 失败也继续加载脚本
-                        };
-                        document.head.appendChild(link);
+                    // 提取 script 标签中的 src - 更可靠的正则表达式
+                    const scriptRegex = /<script[^>]*type="module"[^>]*src="([^"]*\.js)"[^>]*>/g;
+                    const scriptMatches = [];
+                    while ((match = scriptRegex.exec(html)) !== null) {
+                        scriptMatches.push(match[1]);
+                    }
+
+                    if (scriptMatches.length === 0) {
+                        // 尝试不带 type="module" 的匹配
+                        const altScriptRegex = /<script[^>]*src="([^"]*\.js)"[^>]*>/g;
+                        while ((match = altScriptRegex.exec(html)) !== null) {
+                            scriptMatches.push(match[1]);
+                        }
+                    }
+
+                    console.log('📦 找到 CSS 文件:', cssMatches);
+                    console.log('📦 找到 JS 文件:', scriptMatches);
+
+                    if (cssMatches.length === 0 && scriptMatches.length === 0) {
+                        // 调试输出 - 显示 HTML 内容
+                        console.error('❌ 无法找到 CSS 或 JS 文件');
+                        console.log('🔍 完整 HTML 内容:');
+                        console.log(html);
+                        showError('无法从 index.html 中提取资源文件。请检查构建输出。');
+                        return;
+                    }
+
+                    // 加载所有 CSS 文件
+                    let cssLoaded = 0;
+                    const totalCss = cssMatches.length;
+
+                    if (totalCss === 0) {
+                        loadScripts(scriptMatches);
                     } else {
-                        loadScript(html);
+                        cssMatches.forEach(cssPath => {
+                            const link = document.createElement('link');
+                            link.rel = 'stylesheet';
+                            link.href = cssPath;
+                            link.onload = () => {
+                                cssLoaded++;
+                                console.log(`✓ 样式文件加载成功 (${cssLoaded}/${totalCss}):`, cssPath);
+                                if (cssLoaded === totalCss) {
+                                    loadScripts(scriptMatches);
+                                }
+                            };
+                            link.onerror = (err) => {
+                                console.error('✗ 样式文件加载失败:', cssPath, err);
+                                cssLoaded++;
+                                if (cssLoaded === totalCss) {
+                                    loadScripts(scriptMatches); // 即使 CSS 失败也继续加载脚本
+                                }
+                            };
+                            document.head.appendChild(link);
+                        });
                     }
                 } catch (err) {
                     console.error('✗ 应用加载失败:', err);
@@ -93,26 +138,38 @@
                 }
             }
 
-            function loadScript(html) {
-                // 提取 script 标签中的 src
-                const scriptMatch = html.match(/<script[^>]*src="([^"]*)"[^>]*><\/script>/);
-                if (scriptMatch && scriptMatch[1]) {
-                    const scriptPath = scriptMatch[1];
-                    console.log('✓ 加载应用脚本:', scriptPath);
+            function loadScripts(scriptPaths) {
+                if (scriptPaths.length === 0) {
+                    showError('未找到应用脚本文件');
+                    return;
+                }
 
-                    // 创建并追加脚本元素
+                let scriptsLoaded = 0;
+                const totalScripts = scriptPaths.length;
+
+                scriptPaths.forEach(scriptPath => {
+                    console.log('📥 加载应用脚本:', scriptPath);
+
                     const script = document.createElement('script');
                     script.type = 'module';
+                    script.crossOrigin = 'anonymous';
                     script.src = scriptPath;
-                    script.onload = () => console.log('✓ Vue 应用加载成功');
+                    script.onload = () => {
+                        scriptsLoaded++;
+                        console.log(`✓ 脚本加载成功 (${scriptsLoaded}/${totalScripts}):`, scriptPath);
+                        if (scriptsLoaded === totalScripts) {
+                            console.log('✓ Vue 应用加载成功');
+                        }
+                    };
                     script.onerror = (err) => {
-                        console.error('✗ 应用脚本加载失败:', err);
-                        showError('脚本加载失败: ' + scriptPath);
+                        console.error('✗ 脚本加载失败:', scriptPath, err);
+                        scriptsLoaded++;
+                        if (scriptsLoaded === totalScripts) {
+                            showError('脚本加载失败: ' + scriptPath);
+                        }
                     };
                     document.body.appendChild(script);
-                } else {
-                    showError('无法从 index.html 中提取脚本路径');
-                }
+                });
             }
 
             function showError(message) {
@@ -133,6 +190,9 @@
                             <li>重启 Spring Boot 应用</li>
                             <li>刷新此页面</li>
                         </ol>
+                        <p style="color: #999; font-size: 12px;">
+                            💡 提示：打开浏览器开发者工具（F12），查看控制台中的详细错误信息
+                        </p>
                     </div>
                 `;
             }

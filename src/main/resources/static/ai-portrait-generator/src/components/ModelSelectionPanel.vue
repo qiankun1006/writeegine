@@ -16,13 +16,13 @@
         >
           <el-radio-button value="aliyun">
             <div class="provider-option">
-              <img src="@/assets/aliyun-logo.png" alt="阿里云" class="provider-logo" />
+              <span class="provider-emoji">☁️</span>
               <span>阿里云通义</span>
             </div>
           </el-radio-button>
           <el-radio-button value="volcengine">
             <div class="provider-option">
-              <img src="@/assets/volcengine-logo.png" alt="火山引擎" class="provider-logo" />
+              <span class="provider-emoji">🌋</span>
               <span>火山引擎</span>
             </div>
           </el-radio-button>
@@ -211,10 +211,11 @@ const handleParamChange = () => {
   gap: 8px;
 }
 
-.provider-logo {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
+.provider-emoji {
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .model-select {
