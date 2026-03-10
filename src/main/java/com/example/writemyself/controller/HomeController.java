@@ -163,7 +163,7 @@ public class HomeController {
 
     // ===== 地图与场景 =====
     /**
-     * 战棋网格地图编辑页面
+     * 游戏地图编辑页面（包含AI地图生成功能）
      */
     @GetMapping("/create-game/asset/map-grid")
     public String createMapGrid(Model model) {

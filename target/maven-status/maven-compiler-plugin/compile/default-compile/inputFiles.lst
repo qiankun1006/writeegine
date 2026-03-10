@@ -3,6 +3,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/UnityScene.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/AIPortraitService.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/GeneratePortraitResponse.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/GameMapGenerationRequestDTO.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/UnityPhysicsComponent.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitModelConfig.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/AsyncTaskService.java
@@ -18,6 +19,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitUserPreset.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/GameController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/Game.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/GameMapService.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitModelConfigRepository.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/UnityController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/ImageGenerationService.java
@@ -34,6 +36,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/GameRepository.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/VolcengineException.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/AIModelServiceFactory.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/GameMapGenerationResponseDTO.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/ErrorHandlingController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/GeneratePortraitRequest.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/VolcengineService.java
