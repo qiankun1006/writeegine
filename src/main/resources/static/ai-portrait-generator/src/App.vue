@@ -84,8 +84,8 @@ onMounted(() => {
   padding: $spacing-lg;
   overflow-y: auto;
   box-shadow: $shadow-md;
-  flex-shrink: 0;
-  max-height: calc(100vh - 80px); // 减去导航栏高度
+  flex-shrink: 1;
+  min-height: 0; // 允许 grid 内容收缩
 
   @include responsive-tablet {
     width: 280px;
@@ -105,8 +105,8 @@ onMounted(() => {
   padding: $spacing-lg;
   overflow-y: auto;
   box-shadow: $shadow-md;
-  flex-shrink: 0;
-  max-height: calc(100vh - 80px);
+  flex-shrink: 1;
+  min-height: 0; // 允许 grid 内容收缩
 
   @include responsive-tablet {
     width: 280px;
@@ -126,8 +126,8 @@ onMounted(() => {
   padding: $spacing-lg;
   overflow-y: auto;
   box-shadow: $shadow-md;
-  flex-shrink: 0;
-  max-height: calc(100vh - 80px);
+  flex-shrink: 1;
+  min-height: 0; // 允许 grid 内容收缩
 
   @include responsive-tablet {
     width: 280px;
