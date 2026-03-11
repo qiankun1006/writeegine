@@ -58,12 +58,30 @@
 
         <!-- Vue 应用脚本 -->
         <script type="module">
+            // 检测是否处于开发模式（查询参数 dev=true 或本地开发）
+            const isDevelopment = new URLSearchParams(window.location.search).get('dev') === 'true' ||
+                                 location.hostname === 'localhost' ||
+                                 location.hostname === '127.0.0.1';
+
             // 动态查找并加载最新的构建文件
             async function loadApp() {
                 try {
+                    let sourceUrl = '/static/ai-portrait-generator/dist/index.html';
+
+                    // 开发模式：尝试从 Vite Dev Server 加载（如果没有运行则回退到构建文件）
+                    if (isDevelopment) {
+                        sourceUrl = 'http://localhost:5173/';
+                        console.log('🔥 检测到开发模式，尝试从 Vite Dev Server 加载:', sourceUrl);
+                    }
+
                     // 获取 dist 目录中的 index.html 来获取正确的文件名
-                    const response = await fetch('/static/ai-portrait-generator/dist/index.html');
+                    const response = await fetch(sourceUrl);
                     if (!response.ok) {
+                        // 开发模式失败时回退到生产构建
+                        if (isDevelopment) {
+                            console.warn('⚠️ Vite Dev Server 未运行，回退到生产构建');
+                            return loadApp(); // 递归调用，但这次不是开发模式
+                        }
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
                     const html = await response.text();

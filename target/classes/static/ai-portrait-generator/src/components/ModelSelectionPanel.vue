@@ -167,11 +167,14 @@ const handleParamChange = () => {
 
 <style scoped>
 .model-selection-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0; /* 确保 flex 子元素能正确处理溢出 */
   background: white;
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
 }
 
 .panel-header h3 {
@@ -190,6 +193,7 @@ const handleParamChange = () => {
 
 .param-group {
   margin-bottom: 20px;
+  min-width: 0; /* 确保 flex 子元素能正确处理溢出 */
 }
 
 .param-label {

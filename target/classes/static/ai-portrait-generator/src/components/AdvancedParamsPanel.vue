@@ -168,12 +168,14 @@ const randomSeed = () => {
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
+  min-width: 0; // 确保内容能正确处理溢出
 }
 
 .param-group {
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;
+  min-width: 0; // 确保 flex 子元素能正确处理溢出
 }
 
 .param-label {

@@ -211,12 +211,14 @@ const handleReset = () => {
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
+  min-width: 0; // 防止 flex 内容溢出
 }
 
 .params-section {
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;
+  min-width: 0; // 确保 flex 子元素能正确处理溢出
 }
 
 .section-label {

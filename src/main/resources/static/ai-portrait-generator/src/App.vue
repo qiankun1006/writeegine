@@ -53,19 +53,20 @@ onMounted(() => {
 
 .main-container {
   flex: 1;
-  overflow: visible;
+  overflow: hidden; // 防止容器本身有滚动条
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-height: 0; // 关键：让 flex 容器能正确计算高度
 }
 
 .layout-wrapper {
   display: grid;
   grid-template-columns: 320px 1fr;
-  height: 100%;
+  height: 100%; // 填充 main-container 的完整高度
   gap: $spacing-md;
   padding: $spacing-md;
-  overflow: visible;
+  overflow: hidden; // Grid 容器不应该有滚动条
   width: 100%;
   max-width: 100%;
 
