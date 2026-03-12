@@ -1,228 +1,89 @@
 <!DOCTYPE html>
-<html lang="zh-CN"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html lang="zh-CN">
 <head>
-    <title>AI 人物立绘生成器</title>
+    <title>无实际使用，Controller设置了Model属性，作为浏览器标签</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        /* 确保应用占满整个页面 */
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
-
-        .portrait-app-root {
-            width: 100%;
-            height: 100vh;
-        }
-
-        .loading-message {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-size: 18px;
-            color: #666;
-            background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #6C5CE7;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </head>
 <body>
-    <div layout:fragment="content">
-        <!-- Vue 应用根节点 -->
-        <div id="app" class="portrait-app-root">
-            <div class="loading-message">
-                <div class="loading-spinner"></div>
-                <span>AI 立绘生成器加载中...</span>
-            </div>
-        </div>
+    <!-- Vue 应用根节点 -->
+    <div id="app"></div>
 
-        <!-- Vue 应用脚本 -->
-        <script type="module">
-            // 检测是否处于开发模式（查询参数 dev=true 或本地开发）
-            const isDevelopment = new URLSearchParams(window.location.search).get('dev') === 'true' ||
-                                 location.hostname === 'localhost' ||
-                                 location.hostname === '127.0.0.1';
+    <!-- 加载 Vue 应用 -->
+    <script type="module">
+        // 检测是否处于开发模式
+        const isDevelopment = new URLSearchParams(window.location.search).get('dev') === 'true' ||
+                             location.hostname === 'localhost' ||
+                             location.hostname === '127.0.0.1';
 
-            // 动态查找并加载最新的构建文件
-            async function loadApp() {
-                try {
-                    let sourceUrl = '/static/ai-portrait-generator/dist/index.html';
+        // 根据环境选择资源源
+        let sourceUrl = isDevelopment
+            ? 'http://localhost:5173/'
+            : '/static/ai-portrait-generator/dist/index.html';
 
-                    // 开发模式：尝试从 Vite Dev Server 加载（如果没有运行则回退到构建文件）
+        async function loadApp() {
+            try {
+                const response = await fetch(sourceUrl);
+                if (!response.ok) {
                     if (isDevelopment) {
-                        sourceUrl = 'http://localhost:5173/';
-                        console.log('🔥 检测到开发模式，尝试从 Vite Dev Server 加载:', sourceUrl);
+                        console.warn('Vite Dev Server 未运行，回退到生产构建');
+                        // 递归调用，加载生产构建
+                        sourceUrl = '/static/ai-portrait-generator/dist/index.html';
+                        return loadApp();
                     }
-
-                    // 获取 dist 目录中的 index.html 来获取正确的文件名
-                    const response = await fetch(sourceUrl);
-                    if (!response.ok) {
-                        // 开发模式失败时回退到生产构建
-                        if (isDevelopment) {
-                            console.warn('⚠️ Vite Dev Server 未运行，回退到生产构建');
-                            return loadApp(); // 递归调用，但这次不是开发模式
-                        }
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    const html = await response.text();
-                    console.log('✓ 已获取 index.html，内容长度:', html.length);
-
-                    // 提取 CSS 链接 - 更可靠的正则表达式
-                    const cssRegex = /<link[^>]*href="([^"]*\.css)"[^>]*>/g;
-                    const cssMatches = [];
-                    let match;
-                    while ((match = cssRegex.exec(html)) !== null) {
-                        cssMatches.push(match[1]);
-                    }
-
-                    // 提取 script 标签中的 src - 更可靠的正则表达式
-                    const scriptRegex = /<script[^>]*type="module"[^>]*src="([^"]*\.js)"[^>]*>/g;
-                    const scriptMatches = [];
-                    while ((match = scriptRegex.exec(html)) !== null) {
-                        scriptMatches.push(match[1]);
-                    }
-
-                    if (scriptMatches.length === 0) {
-                        // 尝试不带 type="module" 的匹配
-                        const altScriptRegex = /<script[^>]*src="([^"]*\.js)"[^>]*>/g;
-                        while ((match = altScriptRegex.exec(html)) !== null) {
-                            scriptMatches.push(match[1]);
-                        }
-                    }
-
-                    console.log('📦 找到 CSS 文件:', cssMatches);
-                    console.log('📦 找到 JS 文件:', scriptMatches);
-
-                    if (cssMatches.length === 0 && scriptMatches.length === 0) {
-                        // 调试输出 - 显示 HTML 内容
-                        console.error('❌ 无法找到 CSS 或 JS 文件');
-                        console.log('🔍 完整 HTML 内容:');
-                        console.log(html);
-                        showError('无法从 index.html 中提取资源文件。请检查构建输出。');
-                        return;
-                    }
-
-                    // 加载所有 CSS 文件
-                    let cssLoaded = 0;
-                    const totalCss = cssMatches.length;
-
-                    if (totalCss === 0) {
-                        loadScripts(scriptMatches);
-                    } else {
-                        cssMatches.forEach(cssPath => {
-                            const link = document.createElement('link');
-                            link.rel = 'stylesheet';
-                            link.href = cssPath;
-                            link.onload = () => {
-                                cssLoaded++;
-                                console.log(`✓ 样式文件加载成功 (${cssLoaded}/${totalCss}):`, cssPath);
-                                if (cssLoaded === totalCss) {
-                                    loadScripts(scriptMatches);
-                                }
-                            };
-                            link.onerror = (err) => {
-                                console.error('✗ 样式文件加载失败:', cssPath, err);
-                                cssLoaded++;
-                                if (cssLoaded === totalCss) {
-                                    loadScripts(scriptMatches); // 即使 CSS 失败也继续加载脚本
-                                }
-                            };
-                            document.head.appendChild(link);
-                        });
-                    }
-                } catch (err) {
-                    console.error('✗ 应用加载失败:', err);
-                    showError('获取配置文件失败: ' + err.message);
-                }
-            }
-
-            function loadScripts(scriptPaths) {
-                if (scriptPaths.length === 0) {
-                    showError('未找到应用脚本文件');
-                    return;
+                    throw new Error(`HTTP ${response.status}`);
                 }
 
-                let scriptsLoaded = 0;
-                const totalScripts = scriptPaths.length;
+                const html = await response.text();
 
-                scriptPaths.forEach(scriptPath => {
-                    console.log('📥 加载应用脚本:', scriptPath);
+                // 提取 CSS 文件
+                const cssRegex = /<link[^>]*href="([^"]*\.css)"[^>]*>/g;
+                const cssFiles = [];
+                let match;
+                while ((match = cssRegex.exec(html)) !== null) {
+                    cssFiles.push(match[1]);
+                }
 
+                // 提取 JS 脚本
+                const scriptRegex = /<script[^>]*src="([^"]*\.js)"[^>]*>/g;
+                const jsFiles = [];
+                while ((match = scriptRegex.exec(html)) !== null) {
+                    jsFiles.push(match[1]);
+                }
+
+                // 加载 CSS 文件
+                for (const cssPath of cssFiles) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = cssPath;
+                    document.head.appendChild(link);
+                }
+
+                // 加载 JS 脚本
+                for (const jsPath of jsFiles) {
                     const script = document.createElement('script');
                     script.type = 'module';
-                    script.crossOrigin = 'anonymous';
-                    script.src = scriptPath;
-                    script.onload = () => {
-                        scriptsLoaded++;
-                        console.log(`✓ 脚本加载成功 (${scriptsLoaded}/${totalScripts}):`, scriptPath);
-                        if (scriptsLoaded === totalScripts) {
-                            console.log('✓ Vue 应用加载成功');
-                        }
-                    };
-                    script.onerror = (err) => {
-                        console.error('✗ 脚本加载失败:', scriptPath, err);
-                        scriptsLoaded++;
-                        if (scriptsLoaded === totalScripts) {
-                            showError('脚本加载失败: ' + scriptPath);
-                        }
-                    };
+                    script.src = jsPath;
                     document.body.appendChild(script);
-                });
-            }
+                }
 
-            function showError(message) {
-                const app = document.getElementById('app');
-                app.innerHTML = `
-                    <div style="padding: 40px; max-width: 600px; margin: 100px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <h2 style="color: #d32f2f; margin-top: 0;">⚠️ 应用加载失败</h2>
-                        <p style="color: #666; line-height: 1.6;">
-                            ${message}
-                        </p>
-                        <p style="color: #666; line-height: 1.6;">
-                            请确保已执行以下步骤：
-                        </p>
-                        <ol style="color: #666;">
-                            <li>进入目录：src/main/resources/static/ai-portrait-generator/</li>
-                            <li>运行：npm install</li>
-                            <li>运行：npm run build</li>
-                            <li>重启 Spring Boot 应用</li>
-                            <li>刷新此页面</li>
-                        </ol>
-                        <p style="color: #999; font-size: 12px;">
-                            💡 提示：打开浏览器开发者工具（F12），查看控制台中的详细错误信息
-                        </p>
+            } catch (err) {
+                console.error('应用加载失败:', err);
+                document.getElementById('app').innerHTML = `
+                    <div style="padding: 40px; text-align: center; margin-top: 50px;">
+                        <h2>⚠️ 应用加载失败</h2>
+                        <p>${err.message}</p>
                     </div>
                 `;
             }
+        }
 
-            // 页面加载完成后尝试加载应用
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', loadApp);
-            } else {
-                loadApp();
-            }
-        </script>
-    </div>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadApp);
+        } else {
+            loadApp();
+        }
+    </script>
 </body>
 </html>
 
