@@ -1,7 +1,7 @@
 <template>
   <div class="model-selection-panel">
     <div class="panel-header">
-      <h3>🤖 AI 模型选择</h3>
+      <h3>🤖 AI 模型选择11</h3>
       <p class="panel-description">选择不同的 AI 模型来生成图像，不同模型有不同的风格特点</p>
     </div>
 

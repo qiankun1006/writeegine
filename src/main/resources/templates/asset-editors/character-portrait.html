@@ -11,15 +11,11 @@
 
     <!-- 加载 Vue 应用 -->
     <script type="module">
-        // 检测是否处于开发模式
-        const isDevelopment = new URLSearchParams(window.location.search).get('dev') === 'true' ||
-                             location.hostname === 'localhost' ||
-                             location.hostname === '127.0.0.1';
+        // 强制使用生产模式（禁用开发模式）
+        const isDevelopment = false;
 
-        // 根据环境选择资源源
-        let sourceUrl = isDevelopment
-            ? 'http://localhost:5173/'
-            : '/static/ai-portrait-generator/dist/index.html';
+        // 使用生产构建
+        let sourceUrl = '/static/ai-portrait-generator/dist/index.html';
 
         async function loadApp() {
             try {
@@ -69,10 +65,29 @@
 
             } catch (err) {
                 console.error('应用加载失败:', err);
+                console.error('尝试的URL:', sourceUrl);
+                console.error('开发模式:', isDevelopment);
                 document.getElementById('app').innerHTML = `
-                    <div style="padding: 40px; text-align: center; margin-top: 50px;">
-                        <h2>⚠️ 应用加载失败</h2>
-                        <p>${err.message}</p>
+                    <div style="padding: 40px; max-width: 600px; margin: 50px auto; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;">
+                        <h2 style="color: #d32f2f; margin-top: 0;">⚠️ 应用加载失败</h2>
+                        <p><strong>错误信息:</strong> ${err.message}</p>
+                        <p><strong>尝试加载的URL:</strong> <code>${sourceUrl}</code></p>
+                        <p><strong>开发模式:</strong> ${isDevelopment}</p>
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                        <p style="font-size: 14px; color: #666;">
+                            <strong>解决方案:</strong>
+                        </p>
+                        <ul style="font-size: 14px; color: #666;">
+                            <li>如果是开发模式，请确保 Vite 服务器正在运行:
+                                <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">cd src/main/resources/static/ai-portrait-generator
+npm run dev</pre>
+                            </li>
+                            <li>如果是生产模式，请确保已构建:
+                                <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">cd src/main/resources/static/ai-portrait-generator
+npm run build</pre>
+                            </li>
+                            <li>打开浏览器F12查看Network标签确认请求失败</li>
+                        </ul>
                     </div>
                 `;
             }

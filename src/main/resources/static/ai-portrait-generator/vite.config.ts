@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig({
-  base: '/static/ai-portrait-generator/dist/',
+  base: process.env.NODE_ENV === 'production' ? '/static/ai-portrait-generator/dist/' : '/',
   plugins: [vue()],
   resolve: {
     alias: {
