@@ -1,9 +1,9 @@
 <template>
   <div class="advanced-params-panel">
-    <div class="panel-header">
-      <span class="header-title">🔧 高级参数</span>
-    </div>
-    <div class="panel-content">
+    <!-- 使用 ElCollapse 实现折叠功能 -->
+    <el-collapse v-model="activeNames" accordion>
+      <el-collapse-item title="⚙️ 高级参数" name="advanced">
+        <div class="panel-content">
       <!-- 图生图强度 -->
       <div class="param-group">
         <label class="param-label">图生图强度</label>
@@ -124,14 +124,21 @@
         </el-radio-group>
         <p class="param-hint">PNG 支持透明背景，JPG 文件体积更小</p>
       </div>
-    </div>
+        </div>
+      </el-collapse-item>
+    </el-collapse>
   </div>
 </template>
 
 <script setup lang="ts">
+import {ref} from 'vue'
+import {ElCollapse, ElCollapseItem} from 'element-plus'
 import {usePortraitStore} from '@/stores/portraitStore'
 
 const store = usePortraitStore()
+
+// 折叠面板初始状态（默认收起，传空数组）
+const activeNames = ref<string[]>([])
 
 const handleParamChange = () => {
   store.saveParams()
@@ -144,49 +151,39 @@ const randomSeed = () => {
 </script>
 
 <style scoped lang="scss">
+// ========== 高级参数面板 ==========
 .advanced-params-panel {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
+  width: 100%;
+  // ElCollapse 自带样式，无需额外包装
 }
 
-.panel-header {
-  padding: $spacing-md 0;
-  border-bottom: 1px solid $gray-200;
-  user-select: none;
-}
-
-.header-title {
-  font-weight: 600;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: $neutral-gray;
-}
-
+// ========== 面板内容 ==========
 .panel-content {
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
-  min-width: 0; // 确保内容能正确处理溢出
+  gap: 12px;
+  min-width: 0;
 }
 
+// ========== 参数组 ==========
 .param-group {
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
-  min-width: 0; // 确保 flex 子元素能正确处理溢出
+  gap: 6px;
+  min-width: 0;
 }
 
+// ========== 参数标签 ==========
 .param-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  color: $neutral-gray;
+  color: #606266;
 }
 
+// ========== 滑块包装 ==========
 .slider-wrapper {
   display: flex;
-  gap: $spacing-md;
+  gap: 8px;
   align-items: center;
 }
 
@@ -194,29 +191,34 @@ const randomSeed = () => {
   flex: 1;
 }
 
+// ========== 数值显示 ==========
 .value-display {
   font-weight: 600;
-  color: $primary-purple;
+  color: #6c5ce7;
   min-width: 40px;
   text-align: right;
-  font-size: 13px;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
+// ========== 种子值包装 ==========
 .seed-wrapper {
   display: flex;
-  gap: $spacing-sm;
+  gap: 6px;
 }
 
 :deep(.el-input-number) {
   flex: 1;
 }
 
+// ========== 参数提示 ==========
 .param-hint {
   font-size: 12px;
-  color: $gray-500;
+  color: #909399;
   margin: 0;
 }
 
+// ========== 表单控件 ==========
 :deep(.el-select),
 :deep(.el-input-number),
 :deep(.el-switch) {
@@ -226,7 +228,7 @@ const randomSeed = () => {
 :deep(.el-radio-group) {
   width: 100%;
   display: flex;
-  gap: $spacing-md;
+  gap: 8px;
 }
 </style>
 
