@@ -34,7 +34,7 @@ class AIPortraitControllerVolcengineIntegrationTest {
         request.setModelVersion("doubao-seedream-5-0-260128");
         request.setWidth(512);
         request.setHeight(512);
-        request.setCount(1);
+        request.setGenerateCount(1);
 
         // 发送请求
         MvcResult result = mockMvc.perform(post("/api/ai/portrait/generate")
@@ -61,7 +61,7 @@ class AIPortraitControllerVolcengineIntegrationTest {
         request.setModelVersion("unknown-model");
         request.setWidth(512);
         request.setHeight(512);
-        request.setCount(1);
+        request.setGenerateCount(1);
 
         // 发送请求
         MvcResult result = mockMvc.perform(post("/api/ai/portrait/generate")

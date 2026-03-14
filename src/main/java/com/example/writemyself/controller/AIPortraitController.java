@@ -31,21 +31,50 @@ public class AIPortraitController {
 
     /**
      * 创建生成任务
+     *
      * POST /api/ai/portrait/generate
+     *
+     * 前端在用户点击"开始生成"按钮后调用此接口。
+     * 接口会验证参数、创建生成任务、将任务放入队列进行处理。
+     * 返回 202 Accepted 和任务 ID，前端可通过 taskId 查询进度和结果。
+     *
+     * 前后端数据流：
+     * 前端 Vue Store 参数 → GeneratePortraitRequest DTO
+     * → 后端参数验证 → AIPortraitService.createGenerationTask()
+     * → 创建任务并放入队列 → 返回 GeneratePortraitResponse (202)
+     *
+     * @param userId 用户 ID，从请求头 X-User-Id 中获取
+     * @param request 生成请求参数，包含所有用户在前端配置的参数
+     * @return ResponseEntity 包含 taskId 和初始状态的 202 Accepted 响应
      */
     @PostMapping("/generate")
     public ResponseEntity<GeneratePortraitResponse> generate(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody GeneratePortraitRequest request) {
         try {
-            log.info("收到生成请求: userId={}", userId);
+            // 记录请求日志，包含用户 ID 和提示词（截断以保护隐私）
+            log.info("收到生成请求: userId={}, prompt={}, provider={}, generateCount={}",
+                    userId,
+                    request.getPrompt().substring(0, Math.min(50, request.getPrompt().length())),
+                    request.getProvider(),
+                    request.getGenerateCount());
 
+            // 调用服务层创建生成任务
             GeneratePortraitResponse response = aiPortraitService.createGenerationTask(userId, request);
 
+            // 返回 202 Accepted 状态码
+            // 表示请求已被接受，但任务还在处理中
+            // 前端应该根据返回的 taskId 轮询查询进度
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 
+        } catch (IllegalArgumentException e) {
+            // 参数校验失败，返回 400 Bad Request
+            log.warn("生成请求参数校验失败: userId={}, error={}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
         } catch (Exception e) {
-            log.error("生成请求处理失败", e);
+            // 系统错误，返回 500 Internal Server Error
+            log.error("生成请求处理失败: userId={}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

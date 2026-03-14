@@ -5,13 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
+import java.math.BigDecimal;
 
 /**
- * 生成立绘请求 DTO
+ * AI 人物立绘生成请求 DTO
+ *
+ * 前端 Vue Store 中的参数映射到后端的数据传输对象。
+ * 包含所有用户在生成界面中配置的参数。
+ *
+ * @author AI Portrait Generator
+ * @version 1.0
  */
 @Data
 @Builder
@@ -19,86 +23,206 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 public class GeneratePortraitRequest {
 
+    // ============ 核心参数 ============
+
     /**
-     * 正提示词 - 必填
+     * 正面提示词 - 必填
+     *
+     * 用户输入的用于描述生成角色的关键词和描述。
+     * 例如：一个年轻的女性角色，穿着古装，五官精致，皮肤光滑
+     *
+     * 映射自：portraitStore.params.prompt
      */
-    @NotBlank(message = "提示词不能为空")
-    @Size(min = 1, max = 5000, message = "提示词长度需要在 1-5000 字之间")
+    @NotBlank(message = "正面提示词不能为空")
+    @Size(min = 1, max = 500, message = "正面提示词长度需要在 1-500 字之间")
     private String prompt;
 
     /**
-     * 负提示词 - 可选
+     * 负面提示词 - 可选
+     *
+     * 用于告知 AI 模型要避免的元素和特征。
+     * 默认值：低质量, 模糊, 多手指, 水印, 变形, 低分辨率
+     *
+     * 映射自：portraitStore.params.negativePrompt
      */
-    @Size(max = 5000, message = "负提示词长度不能超过 5000 字")
+    @javax.validation.constraints.Size(max = 500, message = "负面提示词长度不能超过 500 字")
     private String negativePrompt;
 
     /**
-     * 参考图片 URL - 可选
+     * 参考图片 Base64 编码 - 可选
+     *
+     * 用户上传的参考图片，以 Base64 格式编码传输。
+     * 格式：data:image/png;base64,iVBORw0KGgo...
+     *
+     * 映射自：portraitStore.params.referenceImagePreview
      */
-    @Size(max = 255, message = "参考图片 URL 长度不能超过 255 字")
-    private String referenceImageUrl;
+    @Pattern(regexp = "^(data:image/(png|jpeg|jpg|webp);base64,)?[A-Za-z0-9+/=]*$",
+             message = "参考图片格式不正确，需要为 Base64 编码")
+    private String referenceImageBase64;
 
     /**
-     * 宽度 - 默认 1024
+     * 模型权重 - 必填
+     *
+     * 控制模型对输入参数的遵循程度。值越大越严格遵循提示词。
+     *
+     * 映射自：portraitStore.params.modelWeight
      */
-    @Min(value = 256, message = "宽度最小值为 256 像素")
-    @Max(value = 2048, message = "宽度最大值为 2048 像素")
+    @NotNull(message = "模型权重不能为空")
+    @DecimalMin(value = "0.0", message = "模型权重最小值为 0.0")
+    @DecimalMax(value = "1.0", message = "模型权重最大值为 1.0")
+    private BigDecimal modelWeight;
+
+    /**
+     * 生成宽度 - 必填
+     *
+     * 生成图片的宽度，单位为像素。
+     * 支持的值：256, 512, 1024, 2048
+     *
+     * 映射自：portraitStore.params.width
+     */
+    @NotNull(message = "生成宽度不能为空")
+    private Integer width;
+
+    /**
+     * 生成高度 - 必填
+     *
+     * 生成图片的高度，单位为像素。
+     * 支持的值：256, 512, 1024, 2048
+     *
+     * 映射自：portraitStore.params.height
+     */
+    @NotNull(message = "生成高度不能为空")
+    private Integer height;
+
+    // ============ 模型选择 ============
+
+    /**
+     * 服务提供商 - 必填
+     *
+     * 选择使用哪个云服务商的文生图 API。
+     * 支持的值：aliyun (阿里云), volcengine (火山引擎)
+     *
+     * 映射自：portraitStore.params.provider
+     */
+    @NotBlank(message = "服务提供商不能为空")
+    @Pattern(regexp = "^(aliyun|volcengine)$",
+             message = "服务提供商只支持 aliyun 或 volcengine")
+    private String provider;
+
+    /**
+     * 模型版本 - 必填
+     *
+     * 使用的模型版本号。不同版本支持不同的功能和效果。
+     * 例如：wanx-v1 (阿里云), flux (火山引擎)
+     *
+     * 映射自：portraitStore.params.modelVersion
+     */
+    @NotBlank(message = "模型版本不能为空")
+    @Size(max = 50, message = "模型版本长度不能超过 50 字")
+    private String modelVersion;
+
+    // ============ 高级参数 ============
+
+    /**
+     * 参考图片强度 - 可选
+     *
+     * 当上传参考图片时，该参数控制参考图片对生成结果的影响程度。
+     * 值的范围 0.0-1.0，值越大，生成结果越接近参考图片。
+     * 默认值：0.6
+     *
+     * 映射自：portraitStore.params.imageStrength
+     */
+    @DecimalMin(value = "0.0", message = "参考图片强度最小值为 0.0")
+    @DecimalMax(value = "1.0", message = "参考图片强度最大值为 1.0")
     @Builder.Default
-    private Integer width = 1024;
+    private BigDecimal imageStrength = new BigDecimal("0.6");
 
     /**
-     * 高度 - 默认 1024
+     * 生成数量 - 必填
+     *
+     * 一次生成多少张图片。每张图片都会消耗相应的配额。
+     * 支持的值：1-4
+     *
+     * 映射自：portraitStore.params.generateCount
      */
-    @Min(value = 256, message = "高度最小值为 256 像素")
-    @Max(value = 2048, message = "高度最大值为 2048 像素")
-    @Builder.Default
-    private Integer height = 1024;
-
-    /**
-     * 生成数量 - 默认 1，最多 4
-     */
+    @NotNull(message = "生成数量不能为空")
     @Min(value = 1, message = "生成数量最少为 1")
     @Max(value = 4, message = "生成数量最多为 4")
-    @Builder.Default
-    private Integer count = 1;
+    private java.lang.Integer generateCount;
+
+    /**
+     * 采样器名称 - 必填
+     *
+     * 选择采样算法，影响生成的质量和速度。
+     * 支持的值：euler (快速), dpm++ (高质量), autocfg (自动)
+     *
+     * 映射自：portraitStore.params.sampler
+     */
+    @NotBlank(message = "采样器不能为空")
+    @Pattern(regexp = "^(euler|dpm\\+\\+|autocfg)$",
+             message = "采样器只支持 euler, dpm++, autocfg")
+    private String sampler;
+
+    /**
+     * 迭代步数 - 必填
+     *
+     * 生成过程中的迭代次数。值越大，生成质量越高，但耗时越长。
+     * 支持的范围：10-50
+     * 默认值：30
+     *
+     * 映射自：portraitStore.params.steps
+     */
+    @NotNull(message = "迭代步数不能为空")
+    @Min(value = 10, message = "迭代步数最少为 10")
+    @Max(value = 50, message = "迭代步数最多为 50")
+    private Integer steps;
 
     /**
      * 风格预设 - 可选
+     *
+     * 预设的艺术风格，影响生成结果的整体风格。
+     * 例如：none (无), anime (动画), oil_painting (油画)
+     *
+     * 映射自：portraitStore.params.stylePreset
      */
     @Size(max = 50, message = "风格预设长度不能超过 50 字")
     private String stylePreset;
 
     /**
-     * 推理步数 - 默认 30
+     * 随机种子值 - 可选
+     *
+     * 用于控制随机性。相同的种子值会生成相同的结果。
+     * 值为 -1 时表示随机，其他正整数为固定种子。
+     *
+     * 映射自：portraitStore.params.seed
      */
-    @Min(value = 10, message = "推理步数最少为 10")
-    @Max(value = 100, message = "推理步数最多为 100")
+    @Min(value = -1, message = "随机种子值最小为 -1")
     @Builder.Default
-    private Integer inferenceSteps = 30;
+    private java.lang.Integer seed = -1;
 
     /**
-     * 采样器 - 可选
+     * 面部增强 - 必填
+     *
+     * 是否启用面部修复和增强功能，使生成的面部更加清晰细致。
+     * 默认值：true
+     *
+     * 映射自：portraitStore.params.faceEnhance
      */
-    @Size(max = 50, message = "采样器长度不能超过 50 字")
-    private String samplerName;
-
-    /**
-     * 种子值 - 可选，-1 表示随机
-     */
-    @Min(value = -1, message = "种子值最小为 -1")
+    @NotNull(message = "面部增强参数不能为空")
     @Builder.Default
-    private Long seed = -1L;
+    private Boolean faceEnhance = true;
 
     /**
-     * 模型名称 - 可选
+     * 输出格式 - 必填
+     *
+     * 生成图片的输出格式。
+     * 支持的值：png, jpg
+     *
+     * 映射自：portraitStore.params.outputFormat
      */
-    @Size(max = 100, message = "模型名称长度不能超过 100 字")
-    private String modelName;
-
-    /**
-     * 模型版本 - 可选
-     */
-    @Size(max = 50, message = "模型版本长度不能超过 50 字")
-    private String modelVersion;
+    @NotBlank(message = "输出格式不能为空")
+    @Pattern(regexp = "^(png|jpg)$",
+             message = "输出格式只支持 png 或 jpg")
+    private String outputFormat;
 }
 

@@ -97,7 +97,7 @@ App.vue 的布局结构（第 62-76 行）：
 ### 步骤 1：检查各组件是否定义了 overflow
 
 ```bash
-grep -n "overflow" CoreParamsPanel.vue AdvancedParamsPanel.vue ModelSelectionPanel.vue
+grep -n "overflow" CoreParamsPanel.vue AdvancedParamsPanel.vue 
 ```
 
 如果有 `overflow-y: auto` 或 `overflow: auto`，需要移除。

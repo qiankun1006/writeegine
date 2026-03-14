@@ -50,6 +50,7 @@ com/example/writemyself/dto/GameMapGenerationResponseDTO.class
 com/example/writemyself/controller/UnityController.class
 com/example/writemyself/controller/GlobalExceptionHandler$ErrorResponse.class
 com/example/writemyself/dto/GeneratePortraitRequest.class
+com/example/writemyself/dto/GeneratePortraitResponse$GeneratedImage$GeneratedImageBuilder.class
 com/example/writemyself/service/UnityService$12.class
 com/example/writemyself/controller/HomeController.class
 com/example/writemyself/controller/ImageEditorController.class
@@ -75,6 +76,7 @@ com/example/writemyself/repository/AIPortraitGenerationRepository.class
 com/example/writemyself/service/UnityService$19.class
 com/example/writemyself/dto/SaveResultRequest.class
 com/example/writemyself/service/UnityService$9.class
+com/example/writemyself/dto/GeneratePortraitResponse$GeneratedImage.class
 com/example/writemyself/controller/GameMapController$GameMapGenerationRequest.class
 com/example/writemyself/service/VolcengineException.class
 com/example/writemyself/controller/UnityController$4.class
