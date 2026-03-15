@@ -327,8 +327,10 @@ onMounted(() => {
   gap: 8px;
   padding: 12px;
   background: white;
-  border-radius: 6px;
+  border-radius: 0 0 6px 6px;
   border: 1px solid #f0f0f0;
+  border-top: none;
+  margin-top: -1px;
 }
 
 // ========== 模型头部 ==========
@@ -337,13 +339,16 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  padding: 8px 0;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 4px;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: #fafafa;
+    border-color: #e0e0e0;
   }
 
   .header-left {
