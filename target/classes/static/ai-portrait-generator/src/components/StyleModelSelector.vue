@@ -1,19 +1,26 @@
 <template>
   <div class="style-model-selector">
-    <div class="model-container">
-      <!-- 标题和刷新按钮 -->
-      <div class="model-header">
+    <!-- 折叠头部 -->
+    <div class="model-header" @click="isExpanded = !isExpanded">
+      <div class="header-left">
+        <el-icon class="expand-icon" :class="{ 'expand-icon--open': isExpanded }">
+          <ArrowRight />
+        </el-icon>
         <label class="section-label">风格模型选择</label>
-        <el-button
-          type="text"
-          size="small"
-          @click="refreshModels"
-          :loading="isRefreshing"
-        >
-          <el-icon><Refresh /></el-icon>
-        </el-button>
+        <span v-if="selectedModel" class="selected-tag">{{ selectedModel.name }}</span>
       </div>
+      <el-button
+        type="text"
+        size="small"
+        @click.stop="refreshModels"
+        :loading="isRefreshing"
+      >
+        <el-icon><Refresh /></el-icon>
+      </el-button>
+    </div>
 
+    <!-- 展开的模型列表容器 -->
+    <div v-if="isExpanded" class="model-container">
       <!-- 模型列表 -->
       <div class="model-list">
         <div
@@ -55,8 +62,8 @@
           </div>
 
           <!-- 选中状态指示器 -->
-          <div class="model-check">
-            <el-icon v-if="selectedModel?.id === model.id" class="check-icon">
+          <div class="model-check" v-if="selectedModel?.id === model.id">
+            <el-icon class="check-icon">
               <SuccessFilled />
             </el-icon>
           </div>
@@ -139,7 +146,7 @@
 <script setup lang="ts">
 import {onMounted, reactive, ref} from 'vue'
 import {usePortraitStore} from '@/stores/portraitStore'
-import {Picture, Plus, Refresh, SuccessFilled, Upload,} from '@element-plus/icons-vue'
+import {ArrowRight, Picture, Plus, Refresh, SuccessFilled, Upload,} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
 
 interface StyleModel {
@@ -193,6 +200,9 @@ const styleModels = ref<StyleModel[]>([
 
 // 选中的模型
 const selectedModel = ref<StyleModel | null>(styleModels.value[0])
+
+// 展开/折叠状态（默认展开）
+const isExpanded = ref(true)
 
 // 各模型的强度权重
 const modelWeights = reactive<Record<string, number>>({
@@ -327,7 +337,42 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .expand-icon {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    color: #909399;
+    font-size: 16px;
+
+    &--open {
+      transform: rotate(90deg);
+    }
+  }
+
+  .selected-tag {
+    font-size: 11px;
+    color: #2196f3;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .section-label {
@@ -375,6 +420,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  overflow: hidden;
 
   &:hover {
     background: #f5f5f5;
@@ -472,18 +518,21 @@ onMounted(() => {
 
 // ========== 选中指示器 ==========
 .model-check {
-  flex-shrink: 0;
+  position: absolute;
+  top: 6px;
+  right: 6px;
   width: 20px;
   height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: -25px;
-  margin-right: -5px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   .check-icon {
     color: #2196f3;
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 

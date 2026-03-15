@@ -100,6 +100,7 @@ const handleParamChange = () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 4px;
 }
 
 // ========== 提示词模块 ==========

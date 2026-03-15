@@ -48,6 +48,8 @@ onMounted(() => {
   display: flex;                         // 使用Flex布局
   flex-direction: column;                // 子元素垂直排列（上下方向）
   background-color: $light-gray;         // 背景色为浅灰色（从主题变量中取）
+  padding-top: 64px;                     // 为固定导航栏预留顶部空间
+  box-sizing: border-box;                // 包含 padding 在 height 计算中
 }
 
 // ========== 主容器 ==========
