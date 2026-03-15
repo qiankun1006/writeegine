@@ -201,8 +201,8 @@ const styleModels = ref<StyleModel[]>([
 // 选中的模型
 const selectedModel = ref<StyleModel | null>(styleModels.value[0])
 
-// 展开/折叠状态（默认展开）
-const isExpanded = ref(true)
+// 展开/折叠状态（默认不展开，用户点击标题时展开）
+const isExpanded = ref(false)
 
 // 各模型的强度权重
 const modelWeights = reactive<Record<string, number>>({

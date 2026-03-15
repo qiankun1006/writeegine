@@ -2,6 +2,12 @@
   <!-- 核心参数面板：包含风格选择、提示词、参考图片等参数配置 -->
   <div class="core-params-panel">
 
+    <!-- 素材类型选择模块：用户可以选择不同的素材创作类型 -->
+    <div class="asset-type-module">
+      <!-- 素材类型选择组件 -->
+      <AssetTypeSelector />
+    </div>
+
     <!-- 风格模型选择模块：用户可以选择不同的AI生成风格（日系、油画、3D等） -->
     <div class="style-module">
       <!-- 风格模型选择组件 -->
@@ -95,6 +101,8 @@ import {usePortraitStore} from '@/stores/portraitStore'
 import {Warning} from '@element-plus/icons-vue'
 // 导入参考图片上传组件
 import ReferenceImageUpload from './ReferenceImageUpload.vue'
+// 导入素材类型选择组件
+import AssetTypeSelector from './AssetTypeSelector.vue'
 // 导入风格模型选择组件
 import StyleModelSelector from './StyleModelSelector.vue'
 
@@ -137,12 +145,18 @@ const handleParamChange = () => {
   min-width: 0;
 }
 
+// ========== 素材类型选择模块 ==========
+.asset-type-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 // ========== 风格模型选择模块 ==========
 .style-module {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 4px;
 }
 
 // ========== 提示词模块 ==========
