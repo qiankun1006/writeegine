@@ -1,5 +1,10 @@
 <template>
   <div class="core-params-panel">
+    <!-- 风格模型选择模块 -->
+    <div class="style-module">
+      <StyleModelSelector />
+    </div>
+
     <!-- 提示词模块 -->
     <div class="prompt-module">
       <h3 class="module-title">📝 提示词</h3>
@@ -62,6 +67,7 @@
 import {usePortraitStore} from '@/stores/portraitStore'
 import {Warning} from '@element-plus/icons-vue'
 import ReferenceImageUpload from './ReferenceImageUpload.vue'
+import StyleModelSelector from './StyleModelSelector.vue'
 
 const store = usePortraitStore()
 
@@ -87,6 +93,13 @@ const handleParamChange = () => {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+}
+
+// ========== 风格模型选择模块 ==========
+.style-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 // ========== 提示词模块 ==========
