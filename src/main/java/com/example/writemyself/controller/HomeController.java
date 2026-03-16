@@ -476,6 +476,16 @@ public class HomeController {
     }
 
     /**
+     * 粒子效果编辑器页面
+     * 用于创建和编辑游戏粒子效果（火焰、雪花、爆炸等）
+     */
+    @GetMapping("/particle-effect-editor")
+    public String particleEffectEditor(Model model) {
+        model.addAttribute("title", "粒子效果编辑器 - 游戏素材创作");
+        return "particle-editor";
+    }
+
+    /**
      * 我的游戏列表
      */
     @GetMapping("/my-games")

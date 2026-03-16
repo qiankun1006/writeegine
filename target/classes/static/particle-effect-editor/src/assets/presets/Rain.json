@@ -1,0 +1,42 @@
+{
+  "name": "雨水",
+  "description": "下雨效果",
+  "config": {
+    "gravity": { "x": 0, "y": 300 },
+    "windForce": { "x": 50, "y": 0 },
+    "maxParticles": 2000,
+    "fps": 60,
+    "backgroundColor": "#2c3e50",
+    "renderMode": "normal",
+    "emitters": [
+      {
+        "position": { "x": 400, "y": 50 },
+        "emissionRate": 200,
+        "emissionBurst": 0,
+        "angle": 270,
+        "angleVariance": 15,
+        "speed": 200,
+        "speedVariance": 50,
+        "enabled": true,
+        "particleConfig": {
+          "lifespan": 2000,
+          "initialVelocity": { "x": 50, "y": 200 },
+          "acceleration": { "x": 0, "y": 100 },
+          "color": {
+            "startR": 135,
+            "startG": 206,
+            "startB": 250,
+            "endR": 70,
+            "endG": 130,
+            "endB": 180
+          },
+          "alphaStart": 0.7,
+          "alphaEnd": 0.3,
+          "scale": { "start": 0.3, "end": 0.1 },
+          "rotation": { "start": 0, "end": 0, "speed": 0 }
+        }
+      }
+    ]
+  }
+}
+

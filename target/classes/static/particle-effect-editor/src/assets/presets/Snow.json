@@ -1,0 +1,42 @@
+{
+  "name": "雪花",
+  "description": "飘落的雪花效果",
+  "config": {
+    "gravity": { "x": 0, "y": 20 },
+    "windForce": { "x": 30, "y": 0 },
+    "maxParticles": 500,
+    "fps": 60,
+    "backgroundColor": "#1a1a2e",
+    "renderMode": "normal",
+    "emitters": [
+      {
+        "position": { "x": 400, "y": 50 },
+        "emissionRate": 20,
+        "emissionBurst": 0,
+        "angle": 270,
+        "angleVariance": 60,
+        "speed": 50,
+        "speedVariance": 30,
+        "enabled": true,
+        "particleConfig": {
+          "lifespan": 8000,
+          "initialVelocity": { "x": 20, "y": 30 },
+          "acceleration": { "x": 10, "y": 20 },
+          "color": {
+            "startR": 255,
+            "startG": 255,
+            "startB": 255,
+            "endR": 255,
+            "endG": 255,
+            "endB": 255
+          },
+          "alphaStart": 0.9,
+          "alphaEnd": 0.6,
+          "scale": { "start": 0.8, "end": 1.2 },
+          "rotation": { "start": 0, "end": 720, "speed": 45 }
+        }
+      }
+    ]
+  }
+}
+

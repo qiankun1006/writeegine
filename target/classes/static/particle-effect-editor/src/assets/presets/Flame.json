@@ -1,0 +1,42 @@
+{
+  "name": "火焰",
+  "description": "经典的火焰粒子效果",
+  "config": {
+    "gravity": { "x": 0, "y": -50 },
+    "windForce": { "x": 0, "y": 0 },
+    "maxParticles": 1000,
+    "fps": 60,
+    "backgroundColor": "#000000",
+    "renderMode": "additive",
+    "emitters": [
+      {
+        "position": { "x": 400, "y": 500 },
+        "emissionRate": 80,
+        "emissionBurst": 0,
+        "angle": 90,
+        "angleVariance": 45,
+        "speed": 150,
+        "speedVariance": 100,
+        "enabled": true,
+        "particleConfig": {
+          "lifespan": 1500,
+          "initialVelocity": { "x": 0, "y": -100 },
+          "acceleration": { "x": 0, "y": -50 },
+          "color": {
+            "startR": 255,
+            "startG": 100,
+            "startB": 0,
+            "endR": 255,
+            "endG": 200,
+            "endB": 0
+          },
+          "alphaStart": 0.8,
+          "alphaEnd": 0,
+          "scale": { "start": 1.5, "end": 0.2 },
+          "rotation": { "start": 0, "end": 360, "speed": 180 }
+        }
+      }
+    ]
+  }
+}
+
