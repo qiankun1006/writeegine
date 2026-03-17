@@ -230,5 +230,38 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+/* 美化 tabs 样式 */
+:deep(.el-tabs__header) {
+  margin: 0;
+  border-bottom: 1px solid #444;
+  background: #1a1a1a;
+}
+
+:deep(.el-tabs__nav) {
+  border: none;
+}
+
+:deep(.el-tabs__item) {
+  color: #999 !important;
+  font-weight: 500;
+  transition: all 0.3s;
+  padding: 0 20px !important;
+}
+
+:deep(.el-tabs__item:hover) {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:deep(.el-tabs__item.is-active) {
+  color: #409eff !important;
+  font-weight: bold;
+}
+
+:deep(.el-tabs__active-bar) {
+  background: #409eff !important;
+  height: 3px !important;
+}
 </style>
 

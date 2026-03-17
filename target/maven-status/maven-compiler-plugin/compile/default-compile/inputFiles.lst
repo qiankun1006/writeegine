@@ -23,6 +23,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitModelConfigRepository.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/UnityController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/ImageGenerationService.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/GameAssetController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/AssetController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/UnityMaterial.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/VolcengineHealthIndicator.java
