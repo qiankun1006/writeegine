@@ -36,10 +36,6 @@ export default defineConfig({
     minify: 'terser',
     sourcemap: false,
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'src/main.ts'),
-        progressBarDemo: path.resolve(__dirname, 'src/demo/main.ts'),
-      },
       output: {
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
