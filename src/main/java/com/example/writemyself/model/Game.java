@@ -92,6 +92,11 @@ public class Game implements Serializable {
     private long updatedAt;
 
     /**
+     * 用户ID（可选）
+     */
+    private String userId;
+
+    /**
      * 构造函数
      */
     public Game() {
@@ -106,6 +111,11 @@ public class Game implements Serializable {
         this.name = name;
         this.type = type;
         this.description = description;
+    }
+
+    public Game(String id, String name, String type, String description, String userId) {
+        this(id, name, type, description);
+        this.userId = userId;
     }
 
     // ===== Getters and Setters =====
@@ -177,6 +187,14 @@ public class Game implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
         return "Game{" +
@@ -184,6 +202,7 @@ public class Game implements Serializable {
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", description='" + description + '\'' +
+                ", userId='" + userId + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * AI肖像任务数据访问Mapper接口
@@ -193,5 +194,80 @@ public interface AIPortraitTaskMapper {
      */
     @Delete("DELETE FROM ai_portrait_task WHERE created_at < #{cutoffTime}")
     int cleanupOldTasks(@Param("cutoffTime") LocalDateTime cutoffTime);
+
+    /**
+     * 条件查询任务
+     */
+    List<AIPortraitTask> selectByCondition(Map<String, Object> params);
+
+    /**
+     * 分页查询任务
+     */
+    List<AIPortraitTask> selectByPage(@Param("limit") int limit, @Param("offset") int offset);
+
+    /**
+     * 批量插入任务
+     */
+    int batchInsert(List<AIPortraitTask> tasks);
+
+    /**
+     * 批量更新任务
+     */
+    int batchUpdate(List<AIPortraitTask> tasks);
+
+    /**
+     * 批量删除任务
+     */
+    int batchDelete(List<Long> ids);
+
+    /**
+     * 批量更新任务状态
+     */
+    int batchUpdateStatus(@Param("ids") List<Long> ids, @Param("status") String status, @Param("updatedAt") LocalDateTime updatedAt);
+
+    /**
+     * 获取任务统计信息
+     */
+    List<Map<String, Object>> getStatistics();
+
+    /**
+     * 获取任务状态分布
+     */
+    List<Map<String, Object>> getStatusDistribution();
+
+    /**
+     * 获取任务处理时间统计
+     */
+    List<Map<String, Object>> getProcessingTimeStats();
+
+    /**
+     * 获取最近活跃的任务
+     */
+    List<AIPortraitTask> getRecentActiveTasks(@Param("limit") int limit);
+
+    /**
+     * 获取需要重试的任务
+     */
+    List<AIPortraitTask> getTasksNeedRetry(@Param("limit") int limit);
+
+    /**
+     * 批量更新任务进度
+     */
+    int batchUpdateProgress(@Param("ids") List<Long> ids, @Param("increment") int increment, @Param("updatedAt") LocalDateTime updatedAt);
+
+    /**
+     * 根据条件统计任务数量
+     */
+    long countByCondition(Map<String, Object> params);
+
+    /**
+     * 获取任务错误统计
+     */
+    List<Map<String, Object>> getErrorStatistics();
+
+    /**
+     * 获取任务性能指标
+     */
+    List<Map<String, Object>> getPerformanceMetrics();
 }
 

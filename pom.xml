@@ -31,6 +31,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mybatis.version>2.3.1</mybatis.version>
+        <druid.version>1.2.20</druid.version>
     </properties>
     <dependencies>
         <dependency>
@@ -118,6 +120,20 @@
             <artifactId>h2</artifactId>
         </dependency>
 
+        <!-- MyBatis 依赖 -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
+        <!-- Druid 连接池 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>1.2.20</version>
+        </dependency>
+
         <!-- 阿里云通义 SDK (暂不需要，当前使用模拟实现) -->
         <!--
         <dependency>
@@ -197,5 +213,23 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
