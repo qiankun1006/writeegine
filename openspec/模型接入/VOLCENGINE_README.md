@@ -29,7 +29,7 @@
 - 错误处理示例
 
 ### 📋 技术总结 (架构概览)
-👉 **[VOLCENGINE_INTEGRATION_SUMMARY.md](./VOLCENGINE_INTEGRATION_SUMMARY.md)**
+👉 **[VOLCENGINE_INTEGRATION_SUMMARY.md](VOLCENGINE_INTEGRATION_SUMMARY.md)**
 - 完成状态总结
 - 架构设计图
 - 核心功能列表
@@ -75,7 +75,7 @@ curl -X POST http://localhost:8080/api/ai/portrait/generate \
 
 ### 👨‍💼 产品经理
 - 📖 [VOLCENGINE_COMPLETION_REPORT.md](./VOLCENGINE_COMPLETION_REPORT.md) - 项目交付物
-- 📖 [VOLCENGINE_INTEGRATION_SUMMARY.md](./VOLCENGINE_INTEGRATION_SUMMARY.md) - 功能总结
+- 📖 [VOLCENGINE_INTEGRATION_SUMMARY.md](VOLCENGINE_INTEGRATION_SUMMARY.md) - 功能总结
 
 ### 👨‍💻 开发工程师
 - 📖 [DOUBAN_QUICK_START.md](./DOUBAN_QUICK_START.md) - 快速上手
@@ -88,7 +88,7 @@ curl -X POST http://localhost:8080/api/ai/portrait/generate \
 
 ### 📚 技术文档人员
 - 📖 [DOUBAN_MODEL_INTEGRATION_GUIDE.md](./DOUBAN_MODEL_INTEGRATION_GUIDE.md) - 完整参考
-- 📖 [VOLCENGINE_INTEGRATION_SUMMARY.md](./VOLCENGINE_INTEGRATION_SUMMARY.md) - 架构说明
+- 📖 [VOLCENGINE_INTEGRATION_SUMMARY.md](VOLCENGINE_INTEGRATION_SUMMARY.md) - 架构说明
 
 ---
 
@@ -222,7 +222,7 @@ A: 使用轻量版模型 + 512×512 分辨率 + 缓存相同提示词
 A: 根据 API 限额，通常 10-100 QPS，建议配置 5-20 并发
 
 **Q: 如何处理生成失败？**
-A: 系统自动重试 3-5 次，详见 [VOLCENGINE_INTEGRATION_SUMMARY.md](./VOLCENGINE_INTEGRATION_SUMMARY.md)
+A: 系统自动重试 3-5 次，详见 [VOLCENGINE_INTEGRATION_SUMMARY.md](VOLCENGINE_INTEGRATION_SUMMARY.md)
 
 ---
 
@@ -237,7 +237,7 @@ A: 系统自动重试 3-5 次，详见 [VOLCENGINE_INTEGRATION_SUMMARY.md](./VOL
 - [快速启动](./DOUBAN_QUICK_START.md)
 - [完整指南](./DOUBAN_MODEL_INTEGRATION_GUIDE.md)
 - [代码示例](./DOUBAO_API_EXAMPLES.md)
-- [技术总结](./VOLCENGINE_INTEGRATION_SUMMARY.md)
+- [技术总结](VOLCENGINE_INTEGRATION_SUMMARY.md)
 - [完成报告](./VOLCENGINE_COMPLETION_REPORT.md)
 
 ---
@@ -288,7 +288,7 @@ netstat -an | grep 8080
 ### 深入学习
 - 📖 阅读 [详细集成指南](./DOUBAN_MODEL_INTEGRATION_GUIDE.md)
 - 💻 研究 [代码示例](./DOUBAO_API_EXAMPLES.md)
-- 🏗️ 了解 [架构设计](./VOLCENGINE_INTEGRATION_SUMMARY.md)
+- 🏗️ 了解 [架构设计](VOLCENGINE_INTEGRATION_SUMMARY.md)
 
 ### 生产部署
 - 🚀 参考 [部署指南](./VOLCENGINE_COMPLETION_REPORT.md)
