@@ -697,7 +697,7 @@ public class RateLimiter {
 - [豆包模型官方文档](https://www.volcengine.com/docs/82379/1824121)
 - [火山引擎方舟平台](https://console.volcengine.com/ark)
 - [项目集成指南](./DOUBAN_MODEL_INTEGRATION_GUIDE.md)
-- [集成总结](./VOLCENGINE_INTEGRATION_SUMMARY.md)
+- [集成总结](./火山引擎豆包模型集成总结.md)
 
 ---
 
