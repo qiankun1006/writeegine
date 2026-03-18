@@ -46,7 +46,7 @@
 
 #### Task 2.1: 快速启动指南
 - **状态**: ✅ 完成
-- **文件**: `DOUBAN_QUICK_START.md`
+- **文件**: `豆包模型快速启动指南.md`
 - **内容**:
   - 5 分钟快速上手
   - 获取 API Key
@@ -69,7 +69,7 @@
 
 #### Task 2.3: API 使用示例
 - **状态**: ✅ 完成
-- **文件**: `DOUBAO_API_EXAMPLES.md`
+- **文件**: `豆包模型API使用示例.md`
 - **内容**:
   - curl 示例
   - Java HttpClient 示例
@@ -82,7 +82,7 @@
 
 #### Task 2.4: 集成总结
 - **状态**: ✅ 完成
-- **文件**: `VOLCENGINE_INTEGRATION_SUMMARY.md`
+- **文件**: `火山引擎豆包模型集成总结.md`
 - **内容**:
   - 完成状态总结
   - 快速开始
@@ -128,7 +128,7 @@
 - **内容**: 本文件
 
 #### Task 4.3: 创建设计文档
-- **状态**: ✅ 完成 (见 VOLCENGINE_INTEGRATION_SUMMARY.md)
+- **状态**: ✅ 完成 (见 火山引擎豆包模型集成总结.md)
 - **内容**: 架构设计和实现细节
 
 ---
@@ -150,10 +150,10 @@
 - [x] 日志输出完整
 
 ### 文档
-- [x] 快速启动指南（DOUBAN_QUICK_START.md）
+- [x] 快速启动指南（豆包模型快速启动指南.md）
 - [x] 详细集成指南（DOUBAN_MODEL_INTEGRATION_GUIDE.md）
-- [x] API 使用示例（DOUBAO_API_EXAMPLES.md）
-- [x] 集成总结（VOLCENGINE_INTEGRATION_SUMMARY.md）
+- [x] API 使用示例（豆包模型API使用示例.md）
+- [x] 集成总结（火山引擎豆包模型集成总结.md）
 - [x] OpenSpec 提案（proposal.md）
 - [x] OpenSpec 任务清单（tasks.md）
 
@@ -170,7 +170,7 @@
 
 ### 新增文件
 
-1. **DOUBAN_QUICK_START.md**
+1. **豆包模型快速启动指南.md**
    - 快速启动指南
    - 行数: 356
    - 大小: ~8KB
@@ -180,12 +180,12 @@
    - 行数: 623
    - 大小: ~25KB
 
-3. **DOUBAO_API_EXAMPLES.md**
+3. **豆包模型API使用示例.md**
    - API 使用示例
    - 行数: 789
    - 大小: ~35KB
 
-4. **VOLCENGINE_INTEGRATION_SUMMARY.md**
+4. **火山引擎豆包模型集成总结.md**
    - 集成总结
    - 行数: 456
    - 大小: ~18KB
@@ -311,9 +311,9 @@ mvn spring-boot:run -Pprod
 
 - [豆包模型官方文档](https://www.volcengine.com/docs/82379/1824121)
 - [火山引擎方舟平台](https://console.volcengine.com/ark)
-- [快速启动指南](../../DOUBAN_QUICK_START.md)
+- [快速启动指南](../../豆包模型快速启动指南.md)
 - [详细集成指南](../../DOUBAN_MODEL_INTEGRATION_GUIDE.md)
-- [API 使用示例](../../DOUBAO_API_EXAMPLES.md)
+- [API 使用示例](../../豆包模型API使用示例.md)
 
 ---
 

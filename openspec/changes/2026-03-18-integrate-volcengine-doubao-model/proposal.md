@@ -60,9 +60,9 @@
 
 ### 文档文件
 - `DOUBAN_MODEL_INTEGRATION_GUIDE.md` - 详细集成指南
-- `VOLCENGINE_INTEGRATION_SUMMARY.md` - 集成总结
-- `DOUBAO_API_EXAMPLES.md` - API 使用示例
-- `DOUBAN_QUICK_START.md` - 快速启动指南
+- `火山引擎豆包模型集成总结.md` - 集成总结
+- `豆包模型API使用示例.md` - API 使用示例
+- `豆包模型快速启动指南.md` - 快速启动指南
 
 ## 🔑 配置参数
 
@@ -121,16 +121,16 @@ volcengine.retry.max-delay=30000
 ## 📚 文档
 
 ### 快速启动 (5分钟)
-见 `DOUBAN_QUICK_START.md`
+见 `豆包模型快速启动指南.md`
 
 ### 详细指南 (完整)
 见 `DOUBAN_MODEL_INTEGRATION_GUIDE.md`
 
 ### API 示例 (代码示例)
-见 `DOUBAO_API_EXAMPLES.md`
+见 `豆包模型API使用示例.md`
 
 ### 集成总结 (概览)
-见 `VOLCENGINE_INTEGRATION_SUMMARY.md`
+见 `火山引擎豆包模型集成总结.md`
 
 ## ✅ 验收标准
 
