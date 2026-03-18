@@ -1,0 +1,195 @@
+/* 进度条动画样式 */
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 闪烁动画 */
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* 抖动动画 */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+/* 流光动画 */
+@keyframes flow {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+/* 条纹动画 */
+@keyframes stripe {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
+/* 充能脉冲 */
+@keyframes charge-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(66, 133, 244, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+  }
+}
+
+/* 血滴动画 */
+@keyframes blood-drop {
+  0% {
+    transform: translateY(-10px) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* 阶梯动画 */
+@keyframes step-fill {
+  0% {
+    width: 0%;
+  }
+  12.5% {
+    width: 12.5%;
+  }
+  25% {
+    width: 25%;
+  }
+  37.5% {
+    width: 37.5%;
+  }
+  50% {
+    width: 50%;
+  }
+  62.5% {
+    width: 62.5%;
+  }
+  75% {
+    width: 75%;
+  }
+  87.5% {
+    width: 87.5%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* 玻璃拟态模糊动画 */
+@keyframes glass-blur {
+  0% {
+    backdrop-filter: blur(8px);
+  }
+  50% {
+    backdrop-filter: blur(12px);
+  }
+  100% {
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* 应用动画的类 */
+.progress-bar--low-health {
+  animation: shake 0.5s ease-in-out;
+}
+
+.progress-bar--charging .progress-fill {
+  animation: charge-pulse 2s infinite;
+}
+
+.progress-bar--loading-stripe .progress-fill {
+  animation: stripe 1s linear infinite;
+}
+
+.progress-bar--energy-flow .progress-fill {
+  animation: flow 2s linear infinite;
+}
+
+.progress-bar--step-animation .progress-fill {
+  animation: step-fill 2s steps(8, end);
+}
+
+.progress-bar--glass-effect .progress-background {
+  animation: glass-blur 3s ease-in-out infinite;
+}
+
+/* 血滴动画容器 */
+.blood-drops {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.blood-drop {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 0, 0, 0.7);
+  border-radius: 50%;
+  animation: blood-drop 1.5s infinite;
+}
+
+/* 动画速度控制 */
+.progress-bar--speed-slow {
+  --animation-speed: 1s;
+}
+
+.progress-bar--speed-normal {
+  --animation-speed: 0.5s;
+}
+
+.progress-bar--speed-fast {
+  --animation-speed: 0.2s;
+}
+
+/* 应用自定义动画速度 */
+.progress-bar--low-health,
+.progress-bar--charging .progress-fill,
+.progress-bar--loading-stripe .progress-fill,
+.progress-bar--energy-flow .progress-fill,
+.progress-bar--step-animation .progress-fill,
+.progress-bar--glass-effect .progress-background {
+  animation-duration: var(--animation-speed, 0.5s);
+}
+

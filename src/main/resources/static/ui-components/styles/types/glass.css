@@ -1,0 +1,303 @@
+/* 玻璃拟态款进度条样式 */
+
+.progress-bar--glass {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 玻璃背景 */
+.progress-bar--glass .progress-background {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border-radius: 11px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  opacity: 0.8;
+}
+
+/* 玻璃填充 */
+.progress-bar--glass .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--glass-fill-start, rgba(66, 133, 244, 0.7)) 0%,
+    var(--glass-fill-end, rgba(66, 133, 244, 0.9)) 100%
+  );
+  border-radius: 11px;
+  position: relative;
+  overflow: hidden;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 玻璃光泽效果 */
+.progress-bar--glass .progress-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  border-radius: 11px 11px 0 0;
+  z-index: 1;
+}
+
+/* 玻璃边框 */
+.progress-bar--glass .progress-border {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+/* 玻璃数值 */
+.progress-bar--glass .progress-value {
+  font-family: 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: white;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.3px;
+  z-index: 10;
+  position: relative;
+}
+
+/* 模糊动画效果 */
+.progress-bar--glass.progress-bar--glass-effect .progress-background {
+  animation: glass-blur-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glass-blur-pulse {
+  0%, 100% {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+  50% {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* 光泽流动效果 */
+.progress-bar--glass .progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: glass-shine 3s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes glass-shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+/* 成功状态 */
+.progress-bar--glass.progress-bar--success {
+  animation: glass-success-glow 2s ease-in-out;
+}
+
+@keyframes glass-success-glow {
+  0%, 100% {
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+      0 0 30px rgba(82, 196, 26, 0.3);
+  }
+}
+
+.progress-bar--glass.progress-bar--success .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--glass-success-start, rgba(82, 196, 26, 0.7)) 0%,
+    var(--glass-success-end, rgba(82, 196, 26, 0.9)) 100%
+  );
+}
+
+/* 错误状态 */
+.progress-bar--glass.progress-bar--error {
+  animation: glass-error-shake 0.5s ease-in-out;
+}
+
+@keyframes glass-error-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+.progress-bar--glass.progress-bar--error .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--glass-error-start, rgba(255, 77, 79, 0.7)) 0%,
+    var(--glass-error-end, rgba(255, 77, 79, 0.9)) 100%
+  );
+}
+
+/* 加载状态 */
+.progress-bar--glass.progress-bar--loading {
+  animation: glass-loading-pulse 2s infinite;
+}
+
+@keyframes glass-loading-pulse {
+  0%, 100% {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.progress-bar--glass.progress-bar--loading .progress-fill::after {
+  animation-duration: 1.5s;
+}
+
+/* 气泡效果 */
+.glass-bubbles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.glass-bubble {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  border-radius: 50%;
+  animation: glass-bubble-float 4s infinite;
+  filter: blur(1px);
+}
+
+@keyframes glass-bubble-float {
+  0% {
+    transform: translateY(100%) translateX(var(--bubble-x, 0));
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-100%) translateX(calc(var(--bubble-x, 0) + 20px));
+    opacity: 0;
+  }
+}
+
+/* 悬停效果 */
+.progress-bar--glass:hover {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.progress-bar--glass:hover .progress-fill::after {
+  animation-duration: 2s;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .progress-bar--glass {
+    height: 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .progress-bar--glass .progress-background,
+  .progress-bar--glass .progress-fill {
+    border-radius: 9px;
+  }
+
+  .progress-bar--glass .progress-border {
+    border-radius: 10px;
+  }
+
+  .progress-bar--glass .progress-value {
+    font-size: 11px;
+  }
+
+  .glass-bubble {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* 游戏编辑器中的特殊样式 */
+.game-editor .progress-bar--glass {
+  height: 26px;
+  margin: 10px 0;
+}
+
+/* 自定义变量支持 */
+.progress-bar--glass {
+  --glass-fill-start: rgba(66, 133, 244, 0.7);
+  --glass-fill-end: rgba(66, 133, 244, 0.9);
+  --glass-border-color: rgba(255, 255, 255, 0.3);
+  --glass-border-hover: rgba(255, 255, 255, 0.4);
+  --glass-success-start: rgba(82, 196, 26, 0.7);
+  --glass-success-end: rgba(82, 196, 26, 0.9);
+  --glass-error-start: rgba(255, 77, 79, 0.7);
+  --glass-error-end: rgba(255, 77, 79, 0.9);
+  --glass-blur-strength: 10px;
+  --glass-blur-hover: 12px;
+  --glass-shine-speed: 3s;
+  --glass-bubble-size: 8px;
+  --glass-bubble-speed: 4s;
+}
+

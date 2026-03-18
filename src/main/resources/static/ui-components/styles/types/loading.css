@@ -1,0 +1,309 @@
+/* 加载进度款进度条样式 */
+
+.progress-bar--loading {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: linear-gradient(
+    180deg,
+    rgba(240, 240, 240, 0.9) 0%,
+    rgba(224, 224, 224, 0.9) 100%
+  );
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar--loading .progress-background {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.05) 0px,
+    rgba(0, 0, 0, 0.05) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+  border-radius: 6px;
+  opacity: 0.5;
+}
+
+.progress-bar--loading .progress-fill {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--loading-fill-color, #1890ff) 0px,
+    var(--loading-fill-color, #1890ff) 10px,
+    var(--loading-fill-highlight, #40a9ff) 10px,
+    var(--loading-fill-highlight, #40a9ff) 20px
+  );
+  background-size: 28.28px 28.28px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  transition: width 0.3s ease;
+  animation: loading-stripe-move 1s linear infinite;
+}
+
+@keyframes loading-stripe-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28.28px 0;
+  }
+}
+
+/* 进度数字显示 */
+.progress-bar--loading .progress-percentage {
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: white;
+  text-shadow:
+    1px 1px 2px rgba(0, 0, 0, 0.3),
+    0 0 1px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
+  z-index: 10;
+  position: relative;
+}
+
+/* 状态图标 */
+.progress-bar--loading .status-icon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  z-index: 15;
+  font-size: 16px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  animation: loading-icon-spin 2s linear infinite;
+}
+
+@keyframes loading-icon-spin {
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+/* 边框效果 */
+.progress-bar--loading .progress-border {
+  border: 1px solid var(--loading-border-color, #d9d9d9);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 加载完成状态 */
+.progress-bar--loading.progress-bar--success {
+  animation: loading-success-pulse 1s ease-in-out;
+}
+
+@keyframes loading-success-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      0 0 20px rgba(82, 196, 26, 0.4);
+  }
+}
+
+.progress-bar--loading.progress-bar--success .progress-fill {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--loading-success-color, #52c41a) 0px,
+    var(--loading-success-color, #52c41a) 10px,
+    var(--loading-success-highlight, #73d13d) 10px,
+    var(--loading-success-highlight, #73d13d) 20px
+  );
+  animation: loading-success-stripe 0.5s linear infinite;
+}
+
+@keyframes loading-success-stripe {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28.28px 0;
+  }
+}
+
+.progress-bar--loading.progress-bar--success .status-icon {
+  animation: none;
+  color: var(--loading-success-icon-color, #52c41a);
+}
+
+/* 加载失败状态 */
+.progress-bar--loading.progress-bar--error {
+  animation: loading-error-shake 0.5s ease-in-out;
+}
+
+@keyframes loading-error-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+.progress-bar--loading.progress-bar--error .progress-fill {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--loading-error-color, #ff4d4f) 0px,
+    var(--loading-error-color, #ff4d4f) 10px,
+    var(--loading-error-highlight, #ff7875) 10px,
+    var(--loading-error-highlight, #ff7875) 20px
+  );
+  animation: loading-error-stripe 0.3s linear infinite;
+}
+
+@keyframes loading-error-stripe {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28.28px 0;
+  }
+}
+
+.progress-bar--loading.progress-bar--error .status-icon {
+  animation: loading-error-pulse 1s infinite;
+  color: var(--loading-error-icon-color, #ff4d4f);
+}
+
+@keyframes loading-error-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 加载中状态 */
+.progress-bar--loading.progress-bar--loading {
+  animation: loading-container-pulse 2s infinite;
+}
+
+@keyframes loading-container-pulse {
+  0%, 100% {
+    background: linear-gradient(
+      180deg,
+      rgba(240, 240, 240, 0.9) 0%,
+      rgba(224, 224, 224, 0.9) 100%
+    );
+  }
+  50% {
+    background: linear-gradient(
+      180deg,
+      rgba(230, 230, 230, 0.9) 0%,
+      rgba(214, 214, 214, 0.9) 100%
+    );
+  }
+}
+
+/* 进度指示器 */
+.loading-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.loading-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: loading-dot-move 2s infinite;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes loading-dot-move {
+  0% {
+    transform: translateX(-10px) translateY(50%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100% + 10px)) translateY(50%);
+    opacity: 0;
+  }
+}
+
+/* 悬停效果 */
+.progress-bar--loading:hover .progress-fill {
+  filter: brightness(1.1);
+}
+
+.progress-bar--loading:hover .progress-border {
+  border-color: var(--loading-border-hover-color, #1890ff);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .progress-bar--loading {
+    height: 20px;
+    border-radius: 6px;
+  }
+
+  .progress-bar--loading .progress-border {
+    border-width: 0.8px;
+    border-radius: 6px;
+  }
+
+  .progress-bar--loading .progress-percentage {
+    font-size: 11px;
+  }
+
+  .progress-bar--loading .status-icon {
+    font-size: 14px;
+    right: 8px;
+  }
+}
+
+/* 游戏编辑器中的特殊样式 */
+.game-editor .progress-bar--loading {
+  height: 22px;
+  margin: 6px 0;
+}
+
+/* 自定义变量支持 */
+.progress-bar--loading {
+  --loading-fill-color: #1890ff;
+  --loading-fill-highlight: #40a9ff;
+  --loading-border-color: #d9d9d9;
+  --loading-border-hover-color: #1890ff;
+  --loading-success-color: #52c41a;
+  --loading-success-highlight: #73d13d;
+  --loading-success-icon-color: #52c41a;
+  --loading-error-color: #ff4d4f;
+  --loading-error-highlight: #ff7875;
+  --loading-error-icon-color: #ff4d4f;
+  --loading-stripe-speed: 1s;
+  --loading-dot-color: rgba(255, 255, 255, 0.8);
+}
+

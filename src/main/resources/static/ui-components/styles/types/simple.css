@@ -1,0 +1,127 @@
+/* 极简纯色款进度条样式 */
+
+.progress-bar--simple {
+  /* 基础样式已在base.css中定义 */
+}
+
+.progress-bar--simple .progress-background {
+  background-color: var(--simple-bg-color, #f0f0f0);
+  border-radius: inherit;
+}
+
+.progress-bar--simple .progress-fill {
+  background-color: var(--simple-fill-color, #1890ff);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+.progress-bar--simple .progress-border {
+  border: var(--simple-border-width, 1px) solid var(--simple-border-color, #d9d9d9);
+  border-radius: inherit;
+  box-sizing: border-box;
+}
+
+/* 悬停效果 */
+.progress-bar--simple:hover .progress-fill {
+  filter: brightness(1.1);
+}
+
+.progress-bar--simple:hover .progress-border {
+  border-color: var(--simple-border-hover-color, #1890ff);
+}
+
+/* 激活状态 */
+.progress-bar--simple:active .progress-fill {
+  filter: brightness(0.9);
+}
+
+/* 禁用状态 */
+.progress-bar--simple.progress-bar--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.progress-bar--simple.progress-bar--disabled .progress-fill {
+  background-color: var(--simple-fill-disabled-color, #bfbfbf);
+}
+
+.progress-bar--simple.progress-bar--disabled .progress-border {
+  border-color: var(--simple-border-disabled-color, #d9d9d9);
+}
+
+/* 成功状态 */
+.progress-bar--simple.progress-bar--success .progress-fill {
+  background-color: var(--simple-fill-success-color, #52c41a);
+}
+
+.progress-bar--simple.progress-bar--success .progress-border {
+  border-color: var(--simple-border-success-color, #73d13d);
+}
+
+/* 错误状态 */
+.progress-bar--simple.progress-bar--error .progress-fill {
+  background-color: var(--simple-fill-error-color, #ff4d4f);
+}
+
+.progress-bar--simple.progress-bar--error .progress-border {
+  border-color: var(--simple-border-error-color, #ff7875);
+}
+
+/* 加载状态 */
+.progress-bar--simple.progress-bar--loading .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--simple-fill-color, #1890ff) 25%,
+    var(--simple-fill-highlight-color, #40a9ff) 50%,
+    var(--simple-fill-color, #1890ff) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .progress-bar--simple {
+    height: 20px;
+  }
+
+  .progress-bar--simple .progress-border {
+    border-width: calc(var(--simple-border-width, 1px) * 0.8);
+  }
+}
+
+/* 游戏编辑器中的特殊样式 */
+.game-editor .progress-bar--simple {
+  height: 20px;
+  margin: 4px 0;
+}
+
+.game-editor .progress-bar--simple .progress-value {
+  font-size: 11px;
+}
+
+/* 自定义变量支持 */
+.progress-bar--simple {
+  --simple-bg-color: #f0f0f0;
+  --simple-fill-color: #1890ff;
+  --simple-border-color: #d9d9d9;
+  --simple-border-width: 1px;
+  --simple-border-hover-color: #1890ff;
+  --simple-fill-disabled-color: #bfbfbf;
+  --simple-border-disabled-color: #d9d9d9;
+  --simple-fill-success-color: #52c41a;
+  --simple-border-success-color: #73d13d;
+  --simple-fill-error-color: #ff4d4f;
+  --simple-border-error-color: #ff7875;
+  --simple-fill-highlight-color: #40a9ff;
+}
+

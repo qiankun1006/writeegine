@@ -53,7 +53,6 @@ com/example/writemyself/controller/TilemapEditorController.class
 com/example/writemyself/service/UnityService$11.class
 com/example/writemyself/model/UnityObject$Transform.class
 com/example/writemyself/model/UnityObject.class
-com/example/writemyself/controller/GameAssetController.class
 com/example/writemyself/dto/GeneratePortraitResponse$GeneratedImage$GeneratedImageBuilder.class
 com/example/writemyself/service/UnityService$13.class
 com/example/writemyself/service/AsyncTaskService.class

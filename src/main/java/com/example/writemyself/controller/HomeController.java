@@ -476,6 +476,17 @@ public class HomeController {
     }
 
     /**
+     * 游戏进度条组件演示页面
+     * 展示6种游戏场景常用的进度条效果，基于Vue3 + Composition API开发
+     * 此页面完全独立，不会影响现有的游戏素材创作页面
+     */
+    @GetMapping("/create-game/asset/progress-bar-demo")
+    public String createProgressBarDemo(Model model) {
+        model.addAttribute("title", "游戏进度条组件演示 - 游戏素材创作");
+        return "create-game-asset-progress-bar-demo";
+    }
+
+    /**
      * 粒子效果编辑器页面
      * 用于创建和编辑游戏粒子效果（火焰、雪花、爆炸等）
      */
