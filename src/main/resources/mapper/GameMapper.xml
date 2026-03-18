@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.writemyself.mapper.GameMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="gameResultMap" type="com.example.writemyself.entity.GameEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="description" column="description"/>
+        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="config" column="config"/>
+        <result property="userId" column="user_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 分页查询游戏 -->
+    <select id="selectByPage" resultMap="gameResultMap">
+        SELECT * FROM game
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 条件查询游戏 -->
+    <select id="selectByCondition" parameterType="map" resultMap="gameResultMap">
+        SELECT * FROM game
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND user_id = #{userId}
+            </if>
+            <if test="startDate != null">
+                AND created_at >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND created_at &lt;= #{endDate}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+        <if test="offset != null">
+            OFFSET #{offset}
+        </if>
+    </select>
+
+    <!-- 搜索游戏 -->
+    <select id="search" resultMap="gameResultMap">
+        SELECT * FROM game
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 批量插入游戏 -->
+    <insert id="batchInsert" parameterType="list">
+        INSERT INTO game (id, name, type, description, thumbnail_url, config, user_id, created_at, updated_at)
+        VALUES
+        <foreach collection="list" item="game" separator=",">
+            (#{game.id}, #{game.name}, #{game.type}, #{game.description}, #{game.thumbnailUrl},
+             #{game.config}, #{game.userId}, #{game.createdAt}, #{game.updatedAt})
+        </foreach>
+    </insert>
+
+    <!-- 批量更新游戏 -->
+    <update id="batchUpdate" parameterType="list">
+        <foreach collection="list" item="game" separator=";">
+            UPDATE game SET
+            name = #{game.name},
+            type = #{game.type},
+            description = #{game.description},
+            thumbnail_url = #{game.thumbnailUrl},
+            config = #{game.config},
+            user_id = #{game.userId},
+            updated_at = #{game.updatedAt}
+            WHERE id = #{game.id}
+        </foreach>
+    </update>
+
+    <!-- 批量删除游戏 -->
+    <delete id="batchDelete" parameterType="list">
+        DELETE FROM game WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 获取游戏统计信息 -->
+    <select id="getStatistics" resultType="map">
+        SELECT
+            COUNT(*) as totalGames,
+            COUNT(DISTINCT user_id) as totalUsers,
+            COUNT(CASE WHEN type = '2d-strategy' THEN 1 END) as strategy2dCount,
+            COUNT(CASE WHEN type = '2d-metroidvania' THEN 1 END) as metroidvania2dCount,
+            COUNT(CASE WHEN type = '2d-rpg' THEN 1 END) as rpg2dCount,
+            COUNT(CASE WHEN type = '3d-shooter' THEN 1 END) as shooter3dCount,
+            COUNT(CASE WHEN type = '3d-legacy' THEN 1 END) as legacy3dCount,
+            DATE(created_at) as createDate,
+            COUNT(*) as dailyCount
+        FROM game
+        GROUP BY DATE(created_at)
+        ORDER BY createDate DESC
+        LIMIT 30
+    </select>
+
+    <!-- 根据条件统计游戏数量 -->
+    <select id="countByCondition" parameterType="map" resultType="long">
+        SELECT COUNT(*) FROM game
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND user_id = #{userId}
+            </if>
+            <if test="startDate != null">
+                AND created_at >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND created_at &lt;= #{endDate}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取热门游戏类型 -->
+    <select id="getPopularGameTypes" resultType="map">
+        SELECT type, COUNT(*) as count
+        FROM game
+        GROUP BY type
+        ORDER BY count DESC
+        LIMIT 10
+    </select>
+
+    <!-- 获取用户游戏统计 -->
+    <select id="getUserGameStats" parameterType="string" resultType="map">
+        SELECT
+            user_id,
+            COUNT(*) as gameCount,
+            GROUP_CONCAT(DISTINCT type) as gameTypes,
+            MAX(created_at) as lastCreated,
+            MIN(created_at) as firstCreated
+        FROM game
+        WHERE user_id = #{userId}
+        GROUP BY user_id
+    </select>
+
+    <!-- 获取最近创建的游戏 -->
+    <select id="getRecentGames" parameterType="int" resultMap="gameResultMap">
+        SELECT * FROM game
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 检查游戏名称是否已存在 -->
+    <select id="existsByName" parameterType="string" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM game WHERE name = #{name}
+    </select>
+
+    <!-- 更新游戏配置 -->
+    <update id="updateConfig">
+        UPDATE game SET config = #{config}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 更新游戏缩略图 -->
+    <update id="updateThumbnail">
+        UPDATE game SET thumbnail_url = #{thumbnailUrl}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 转移游戏所有权 -->
+    <update id="transferOwnership">
+        UPDATE game SET user_id = #{newUserId}, updated_at = NOW() WHERE id = #{id} AND user_id = #{oldUserId}
+    </update>
+
+    <!-- 批量转移游戏所有权 -->
+    <update id="batchTransferOwnership">
+        UPDATE game SET user_id = #{newUserId}, updated_at = NOW()
+        WHERE user_id = #{oldUserId}
+        <if test="gameIds != null and gameIds.size() > 0">
+            AND id IN
+            <foreach collection="gameIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </update>
+
+</mapper>
+
