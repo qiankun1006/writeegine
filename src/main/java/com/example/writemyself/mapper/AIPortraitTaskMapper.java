@@ -1,6 +1,6 @@
 package com.example.writemyself.mapper;
 
-import com.example.writemyself.entity.AIPortraitTask;
+import com.example.writemyself.entity.AIPortraitTaskEntity;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
@@ -10,6 +10,7 @@ import java.util.Map;
 
 /**
  * AI肖像任务数据访问Mapper接口
+ * 使用MyBatis注解和XML混合模式
  */
 @Mapper
 @Repository
@@ -31,47 +32,55 @@ public interface AIPortraitTaskMapper {
             @Result(property = "startedAt", column = "started_at"),
             @Result(property = "completedAt", column = "completed_at"),
             @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
+            @Result(property = "updatedAt", column = "updated_at"),
+            @Result(property = "metadata", column = "metadata")
     })
-    AIPortraitTask selectById(@Param("id") Long id);
+    AIPortraitTaskEntity selectById(@Param("id") Long id);
 
     /**
      * 根据任务ID查询任务
      */
     @Select("SELECT * FROM ai_portrait_task WHERE task_id = #{taskId}")
     @ResultMap("aiPortraitTaskResultMap")
-    AIPortraitTask selectByTaskId(@Param("taskId") String taskId);
+    AIPortraitTaskEntity selectByTaskId(@Param("taskId") String taskId);
 
     /**
-     * 根据生成ID查询任务
+     * 根据生成记录ID查询任务
      */
     @Select("SELECT * FROM ai_portrait_task WHERE generation_id = #{generationId}")
     @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTask> selectByGenerationId(@Param("generationId") Long generationId);
-
-    /**
-     * 根据状态查询任务
-     */
-    @Select("SELECT * FROM ai_portrait_task WHERE status = #{status} ORDER BY created_at ASC")
-    @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTask> selectByStatus(@Param("status") String status);
+    AIPortraitTaskEntity selectByGenerationId(@Param("generationId") Long generationId);
 
     /**
      * 查询所有任务
      */
     @Select("SELECT * FROM ai_portrait_task ORDER BY created_at DESC")
     @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTask> selectAll();
+    List<AIPortraitTaskEntity> selectAll();
+
+    /**
+     * 根据状态查询任务
+     */
+    @Select("SELECT * FROM ai_portrait_task WHERE status = #{status} ORDER BY created_at ASC")
+    @ResultMap("aiPortraitTaskResultMap")
+    List<AIPortraitTaskEntity> selectByStatus(@Param("status") String status);
+
+    /**
+     * 根据状态和重试次数查询任务
+     */
+    @Select("SELECT * FROM ai_portrait_task WHERE status = #{status} AND retry_count < #{retryCount} ORDER BY created_at ASC")
+    @ResultMap("aiPortraitTaskResultMap")
+    List<AIPortraitTaskEntity> selectByStatusAndRetryCountLessThan(@Param("status") String status, @Param("retryCount") Integer retryCount);
 
     /**
      * 插入任务
      */
     @Insert("INSERT INTO ai_portrait_task (task_id, generation_id, status, progress, retry_count, max_retries, " +
-            "last_error, started_at, completed_at, created_at, updated_at) " +
+            "last_error, started_at, completed_at, created_at, updated_at, metadata) " +
             "VALUES (#{taskId}, #{generationId}, #{status}, #{progress}, #{retryCount}, #{maxRetries}, " +
-            "#{lastError}, #{startedAt}, #{completedAt}, #{createdAt}, #{updatedAt})")
+            "#{lastError}, #{startedAt}, #{completedAt}, #{createdAt}, #{updatedAt}, #{metadata})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    int insert(AIPortraitTask task);
+    int insert(AIPortraitTaskEntity task);
 
     /**
      * 更新任务
@@ -86,21 +95,16 @@ public interface AIPortraitTaskMapper {
             "last_error = #{lastError}, " +
             "started_at = #{startedAt}, " +
             "completed_at = #{completedAt}, " +
-            "updated_at = #{updatedAt} " +
+            "updated_at = #{updatedAt}, " +
+            "metadata = #{metadata} " +
             "WHERE id = #{id}")
-    int update(AIPortraitTask task);
+    int update(AIPortraitTaskEntity task);
 
     /**
      * 删除任务
      */
     @Delete("DELETE FROM ai_portrait_task WHERE id = #{id}")
     int deleteById(@Param("id") Long id);
-
-    /**
-     * 根据任务ID删除任务
-     */
-    @Delete("DELETE FROM ai_portrait_task WHERE task_id = #{taskId}")
-    int deleteByTaskId(@Param("taskId") String taskId);
 
     /**
      * 统计任务数量
@@ -127,147 +131,114 @@ public interface AIPortraitTaskMapper {
     boolean existsByTaskId(@Param("taskId") String taskId);
 
     /**
-     * 更新任务状态
+     * 分页查询任务
+     * 使用XML映射实现复杂查询
      */
-    @Update("UPDATE ai_portrait_task SET status = #{status}, updated_at = #{updatedAt} WHERE id = #{id}")
-    int updateStatus(@Param("id") Long id, @Param("status") String status, @Param("updatedAt") LocalDateTime updatedAt);
-
-    /**
-     * 更新任务进度
-     */
-    @Update("UPDATE ai_portrait_task SET progress = #{progress}, updated_at = #{updatedAt} WHERE id = #{id}")
-    int updateProgress(@Param("id") Long id, @Param("progress") Integer progress, @Param("updatedAt") LocalDateTime updatedAt);
-
-    /**
-     * 更新任务错误信息
-     */
-    @Update("UPDATE ai_portrait_task SET last_error = #{lastError}, retry_count = retry_count + 1, updated_at = #{updatedAt} WHERE id = #{id}")
-    int updateError(@Param("id") Long id, @Param("lastError") String lastError, @Param("updatedAt") LocalDateTime updatedAt);
-
-    /**
-     * 重置任务重试次数
-     */
-    @Update("UPDATE ai_portrait_task SET retry_count = 0, updated_at = #{updatedAt} WHERE id = #{id}")
-    int resetRetryCount(@Param("id") Long id, @Param("updatedAt") LocalDateTime updatedAt);
-
-    /**
-     * 标记任务为开始处理
-     */
-    @Update("UPDATE ai_portrait_task SET status = 'PROCESSING', started_at = #{startedAt}, updated_at = #{updatedAt} WHERE id = #{id}")
-    int markAsProcessing(@Param("id") Long id, @Param("startedAt") LocalDateTime startedAt, @Param("updatedAt") LocalDateTime updatedAt);
-
-    /**
-     * 标记任务为完成
-     */
-    @Update("UPDATE ai_portrait_task SET status = 'SUCCESS', progress = 100, completed_at = #{completedAt}, updated_at = #{updatedAt} WHERE id = #{id}")
-    int markAsSuccess(@Param("id") Long id, @Param("completedAt") LocalDateTime completedAt, @Param("updatedAt") LocalDateTime updatedAt);
-
-    /**
-     * 标记任务为失败
-     */
-    @Update("UPDATE ai_portrait_task SET status = 'FAILED', completed_at = #{completedAt}, updated_at = #{updatedAt} WHERE id = #{id}")
-    int markAsFailed(@Param("id") Long id, @Param("completedAt") LocalDateTime completedAt, @Param("updatedAt") LocalDateTime updatedAt);
-
-    /**
-     * 获取待处理的任务
-     */
-    @Select("SELECT * FROM ai_portrait_task WHERE status = 'PENDING' AND retry_count < max_retries ORDER BY created_at ASC LIMIT #{limit}")
-    @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTask> selectPendingTasks(@Param("limit") int limit);
-
-    /**
-     * 获取失败的任务（可重试）
-     */
-    @Select("SELECT * FROM ai_portrait_task WHERE status = 'FAILED' AND retry_count < max_retries ORDER BY updated_at ASC LIMIT #{limit}")
-    @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTask> selectFailedTasks(@Param("limit") int limit);
-
-    /**
-     * 获取超时的任务（处理时间超过指定分钟）
-     */
-    @Select("SELECT * FROM ai_portrait_task WHERE status = 'PROCESSING' AND started_at < #{timeoutTime} ORDER BY started_at ASC")
-    @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTask> selectTimeoutTasks(@Param("timeoutTime") LocalDateTime timeoutTime);
-
-    /**
-     * 清理旧的任务记录（保留最近N天的记录）
-     */
-    @Delete("DELETE FROM ai_portrait_task WHERE created_at < #{cutoffTime}")
-    int cleanupOldTasks(@Param("cutoffTime") LocalDateTime cutoffTime);
+    List<AIPortraitTaskEntity> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
 
     /**
      * 条件查询任务
+     * 使用XML映射实现动态SQL
      */
-    List<AIPortraitTask> selectByCondition(Map<String, Object> params);
-
-    /**
-     * 分页查询任务
-     */
-    List<AIPortraitTask> selectByPage(@Param("limit") int limit, @Param("offset") int offset);
+    List<AIPortraitTaskEntity> selectByCondition(Map<String, Object> condition);
 
     /**
      * 批量插入任务
+     * 使用XML映射实现批量操作
      */
-    int batchInsert(List<AIPortraitTask> tasks);
+    int batchInsert(List<AIPortraitTaskEntity> tasks);
 
     /**
      * 批量更新任务
+     * 使用XML映射实现批量操作
      */
-    int batchUpdate(List<AIPortraitTask> tasks);
+    int batchUpdate(List<AIPortraitTaskEntity> tasks);
 
     /**
      * 批量删除任务
+     * 使用XML映射实现批量操作
      */
     int batchDelete(List<Long> ids);
 
     /**
-     * 批量更新任务状态
+     * 搜索任务（根据任务ID或错误信息）
+     * 使用XML映射实现全文搜索
      */
-    int batchUpdateStatus(@Param("ids") List<Long> ids, @Param("status") String status, @Param("updatedAt") LocalDateTime updatedAt);
+    List<AIPortraitTaskEntity> search(@Param("keyword") String keyword);
 
     /**
      * 获取任务统计信息
+     * 使用XML映射实现复杂统计
      */
-    List<Map<String, Object>> getStatistics();
+    Map<String, Object> getStatistics();
 
     /**
-     * 获取任务状态分布
+     * 获取状态统计信息
+     * 使用XML映射实现状态统计
      */
-    List<Map<String, Object>> getStatusDistribution();
+    Map<String, Object> getStatusStats();
 
     /**
-     * 获取任务处理时间统计
+     * 获取最近创建的任务
+     * 使用XML映射实现排序查询
      */
-    List<Map<String, Object>> getProcessingTimeStats();
+    List<AIPortraitTaskEntity> getRecentTasks(@Param("limit") int limit);
 
     /**
-     * 获取最近活跃的任务
+     * 更新任务状态
+     * 使用XML映射实现状态更新
      */
-    List<AIPortraitTask> getRecentActiveTasks(@Param("limit") int limit);
+    int updateTaskStatus(@Param("taskId") String taskId, @Param("status") String status,
+                         @Param("progress") Integer progress, @Param("updatedAt") LocalDateTime updatedAt);
 
     /**
-     * 获取需要重试的任务
+     * 更新任务完成状态
+     * 使用XML映射实现完成状态更新
      */
-    List<AIPortraitTask> getTasksNeedRetry(@Param("limit") int limit);
+    int updateTaskCompletion(@Param("taskId") String taskId, @Param("status") String status,
+                             @Param("completedAt") LocalDateTime completedAt, @Param("updatedAt") LocalDateTime updatedAt);
 
     /**
-     * 批量更新任务进度
+     * 更新任务开始时间
+     * 使用XML映射实现开始时间更新
      */
-    int batchUpdateProgress(@Param("ids") List<Long> ids, @Param("increment") int increment, @Param("updatedAt") LocalDateTime updatedAt);
+    int updateTaskStart(@Param("taskId") String taskId, @Param("startedAt") LocalDateTime startedAt,
+                        @Param("updatedAt") LocalDateTime updatedAt);
+
+    /**
+     * 增加重试次数
+     * 使用XML映射实现重试次数更新
+     */
+    int incrementRetryCount(@Param("taskId") String taskId);
+
+    /**
+     * 重置重试次数
+     * 使用XML映射实现重试次数重置
+     */
+    int resetRetryCount(@Param("taskId") String taskId);
+
+    /**
+     * 批量更新任务状态
+     * 使用XML映射实现批量状态更新
+     */
+    int batchUpdateStatus(@Param("taskIds") List<String> taskIds, @Param("status") String status);
+
+    /**
+     * 获取待处理任务（用于任务调度）
+     * 使用XML映射实现任务调度查询
+     */
+    List<AIPortraitTaskEntity> getPendingTasks(@Param("limit") int limit);
+
+    /**
+     * 获取失败但可重试的任务
+     * 使用XML映射实现可重试任务查询
+     */
+    List<AIPortraitTaskEntity> getRetryableTasks(@Param("limit") int limit);
 
     /**
      * 根据条件统计任务数量
+     * 使用XML映射实现动态统计
      */
-    long countByCondition(Map<String, Object> params);
-
-    /**
-     * 获取任务错误统计
-     */
-    List<Map<String, Object>> getErrorStatistics();
-
-    /**
-     * 获取任务性能指标
-     */
-    List<Map<String, Object>> getPerformanceMetrics();
+    long countByCondition(Map<String, Object> condition);
 }
 

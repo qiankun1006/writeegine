@@ -3,7 +3,7 @@
 <mapper namespace="com.example.writemyself.mapper.AIPortraitTaskMapper">
 
     <!-- 基础结果映射 -->
-    <resultMap id="aiPortraitTaskResultMap" type="com.example.writemyself.entity.AIPortraitTask">
+    <resultMap id="aiPortraitTaskResultMap" type="com.example.writemyself.entity.AIPortraitTaskEntity">
         <id property="id" column="id"/>
         <result property="taskId" column="task_id"/>
         <result property="generationId" column="generation_id"/>
@@ -16,7 +16,15 @@
         <result property="completedAt" column="completed_at"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
+        <result property="metadata" column="metadata"/>
     </resultMap>
+
+    <!-- 分页查询任务 -->
+    <select id="selectByPage" resultMap="aiPortraitTaskResultMap">
+        SELECT * FROM ai_portrait_task
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 
     <!-- 条件查询任务 -->
     <select id="selectByCondition" parameterType="map" resultMap="aiPortraitTaskResultMap">
@@ -37,14 +45,20 @@
             <if test="maxProgress != null">
                 AND progress &lt;= #{maxProgress}
             </if>
+            <if test="retryCount != null">
+                AND retry_count = #{retryCount}
+            </if>
+            <if test="maxRetries != null">
+                AND max_retries = #{maxRetries}
+            </if>
             <if test="startDate != null">
                 AND created_at >= #{startDate}
             </if>
             <if test="endDate != null">
                 AND created_at &lt;= #{endDate}
             </if>
-            <if test="hasError != null and hasError">
-                AND last_error IS NOT NULL AND last_error != ''
+            <if test="keyword != null and keyword != ''">
+                AND (task_id LIKE CONCAT('%', #{keyword}, '%') OR last_error LIKE CONCAT('%', #{keyword}, '%'))
             </if>
         </where>
         ORDER BY created_at DESC
@@ -56,22 +70,22 @@
         </if>
     </select>
 
-    <!-- 分页查询任务 -->
-    <select id="selectByPage" resultMap="aiPortraitTaskResultMap">
+    <!-- 搜索任务 -->
+    <select id="search" resultMap="aiPortraitTaskResultMap">
         SELECT * FROM ai_portrait_task
+        WHERE task_id LIKE CONCAT('%', #{keyword}, '%')
+           OR last_error LIKE CONCAT('%', #{keyword}, '%')
         ORDER BY created_at DESC
-        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 批量插入任务 -->
-    <insert id="batchInsert" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+    <insert id="batchInsert" parameterType="list">
         INSERT INTO ai_portrait_task (task_id, generation_id, status, progress, retry_count, max_retries,
-        last_error, started_at, completed_at, created_at, updated_at)
+            last_error, started_at, completed_at, created_at, updated_at, metadata)
         VALUES
         <foreach collection="list" item="task" separator=",">
-            (#{task.taskId}, #{task.generationId}, #{task.status}, #{task.progress}, #{task.retryCount},
-            #{task.maxRetries}, #{task.lastError}, #{task.startedAt}, #{task.completedAt},
-            #{task.createdAt}, #{task.updatedAt})
+            (#{task.taskId}, #{task.generationId}, #{task.status}, #{task.progress}, #{task.retryCount}, #{task.maxRetries},
+             #{task.lastError}, #{task.startedAt}, #{task.completedAt}, #{task.createdAt}, #{task.updatedAt}, #{task.metadata})
         </foreach>
     </insert>
 
@@ -88,7 +102,8 @@
             last_error = #{task.lastError},
             started_at = #{task.startedAt},
             completed_at = #{task.completedAt},
-            updated_at = #{task.updatedAt}
+            updated_at = #{task.updatedAt},
+            metadata = #{task.metadata}
             WHERE id = #{task.id}
         </foreach>
     </update>
@@ -101,25 +116,17 @@
         </foreach>
     </delete>
 
-    <!-- 批量更新任务状态 -->
-    <update id="batchUpdateStatus">
-        UPDATE ai_portrait_task SET status = #{status}, updated_at = #{updatedAt}
-        WHERE id IN
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </update>
-
     <!-- 获取任务统计信息 -->
     <select id="getStatistics" resultType="map">
         SELECT
             COUNT(*) as totalTasks,
+            COUNT(DISTINCT generation_id) as totalGenerations,
             COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pendingCount,
             COUNT(CASE WHEN status = 'PROCESSING' THEN 1 END) as processingCount,
             COUNT(CASE WHEN status = 'SUCCESS' THEN 1 END) as successCount,
             COUNT(CASE WHEN status = 'FAILED' THEN 1 END) as failedCount,
             AVG(progress) as avgProgress,
-            SUM(retry_count) as totalRetries,
+            AVG(retry_count) as avgRetryCount,
             DATE(created_at) as createDate,
             COUNT(*) as dailyCount
         FROM ai_portrait_task
@@ -128,54 +135,96 @@
         LIMIT 30
     </select>
 
-    <!-- 获取任务状态分布 -->
-    <select id="getStatusDistribution" resultType="map">
-        SELECT status, COUNT(*) as count
+    <!-- 获取状态统计信息 -->
+    <select id="getStatusStats" resultType="map">
+        SELECT
+            status,
+            COUNT(*) as count,
+            AVG(progress) as avgProgress,
+            AVG(retry_count) as avgRetryCount,
+            MIN(created_at) as earliest,
+            MAX(created_at) as latest
         FROM ai_portrait_task
         GROUP BY status
         ORDER BY count DESC
     </select>
 
-    <!-- 获取任务处理时间统计 -->
-    <select id="getProcessingTimeStats" resultType="map">
-        SELECT
-            status,
-            COUNT(*) as count,
-            AVG(TIMESTAMPDIFF(SECOND, started_at, completed_at)) as avgProcessingTime,
-            MIN(TIMESTAMPDIFF(SECOND, started_at, completed_at)) as minProcessingTime,
-            MAX(TIMESTAMPDIFF(SECOND, started_at, completed_at)) as maxProcessingTime
-        FROM ai_portrait_task
-        WHERE started_at IS NOT NULL AND completed_at IS NOT NULL
-        GROUP BY status
-    </select>
-
-    <!-- 获取最近活跃的任务 -->
-    <select id="getRecentActiveTasks" parameterType="int" resultMap="aiPortraitTaskResultMap">
+    <!-- 获取最近创建的任务 -->
+    <select id="getRecentTasks" parameterType="int" resultMap="aiPortraitTaskResultMap">
         SELECT * FROM ai_portrait_task
-        WHERE updated_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
-        ORDER BY updated_at DESC
+        ORDER BY created_at DESC
         LIMIT #{limit}
     </select>
 
-    <!-- 获取需要重试的任务 -->
-    <select id="getTasksNeedRetry" resultMap="aiPortraitTaskResultMap">
-        SELECT * FROM ai_portrait_task
-        WHERE status IN ('FAILED', 'PENDING')
-          AND retry_count < max_retries
-          AND (last_error IS NULL OR last_error NOT LIKE '%fatal%')
-        ORDER BY updated_at ASC
-        LIMIT #{limit}
-    </select>
-
-    <!-- 更新多个任务的进度 -->
-    <update id="batchUpdateProgress">
-        UPDATE ai_portrait_task SET progress = progress + #{increment}, updated_at = #{updatedAt}
-        WHERE id IN
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        AND progress <![CDATA[<]]> 100
+    <!-- 更新任务状态 -->
+    <update id="updateTaskStatus">
+        UPDATE ai_portrait_task SET
+        status = #{status},
+        progress = #{progress},
+        updated_at = #{updatedAt}
+        WHERE task_id = #{taskId}
     </update>
+
+    <!-- 更新任务完成状态 -->
+    <update id="updateTaskCompletion">
+        UPDATE ai_portrait_task SET
+        status = #{status},
+        completed_at = #{completedAt},
+        updated_at = #{updatedAt}
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 更新任务开始时间 -->
+    <update id="updateTaskStart">
+        UPDATE ai_portrait_task SET
+        started_at = #{startedAt},
+        updated_at = #{updatedAt}
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 增加重试次数 -->
+    <update id="incrementRetryCount">
+        UPDATE ai_portrait_task SET
+        retry_count = retry_count + 1,
+        updated_at = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 重置重试次数 -->
+    <update id="resetRetryCount">
+        UPDATE ai_portrait_task SET
+        retry_count = 0,
+        updated_at = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 批量更新任务状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE ai_portrait_task SET
+        status = #{status},
+        updated_at = NOW()
+        WHERE task_id IN
+        <foreach collection="taskIds" item="taskId" open="(" separator="," close=")">
+            #{taskId}
+        </foreach>
+    </update>
+
+    <!-- 获取待处理任务（用于任务调度） -->
+    <select id="getPendingTasks" parameterType="int" resultMap="aiPortraitTaskResultMap">
+        SELECT * FROM ai_portrait_task
+        WHERE status = 'PENDING'
+        ORDER BY created_at ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取失败但可重试的任务 -->
+    <select id="getRetryableTasks" parameterType="int" resultMap="aiPortraitTaskResultMap">
+        SELECT * FROM ai_portrait_task
+        WHERE status = 'FAILED'
+          AND retry_count &lt; max_retries
+        ORDER BY created_at ASC
+        LIMIT #{limit}
+    </select>
 
     <!-- 根据条件统计任务数量 -->
     <select id="countByCondition" parameterType="map" resultType="long">
@@ -196,43 +245,22 @@
             <if test="maxProgress != null">
                 AND progress &lt;= #{maxProgress}
             </if>
+            <if test="retryCount != null">
+                AND retry_count = #{retryCount}
+            </if>
+            <if test="maxRetries != null">
+                AND max_retries = #{maxRetries}
+            </if>
             <if test="startDate != null">
                 AND created_at >= #{startDate}
             </if>
             <if test="endDate != null">
                 AND created_at &lt;= #{endDate}
             </if>
-            <if test="hasError != null and hasError">
-                AND last_error IS NOT NULL AND last_error != ''
+            <if test="keyword != null and keyword != ''">
+                AND (task_id LIKE CONCAT('%', #{keyword}, '%') OR last_error LIKE CONCAT('%', #{keyword}, '%'))
             </if>
         </where>
-    </select>
-
-    <!-- 获取任务错误统计 -->
-    <select id="getErrorStatistics" resultType="map">
-        SELECT
-            LEFT(last_error, 100) as errorPrefix,
-            COUNT(*) as errorCount,
-            MIN(created_at) as firstOccurrence,
-            MAX(created_at) as lastOccurrence
-        FROM ai_portrait_task
-        WHERE last_error IS NOT NULL AND last_error != ''
-        GROUP BY LEFT(last_error, 100)
-        ORDER BY errorCount DESC
-        LIMIT 20
-    </select>
-
-    <!-- 获取任务性能指标 -->
-    <select id="getPerformanceMetrics" resultType="map">
-        SELECT
-            HOUR(created_at) as hourOfDay,
-            COUNT(*) as taskCount,
-            AVG(TIMESTAMPDIFF(SECOND, started_at, completed_at)) as avgProcessingTime,
-            SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) / COUNT(*) as successRate
-        FROM ai_portrait_task
-        WHERE created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)
-        GROUP BY HOUR(created_at)
-        ORDER BY hourOfDay
     </select>
 
 </mapper>
