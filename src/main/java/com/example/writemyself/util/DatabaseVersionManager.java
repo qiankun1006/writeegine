@@ -16,6 +16,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -238,7 +239,7 @@ public class DatabaseVersionManager {
         try {
             logger.info("开始验证数据库结构...");
 
-            List<String> requiredTables = List.of("game", "ai_portrait_task", "ai_portrait_generation", "user", "system_config");
+            List<String> requiredTables = Arrays.asList("game", "ai_portrait_task", "ai_portrait_generation", "user", "system_config");
             List<String> missingTables = new ArrayList<>();
 
             for (String table : requiredTables) {
@@ -283,10 +284,10 @@ public class DatabaseVersionManager {
     private void validateTableColumns() {
         try {
             // 验证game表的必需列
-            validateTableColumns("game", List.of("id", "name", "type", "created_at", "updated_at"));
+            validateTableColumns("game", Arrays.asList("id", "name", "type", "created_at", "updated_at"));
 
             // 验证ai_portrait_task表的必需列
-            validateTableColumns("ai_portrait_task", List.of("id", "task_id", "status", "created_at", "updated_at"));
+            validateTableColumns("ai_portrait_task", Arrays.asList("id", "task_id", "status", "created_at", "updated_at"));
 
             logger.info("表列结构验证完成");
 

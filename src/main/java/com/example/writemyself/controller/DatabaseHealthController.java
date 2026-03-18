@@ -4,7 +4,7 @@ import com.example.writemyself.util.DatabaseConnectionTester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthComponent;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -115,8 +115,8 @@ public class DatabaseHealthController {
             response.put("timestamp", System.currentTimeMillis());
 
             // 添加Spring Boot Actuator的健康状态
-            Health health = healthEndpoint.health();
-            response.put("actuatorHealth", health.getStatus().getCode());
+            HealthComponent healthComponent = healthEndpoint.health();
+            response.put("actuatorHealth", healthComponent.getStatus().getCode());
 
             logger.info("综合健康检查完成");
 

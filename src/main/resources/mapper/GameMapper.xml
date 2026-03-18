@@ -199,5 +199,36 @@
         </if>
     </update>
 
+    <!-- 获取游戏统计信息 -->
+    <select id="getStatistics" resultType="map">
+        SELECT
+            COUNT(*) as totalGames,
+            COUNT(DISTINCT type) as totalTypes,
+            COUNT(DISTINCT user_id) as totalUsers,
+            MIN(created_at) as earliestGame,
+            MAX(created_at) as latestGame
+        FROM game
+    </select>
+
+    <!-- 获取用户游戏统计 -->
+    <select id="getUserGameStats" parameterType="string" resultType="map">
+        SELECT
+            #{userId} as userId,
+            COUNT(*) as gameCount,
+            COUNT(DISTINCT type) as typeCount,
+            MIN(created_at) as firstGameTime,
+            MAX(updated_at) as lastUpdateTime,
+            GROUP_CONCAT(DISTINCT type) as gameTypes
+        FROM game
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 获取最近创建的游戏 -->
+    <select id="getRecentGames" parameterType="int" resultMap="gameResultMap">
+        SELECT * FROM game
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
 </mapper>
 

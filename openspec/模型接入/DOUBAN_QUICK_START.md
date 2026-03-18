@@ -1,0 +1,361 @@
+# 豆包模型快速启动指南
+
+## ⚡ 5 分钟快速上手
+
+### 第 1 步：获取 API Key（2 分钟）
+
+1. 访问 [https://console.volcengine.com/](https://console.volcengine.com/)
+2. 登录你的火山引擎账户
+3. 进入"方舟"服务
+4. 创建或复制 API Key
+
+### 第 2 步：配置 API Key（1 分钟）
+
+#### 开发环境
+编辑 `src/main/resources/application-dev.properties`:
+```properties
+volcengine.ark.api.key=【填入你的 API Key】
+volcengine.model=doubao-seedream-5-0-lite
+```
+
+#### 生产环境
+编辑 `src/main/resources/application-prod.properties`:
+```properties
+volcengine.ark.api.key=【填入你的 API Key】
+volcengine.model=doubao-seedream-5-0-260128
+```
+
+### 第 3 步：启动应用（1 分钟）
+
+```bash
+# 开发环境启动
+mvn spring-boot:run
+
+# 生产环境启动
+mvn spring-boot:run -Pprod
+```
+
+### 第 4 步：调用 API（1 分钟）
+
+```bash
+# 创建生成任务
+curl -X POST http://localhost:8080/api/ai/portrait/generate \
+  -H "Content-Type: application/json" \
+  -H "X-User-Id: 123" \
+  -d '{
+    "prompt": "一个年轻女性角色，长棕发，穿着蓝色和服",
+    "provider": "volcengine",
+    "model": "doubao-seedream-5-0-lite",
+    "width": 1024,
+    "height": 1024,
+    "generateCount": 1
+  }'
+
+# 响应示例
+# {
+#   "taskId": "gen-20260318-xxxxx",
+#   "status": "PENDING",
+#   "createdAt": 1710768000000
+# }
+```
+
+完成！🎉
+
+---
+
+## 核心概念
+
+### 支持的模型
+
+| 模型 | ID | 质量 | 速度 | 成本 | 推荐 |
+|------|----|----|------|------|------|
+| **专业版 5.0** | `doubao-seedream-5-0-260128` | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | $$ | 生产 |
+| **轻量版 5.0** | `doubao-seedream-5-0-lite` | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | $ | 开发 |
+
+### 常用参数
+
+```json
+{
+  "prompt": "生成的描述（必需）",
+  "provider": "volcengine",
+  "model": "doubao-seedream-5-0-lite",
+  "width": 1024,
+  "height": 1024,
+  "generateCount": 1,
+  "seed": null
+}
+```
+
+### API 流程
+
+```
+1. 创建任务 (POST /generate)
+   ↓
+2. 获取 taskId
+   ↓
+3. 轮询查询进度 (GET /progress/{taskId})
+   ↓
+4. 获取结果 (resultUrls)
+```
+
+---
+
+## 常用命令
+
+### 构建
+
+```bash
+# 编译
+mvn clean compile
+
+# 打包
+mvn clean package
+
+# 跳过测试快速打包
+mvn clean package -DskipTests
+```
+
+### 启动
+
+```bash
+# 开发环境
+mvn spring-boot:run
+
+# 生产环境
+SPRING_PROFILES_ACTIVE=prod mvn spring-boot:run
+```
+
+### 运行
+
+```bash
+# JAR 方式
+java -jar target/writeMyself-0.0.1-SNAPSHOT.jar
+
+# 带参数
+java -Dspring.profiles.active=prod -jar target/writeMyself-0.0.1-SNAPSHOT.jar
+```
+
+---
+
+## 测试 API
+
+### 工具
+
+- **curl** (命令行)
+- **Postman** (可视化)
+- **Python requests**
+- **Java HttpClient**
+
+### 示例：使用 curl 测试
+
+```bash
+# 1. 创建任务
+taskId=$(curl -X POST http://localhost:8080/api/ai/portrait/generate \
+  -H "Content-Type: application/json" \
+  -H "X-User-Id: 123" \
+  -d '{
+    "prompt": "一个年轻女性角色",
+    "provider": "volcengine",
+    "model": "doubao-seedream-5-0-lite",
+    "width": 1024,
+    "height": 1024,
+    "generateCount": 1
+  }' | jq -r '.taskId')
+
+# 2. 查询进度
+curl http://localhost:8080/api/ai/portrait/progress/$taskId \
+  -H "X-User-Id: 123"
+```
+
+---
+
+## 配置详解
+
+### 环境配置文件
+
+#### application-dev.properties
+```properties
+# 开发环境：使用 H2 内存数据库
+spring.datasource.url=jdbc:h2:mem:writeengine
+
+# 豆包配置
+volcengine.ark.api.key=【待写入】
+volcengine.model=doubao-seedream-5-0-lite
+volcengine.generate.timeout=300
+volcengine.retry.max-attempts=3
+```
+
+#### application-prod.properties
+```properties
+# 生产环境：使用 RDS MySQL
+spring.datasource.url=jdbc:mysql://{RDS_HOST}:3306/writeengine
+
+# 豆包配置
+volcengine.ark.api.key=【待写入】
+volcengine.model=doubao-seedream-5-0-260128
+volcengine.generate.timeout=600
+volcengine.retry.max-attempts=5
+```
+
+### 激活不同环境
+
+```bash
+# 开发环境（默认）
+mvn spring-boot:run
+
+# 生产环境
+mvn spring-boot:run -Pprod
+
+# 或通过环境变量
+export SPRING_PROFILES_ACTIVE=prod
+mvn spring-boot:run
+```
+
+---
+
+## 故障排查
+
+### 问题 1: API Key 无效
+
+**症状**: `401 Unauthorized` 或 "API密钥无效"
+
+**解决**:
+1. 确认 `volcengine.ark.api.key` 已填写
+2. 从火山引擎控制台重新复制 API Key
+3. 检查 API Key 是否过期
+
+### 问题 2: 生成超时
+
+**症状**: 生成任务长时间停留在 PENDING 状态
+
+**解决**:
+1. 增加 `volcengine.generate.timeout` 值
+2. 尝试使用轻量版模型
+3. 检查网络连接
+
+### 问题 3: 无法连接到服务
+
+**症状**: `Connection refused` 或 `ECONNREFUSED`
+
+**解决**:
+1. 确认应用已启动: `mvn spring-boot:run`
+2. 确认端口 8080 未被占用: `lsof -i :8080`
+3. 检查防火墙设置
+
+### 问题 4: 提示词包含非法内容
+
+**症状**: `400 Bad Request` - 提示词审核失败
+
+**解决**:
+1. 检查提示词是否包含违禁词汇
+2. 修改提示词的表述方式
+3. 参考官方示例提示词
+
+---
+
+## 提示词示例
+
+### 基础示例
+
+```
+一个年轻女性角色，长棕发，穿着蓝色和服
+```
+
+### 高质量示例
+
+```
+一个年轻女性角色，长棕色头发，穿着蓝色和服，
+精致的脸部特征，大眼睛，微笑表情，
+动漫风格，高清，8K，完美光影，专业渲染
+```
+
+### 风格指定
+
+```
+# 动漫风格
+一个可爱的女性角色，二次元动漫风格，高质量渲染
+
+# 写实风格
+一个年轻女性，写实风格，细节精致，摄影质感
+
+# 插画风格
+一个角色，数字插画风格，厚涂，概念艺术
+```
+
+---
+
+## 性能优化
+
+### 1. 缓存相同提示词
+
+使用 seed 参数确保结果一致性：
+```bash
+curl -X POST http://localhost:8080/api/ai/portrait/generate \
+  -H "Content-Type: application/json" \
+  -H "X-User-Id: 123" \
+  -d '{
+    "prompt": "一个年轻女性角色",
+    "seed": 12345
+  }'
+```
+
+### 2. 批量生成
+
+生成多个版本（generateCount > 1）：
+```bash
+"generateCount": 4  # 生成 4 张相关的图片
+```
+
+### 3. 选择合适尺寸
+
+- 开发测试: 512×512（快速）
+- 预览: 768×768（平衡）
+- 正式: 1024×1024（推荐）
+- 超高清: 2048×2048（最慢）
+
+---
+
+## 常见问题
+
+**Q: 需要 API 额度吗？**
+
+A: 是的，火山引擎按生成的图片数量计费。建议先申请免费试用额度。
+
+**Q: 生成的图片会永久保存吗？**
+
+A: 生成的图片 URL 有有效期，建议及时下载保存。
+
+**Q: 能自定义画风吗？**
+
+A: 可以，在提示词中指定风格（如"动漫"、"插画"、"写实"等）。
+
+**Q: 支持多语言提示词吗？**
+
+A: 主要支持中文和英文，建议使用中文获得最佳效果。
+
+---
+
+## 有用的链接
+
+- [官方文档](https://www.volcengine.com/docs/82379/1824121)
+- [控制台](https://console.volcengine.com/ark)
+- [详细集成指南](./DOUBAN_MODEL_INTEGRATION_GUIDE.md)
+- [API 使用示例](./DOUBAO_API_EXAMPLES.md)
+- [集成总结](./VOLCENGINE_INTEGRATION_SUMMARY.md)
+
+---
+
+## 下一步
+
+- ✅ 配置 API Key
+- ✅ 启动应用
+- ✅ 调用生成 API
+- 🔄 查看 [详细集成指南](./DOUBAN_MODEL_INTEGRATION_GUIDE.md)
+- 🔄 参考 [API 使用示例](./DOUBAO_API_EXAMPLES.md)
+
+---
+
+**最后更新**: 2026年3月18日
+
+💡 **提示**: 遇到问题？查看本指南的"故障排查"部分或阅读详细集成指南。
+

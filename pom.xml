@@ -171,16 +171,23 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>static/ai-portrait-generator/node_modules/**</exclude>
-                    <exclude>static/ai-portrait-generator/node_modules/**/*</exclude>
-                </excludes>
-                <filtering>false</filtering>
-            </resource>
-        </resources>
+<resources>
+<resource>
+<directory>src/main/resources</directory>
+<excludes>
+<!-- 排除所有node_modules目录 -->
+<exclude>static/ai-portrait-generator/node_modules/**</exclude>
+<exclude>static/ai-portrait-generator/node_modules/**/*</exclude>
+<exclude>static/particle-effect-editor/node_modules/**</exclude>
+<exclude>static/particle-effect-editor/node_modules/**/*</exclude>
+<exclude>**/node_modules/**</exclude>
+<!-- 排除npm相关文件 -->
+<exclude>**/package-lock.json</exclude>
+<exclude>**/yarn.lock</exclude>
+</excludes>
+<filtering>false</filtering>
+</resource>
+</resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

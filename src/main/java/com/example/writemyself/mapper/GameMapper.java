@@ -1,7 +1,6 @@
 package com.example.writemyself.mapper;
 
 import com.example.writemyself.entity.GameEntity;
-import com.example.writemyself.model.Game;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
@@ -140,6 +139,18 @@ public interface GameMapper {
      * 使用XML映射实现复杂统计
      */
     Map<String, Object> getStatistics();
+
+    /**
+     * 获取用户游戏统计
+     * 使用XML映射实现用户统计
+     */
+    Map<String, Object> getUserGameStats(@Param("userId") String userId);
+
+    /**
+     * 获取最近创建的游戏
+     * 使用XML映射实现排序查询
+     */
+    List<GameEntity> getRecentGames(@Param("limit") int limit);
 
     /**
      * 根据条件统计游戏数量
