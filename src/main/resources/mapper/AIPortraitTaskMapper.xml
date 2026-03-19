@@ -45,11 +45,11 @@
             <if test="maxProgress != null">
                 AND progress &lt;= #{maxProgress}
             </if>
-            <if test="retryCount != null">
-                AND retry_count = #{retryCount}
+            <if test="minRetryCount != null">
+                AND retry_count >= #{minRetryCount}
             </if>
-            <if test="maxRetries != null">
-                AND max_retries = #{maxRetries}
+            <if test="maxRetryCount != null">
+                AND retry_count &lt;= #{maxRetryCount}
             </if>
             <if test="startDate != null">
                 AND created_at >= #{startDate}
@@ -81,11 +81,12 @@
     <!-- 批量插入任务 -->
     <insert id="batchInsert" parameterType="list">
         INSERT INTO ai_portrait_task (task_id, generation_id, status, progress, retry_count, max_retries,
-            last_error, started_at, completed_at, created_at, updated_at, metadata)
+        last_error, started_at, completed_at, created_at, updated_at, metadata)
         VALUES
         <foreach collection="list" item="task" separator=",">
-            (#{task.taskId}, #{task.generationId}, #{task.status}, #{task.progress}, #{task.retryCount}, #{task.maxRetries},
-             #{task.lastError}, #{task.startedAt}, #{task.completedAt}, #{task.createdAt}, #{task.updatedAt}, #{task.metadata})
+            (#{task.taskId}, #{task.generationId}, #{task.status}, #{task.progress}, #{task.retryCount},
+            #{task.maxRetries}, #{task.lastError}, #{task.startedAt}, #{task.completedAt}, #{task.createdAt},
+            #{task.updatedAt}, #{task.metadata})
         </foreach>
     </insert>
 
@@ -120,7 +121,6 @@
     <select id="getStatistics" resultType="map">
         SELECT
             COUNT(*) as totalTasks,
-            COUNT(DISTINCT generation_id) as totalGenerations,
             COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pendingCount,
             COUNT(CASE WHEN status = 'PROCESSING' THEN 1 END) as processingCount,
             COUNT(CASE WHEN status = 'SUCCESS' THEN 1 END) as successCount,
@@ -142,8 +142,8 @@
             COUNT(*) as count,
             AVG(progress) as avgProgress,
             AVG(retry_count) as avgRetryCount,
-            MIN(created_at) as earliest,
-            MAX(created_at) as latest
+            MIN(created_at) as firstTaskTime,
+            MAX(updated_at) as lastUpdateTime
         FROM ai_portrait_task
         GROUP BY status
         ORDER BY count DESC
@@ -158,51 +158,51 @@
 
     <!-- 更新任务状态 -->
     <update id="updateTaskStatus">
-        UPDATE ai_portrait_task SET
-        status = #{status},
-        progress = #{progress},
-        updated_at = #{updatedAt}
+        UPDATE ai_portrait_task
+        SET status = #{status},
+            progress = #{progress},
+            updated_at = #{updatedAt}
         WHERE task_id = #{taskId}
     </update>
 
     <!-- 更新任务完成状态 -->
     <update id="updateTaskCompletion">
-        UPDATE ai_portrait_task SET
-        status = #{status},
-        completed_at = #{completedAt},
-        updated_at = #{updatedAt}
+        UPDATE ai_portrait_task
+        SET status = #{status},
+            completed_at = #{completedAt},
+            updated_at = #{updatedAt}
         WHERE task_id = #{taskId}
     </update>
 
     <!-- 更新任务开始时间 -->
     <update id="updateTaskStart">
-        UPDATE ai_portrait_task SET
-        started_at = #{startedAt},
-        updated_at = #{updatedAt}
+        UPDATE ai_portrait_task
+        SET started_at = #{startedAt},
+            updated_at = #{updatedAt}
         WHERE task_id = #{taskId}
     </update>
 
     <!-- 增加重试次数 -->
     <update id="incrementRetryCount">
-        UPDATE ai_portrait_task SET
-        retry_count = retry_count + 1,
-        updated_at = NOW()
+        UPDATE ai_portrait_task
+        SET retry_count = retry_count + 1,
+            updated_at = NOW()
         WHERE task_id = #{taskId}
     </update>
 
     <!-- 重置重试次数 -->
     <update id="resetRetryCount">
-        UPDATE ai_portrait_task SET
-        retry_count = 0,
-        updated_at = NOW()
+        UPDATE ai_portrait_task
+        SET retry_count = 0,
+            updated_at = NOW()
         WHERE task_id = #{taskId}
     </update>
 
     <!-- 批量更新任务状态 -->
     <update id="batchUpdateStatus">
-        UPDATE ai_portrait_task SET
-        status = #{status},
-        updated_at = NOW()
+        UPDATE ai_portrait_task
+        SET status = #{status},
+            updated_at = NOW()
         WHERE task_id IN
         <foreach collection="taskIds" item="taskId" open="(" separator="," close=")">
             #{taskId}
@@ -245,11 +245,11 @@
             <if test="maxProgress != null">
                 AND progress &lt;= #{maxProgress}
             </if>
-            <if test="retryCount != null">
-                AND retry_count = #{retryCount}
+            <if test="minRetryCount != null">
+                AND retry_count >= #{minRetryCount}
             </if>
-            <if test="maxRetries != null">
-                AND max_retries = #{maxRetries}
+            <if test="maxRetryCount != null">
+                AND retry_count &lt;= #{maxRetryCount}
             </if>
             <if test="startDate != null">
                 AND created_at >= #{startDate}
