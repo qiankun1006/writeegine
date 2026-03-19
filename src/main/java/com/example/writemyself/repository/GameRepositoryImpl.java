@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -238,46 +239,13 @@ public class GameRepositoryImpl implements GameRepository {
     /**
      * 将Game模型转换为GameEntity实体
      */
-    private GameEntity convertToEntity(Game game) {
-        GameEntity entity = new GameEntity(game);
-
-        // 处理配置数据（JSON格式）
-        if (game.getMetadata() != null && !game.getMetadata().isEmpty()) {
-            // 这里需要将Map转换为JSON字符串
-            // 实际项目中可以使用Jackson或Gson
-            // 这里简单实现
-            entity.setConfig(game.getMetadata().toString());
-        }
-
-        return entity;
-    }
 
     /**
      * 将GameEntity实体转换为Game模型
      */
-    private Game convertToModel(GameEntity entity) {
-        Game game = entity.toGame();
-
-        // 处理配置数据（JSON格式）
-        if (entity.getConfig() != null && !entity.getConfig().isEmpty()) {
-            // 这里需要将JSON字符串转换为Map
-            // 实际项目中可以使用Jackson或Gson
-            // 这里简单实现，返回空Map
-            game.setMetadata(new HashMap<>());
-        }
-
-        return game;
-    }
 
     /**
      * 将GameEntity列表转换为Game模型列表
      */
-    private List<Game> convertToModelList(List<GameEntity> entities) {
-        List<Game> games = new ArrayList<>();
-        for (GameEntity entity : entities) {
-            games.add(convertToModel(entity));
-        }
-        return games;
-    }
 }
 

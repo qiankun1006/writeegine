@@ -1,7 +1,7 @@
 package com.example.writemyself.service;
 
-import com.example.writemyself.entity.AIPortraitGeneration;
-import com.example.writemyself.entity.AIPortraitTask;
+import com.example.writemyself.model.AIPortraitGeneration;
+import com.example.writemyself.model.AIPortraitTask;
 import com.example.writemyself.repository.AIPortraitGenerationRepository;
 import com.example.writemyself.repository.AIPortraitTaskRepository;
 import lombok.RequiredArgsConstructor;

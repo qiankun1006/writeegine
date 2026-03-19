@@ -3,7 +3,7 @@
 <mapper namespace="com.example.writemyself.mapper.AIPortraitModelConfigMapper">
 
     <!-- 基础结果映射 -->
-    <resultMap id="aiPortraitModelConfigResultMap" type="com.example.writemyself.entity.AIPortraitModelConfigEntity">
+    <resultMap id="aiPortraitModelConfigResultMap" type="com.example.writemyself.model.AIPortraitModelConfig">
         <id property="id" column="id"/>
         <result property="modelName" column="model_name"/>
         <result property="displayName" column="display_name"/>

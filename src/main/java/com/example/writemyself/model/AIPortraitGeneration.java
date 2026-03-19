@@ -16,7 +16,7 @@ import java.util.Map;
  * 保存用户提交的生成参数和生成结果
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class AIPortraitGeneration implements Serializable {
@@ -203,25 +203,7 @@ public class AIPortraitGeneration implements Serializable {
     /**
      * 额外元数据
      */
-    private Map<String, Object> metadata;
-
-    /**
-     * 构造函数
-     */
-    public AIPortraitGeneration() {
-        this.metadata = new HashMap<>();
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.status = Status.PENDING.getValue();
-    }
-
-    public AIPortraitGeneration(Long userId, String taskId, String prompt, String modelName) {
-        this();
-        this.userId = userId;
-        this.taskId = taskId;
-        this.prompt = prompt;
-        this.modelName = modelName;
-    }
+    private Map<String, Object> metadata = new HashMap<>();
 
     // ===== Getters and Setters =====
 

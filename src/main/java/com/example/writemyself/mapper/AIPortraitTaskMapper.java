@@ -1,6 +1,6 @@
 package com.example.writemyself.mapper;
 
-import com.example.writemyself.entity.AIPortraitTaskEntity;
+import com.example.writemyself.model.AIPortraitTask;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
@@ -35,42 +35,42 @@ public interface AIPortraitTaskMapper {
             @Result(property = "updatedAt", column = "updated_at"),
             @Result(property = "metadata", column = "metadata")
     })
-    AIPortraitTaskEntity selectById(@Param("id") Long id);
+    AIPortraitTask selectById(@Param("id") Long id);
 
     /**
      * 根据任务ID查询任务
      */
     @Select("SELECT * FROM ai_portrait_task WHERE task_id = #{taskId}")
     @ResultMap("aiPortraitTaskResultMap")
-    AIPortraitTaskEntity selectByTaskId(@Param("taskId") String taskId);
+    AIPortraitTask selectByTaskId(@Param("taskId") String taskId);
 
     /**
      * 根据生成记录ID查询任务
      */
     @Select("SELECT * FROM ai_portrait_task WHERE generation_id = #{generationId}")
     @ResultMap("aiPortraitTaskResultMap")
-    AIPortraitTaskEntity selectByGenerationId(@Param("generationId") Long generationId);
+    AIPortraitTask selectByGenerationId(@Param("generationId") Long generationId);
 
     /**
      * 查询所有任务
      */
     @Select("SELECT * FROM ai_portrait_task ORDER BY created_at DESC")
     @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTaskEntity> selectAll();
+    List<AIPortraitTask> selectAll();
 
     /**
      * 根据状态查询任务
      */
     @Select("SELECT * FROM ai_portrait_task WHERE status = #{status} ORDER BY created_at ASC")
     @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTaskEntity> selectByStatus(@Param("status") String status);
+    List<AIPortraitTask> selectByStatus(@Param("status") String status);
 
     /**
      * 根据状态和重试次数查询任务
      */
     @Select("SELECT * FROM ai_portrait_task WHERE status = #{status} AND retry_count < #{retryCount} ORDER BY created_at ASC")
     @ResultMap("aiPortraitTaskResultMap")
-    List<AIPortraitTaskEntity> selectByStatusAndRetryCountLessThan(@Param("status") String status, @Param("retryCount") Integer retryCount);
+    List<AIPortraitTask> selectByStatusAndRetryCountLessThan(@Param("status") String status, @Param("retryCount") Integer retryCount);
 
     /**
      * 插入任务
@@ -80,7 +80,7 @@ public interface AIPortraitTaskMapper {
             "VALUES (#{taskId}, #{generationId}, #{status}, #{progress}, #{retryCount}, #{maxRetries}, " +
             "#{lastError}, #{startedAt}, #{completedAt}, #{createdAt}, #{updatedAt}, #{metadata})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    int insert(AIPortraitTaskEntity task);
+    int insert(AIPortraitTask task);
 
     /**
      * 更新任务
@@ -98,7 +98,7 @@ public interface AIPortraitTaskMapper {
             "updated_at = #{updatedAt}, " +
             "metadata = #{metadata} " +
             "WHERE id = #{id}")
-    int update(AIPortraitTaskEntity task);
+    int update(AIPortraitTask task);
 
     /**
      * 删除任务
@@ -134,25 +134,25 @@ public interface AIPortraitTaskMapper {
      * 分页查询任务
      * 使用XML映射实现复杂查询
      */
-    List<AIPortraitTaskEntity> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
+    List<AIPortraitTask> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
 
     /**
      * 条件查询任务
      * 使用XML映射实现动态SQL
      */
-    List<AIPortraitTaskEntity> selectByCondition(Map<String, Object> condition);
+    List<AIPortraitTask> selectByCondition(Map<String, Object> condition);
 
     /**
      * 批量插入任务
      * 使用XML映射实现批量操作
      */
-    int batchInsert(List<AIPortraitTaskEntity> tasks);
+    int batchInsert(List<AIPortraitTask> tasks);
 
     /**
      * 批量更新任务
      * 使用XML映射实现批量操作
      */
-    int batchUpdate(List<AIPortraitTaskEntity> tasks);
+    int batchUpdate(List<AIPortraitTask> tasks);
 
     /**
      * 批量删除任务
@@ -164,7 +164,7 @@ public interface AIPortraitTaskMapper {
      * 搜索任务（根据任务ID或错误信息）
      * 使用XML映射实现全文搜索
      */
-    List<AIPortraitTaskEntity> search(@Param("keyword") String keyword);
+    List<AIPortraitTask> search(@Param("keyword") String keyword);
 
     /**
      * 获取任务统计信息
@@ -182,7 +182,7 @@ public interface AIPortraitTaskMapper {
      * 获取最近创建的任务
      * 使用XML映射实现排序查询
      */
-    List<AIPortraitTaskEntity> getRecentTasks(@Param("limit") int limit);
+    List<AIPortraitTask> getRecentTasks(@Param("limit") int limit);
 
     /**
      * 更新任务状态
@@ -227,13 +227,13 @@ public interface AIPortraitTaskMapper {
      * 获取待处理任务（用于任务调度）
      * 使用XML映射实现任务调度查询
      */
-    List<AIPortraitTaskEntity> getPendingTasks(@Param("limit") int limit);
+    List<AIPortraitTask> getPendingTasks(@Param("limit") int limit);
 
     /**
      * 获取失败但可重试的任务
      * 使用XML映射实现可重试任务查询
      */
-    List<AIPortraitTaskEntity> getRetryableTasks(@Param("limit") int limit);
+    List<AIPortraitTask> getRetryableTasks(@Param("limit") int limit);
 
     /**
      * 根据条件统计任务数量

@@ -1,6 +1,6 @@
 package com.example.writemyself.mapper;
 
-import com.example.writemyself.entity.AIPortraitModelConfigEntity;
+import com.example.writemyself.model.AIPortraitModelConfig;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
@@ -34,42 +34,42 @@ public interface AIPortraitModelConfigMapper {
             @Result(property = "updatedAt", column = "updated_at"),
             @Result(property = "metadata", column = "metadata")
     })
-    AIPortraitModelConfigEntity selectById(@Param("id") Long id);
+    AIPortraitModelConfig selectById(@Param("id") Long id);
 
     /**
      * 根据模型名称查询模型配置
      */
     @Select("SELECT * FROM ai_portrait_model_config WHERE model_name = #{modelName}")
     @ResultMap("aiPortraitModelConfigResultMap")
-    AIPortraitModelConfigEntity selectByModelName(@Param("modelName") String modelName);
+    AIPortraitModelConfig selectByModelName(@Param("modelName") String modelName);
 
     /**
      * 查询所有模型配置
      */
     @Select("SELECT * FROM ai_portrait_model_config ORDER BY created_at DESC")
     @ResultMap("aiPortraitModelConfigResultMap")
-    List<AIPortraitModelConfigEntity> selectAll();
+    List<AIPortraitModelConfig> selectAll();
 
     /**
      * 查询所有活跃的模型配置
      */
     @Select("SELECT * FROM ai_portrait_model_config WHERE is_active = true ORDER BY created_at DESC")
     @ResultMap("aiPortraitModelConfigResultMap")
-    List<AIPortraitModelConfigEntity> selectByIsActiveTrue();
+    List<AIPortraitModelConfig> selectByIsActiveTrue();
 
     /**
      * 根据提供商查询模型配置
      */
     @Select("SELECT * FROM ai_portrait_model_config WHERE provider = #{provider} ORDER BY created_at DESC")
     @ResultMap("aiPortraitModelConfigResultMap")
-    List<AIPortraitModelConfigEntity> selectByProvider(@Param("provider") String provider);
+    List<AIPortraitModelConfig> selectByProvider(@Param("provider") String provider);
 
     /**
      * 根据提供商查询活跃的模型配置
      */
     @Select("SELECT * FROM ai_portrait_model_config WHERE provider = #{provider} AND is_active = true ORDER BY created_at DESC")
     @ResultMap("aiPortraitModelConfigResultMap")
-    List<AIPortraitModelConfigEntity> selectByProviderAndIsActiveTrue(@Param("provider") String provider);
+    List<AIPortraitModelConfig> selectByProviderAndIsActiveTrue(@Param("provider") String provider);
 
     /**
      * 插入模型配置
@@ -79,7 +79,7 @@ public interface AIPortraitModelConfigMapper {
             "VALUES (#{modelName}, #{displayName}, #{provider}, #{endpointUrl}, #{isActive}, " +
             "#{description}, #{supportedStyles}, #{maxWidth}, #{maxHeight}, #{createdAt}, #{updatedAt}, #{metadata})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    int insert(AIPortraitModelConfigEntity config);
+    int insert(AIPortraitModelConfig config);
 
     /**
      * 更新模型配置
@@ -97,7 +97,7 @@ public interface AIPortraitModelConfigMapper {
             "updated_at = #{updatedAt}, " +
             "metadata = #{metadata} " +
             "WHERE id = #{id}")
-    int update(AIPortraitModelConfigEntity config);
+    int update(AIPortraitModelConfig config);
 
     /**
      * 删除模型配置
@@ -127,25 +127,25 @@ public interface AIPortraitModelConfigMapper {
      * 分页查询模型配置
      * 使用XML映射实现复杂查询
      */
-    List<AIPortraitModelConfigEntity> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
+    List<AIPortraitModelConfig> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
 
     /**
      * 条件查询模型配置
      * 使用XML映射实现动态SQL
      */
-    List<AIPortraitModelConfigEntity> selectByCondition(Map<String, Object> condition);
+    List<AIPortraitModelConfig> selectByCondition(Map<String, Object> condition);
 
     /**
      * 批量插入模型配置
      * 使用XML映射实现批量操作
      */
-    int batchInsert(List<AIPortraitModelConfigEntity> configs);
+    int batchInsert(List<AIPortraitModelConfig> configs);
 
     /**
      * 批量更新模型配置
      * 使用XML映射实现批量操作
      */
-    int batchUpdate(List<AIPortraitModelConfigEntity> configs);
+    int batchUpdate(List<AIPortraitModelConfig> configs);
 
     /**
      * 批量删除模型配置
@@ -157,7 +157,7 @@ public interface AIPortraitModelConfigMapper {
      * 搜索模型配置（根据模型名称、显示名称或描述）
      * 使用XML映射实现全文搜索
      */
-    List<AIPortraitModelConfigEntity> search(@Param("keyword") String keyword);
+    List<AIPortraitModelConfig> search(@Param("keyword") String keyword);
 
     /**
      * 获取模型配置统计信息
@@ -175,7 +175,7 @@ public interface AIPortraitModelConfigMapper {
      * 获取最近创建的模型配置
      * 使用XML映射实现排序查询
      */
-    List<AIPortraitModelConfigEntity> getRecentConfigs(@Param("limit") int limit);
+    List<AIPortraitModelConfig> getRecentConfigs(@Param("limit") int limit);
 
     /**
      * 更新模型配置状态

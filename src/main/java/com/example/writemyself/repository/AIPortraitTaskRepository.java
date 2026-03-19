@@ -2,8 +2,11 @@ package com.example.writemyself.repository;
 
 import com.example.writemyself.model.AIPortraitTask;
 
+import java.util.Optional;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 
 /**
@@ -19,17 +22,17 @@ public interface AIPortraitTaskRepository {
     /**
      * 根据 ID 查询任务
      */
-    AIPortraitTask findById(Long id);
+    Optional<AIPortraitTask> findById(Long id);
 
     /**
      * 根据任务ID查找任务
      */
-    AIPortraitTask findByTaskId(String taskId);
+    Optional<AIPortraitTask> findByTaskId(String taskId);
 
     /**
      * 根据生成记录ID查找任务
      */
-    AIPortraitTask findByGenerationId(Long generationId);
+    Optional<AIPortraitTask> findByGenerationId(Long generationId);
 
     /**
      * 获取所有任务

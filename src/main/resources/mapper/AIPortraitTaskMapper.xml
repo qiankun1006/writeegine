@@ -3,7 +3,7 @@
 <mapper namespace="com.example.writemyself.mapper.AIPortraitTaskMapper">
 
     <!-- 基础结果映射 -->
-    <resultMap id="aiPortraitTaskResultMap" type="com.example.writemyself.entity.AIPortraitTaskEntity">
+    <resultMap id="aiPortraitTaskResultMap" type="com.example.writemyself.model.AIPortraitTask">
         <id property="id" column="id"/>
         <result property="taskId" column="task_id"/>
         <result property="generationId" column="generation_id"/>

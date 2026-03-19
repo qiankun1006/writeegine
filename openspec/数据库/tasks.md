@@ -53,7 +53,7 @@ docker ps | grep mysql
 
 ---
 
-## 第2步：连接到 MySQL
+## [ ] 第2步：连接到 MySQL
 
 ### 首次连接（无密码）
 

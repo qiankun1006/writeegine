@@ -1,6 +1,6 @@
 package com.example.writemyself.mapper;
 
-import com.example.writemyself.entity.AIPortraitGenerationEntity;
+import com.example.writemyself.model.AIPortraitGeneration;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
@@ -50,35 +50,35 @@ public interface AIPortraitGenerationMapper {
             @Result(property = "completedAt", column = "completed_at"),
             @Result(property = "metadata", column = "metadata")
     })
-    AIPortraitGenerationEntity selectById(@Param("id") Long id);
+    AIPortraitGeneration selectById(@Param("id") Long id);
 
     /**
      * 根据任务ID查询生成记录
      */
     @Select("SELECT * FROM ai_portrait_generation WHERE task_id = #{taskId}")
     @ResultMap("aiPortraitGenerationResultMap")
-    AIPortraitGenerationEntity selectByTaskId(@Param("taskId") String taskId);
+    AIPortraitGeneration selectByTaskId(@Param("taskId") String taskId);
 
     /**
      * 查询所有生成记录
      */
     @Select("SELECT * FROM ai_portrait_generation ORDER BY created_at DESC")
     @ResultMap("aiPortraitGenerationResultMap")
-    List<AIPortraitGenerationEntity> selectAll();
+    List<AIPortraitGeneration> selectAll();
 
     /**
      * 根据用户ID查询生成记录
      */
     @Select("SELECT * FROM ai_portrait_generation WHERE user_id = #{userId} ORDER BY created_at DESC")
     @ResultMap("aiPortraitGenerationResultMap")
-    List<AIPortraitGenerationEntity> selectByUserId(@Param("userId") Long userId);
+    List<AIPortraitGeneration> selectByUserId(@Param("userId") Long userId);
 
     /**
      * 根据状态查询生成记录
      */
     @Select("SELECT * FROM ai_portrait_generation WHERE status = #{status} ORDER BY created_at ASC")
     @ResultMap("aiPortraitGenerationResultMap")
-    List<AIPortraitGenerationEntity> selectByStatus(@Param("status") String status);
+    List<AIPortraitGeneration> selectByStatus(@Param("status") String status);
 
     /**
      * 插入生成记录
@@ -93,7 +93,7 @@ public interface AIPortraitGenerationMapper {
             "#{outputFormat}, #{generatedImageUrls}, #{status}, #{errorMessage}, #{generationTime}, #{queueWaitTime}, " +
             "#{createdAt}, #{updatedAt}, #{completedAt}, #{metadata})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    int insert(AIPortraitGenerationEntity generation);
+    int insert(AIPortraitGeneration generation);
 
     /**
      * 更新生成记录
@@ -127,7 +127,7 @@ public interface AIPortraitGenerationMapper {
             "completed_at = #{completedAt}, " +
             "metadata = #{metadata} " +
             "WHERE id = #{id}")
-    int update(AIPortraitGenerationEntity generation);
+    int update(AIPortraitGeneration generation);
 
     /**
      * 删除生成记录
@@ -163,25 +163,25 @@ public interface AIPortraitGenerationMapper {
      * 分页查询生成记录
      * 使用XML映射实现复杂查询
      */
-    List<AIPortraitGenerationEntity> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
+    List<AIPortraitGeneration> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
 
     /**
      * 条件查询生成记录
      * 使用XML映射实现动态SQL
      */
-    List<AIPortraitGenerationEntity> selectByCondition(Map<String, Object> condition);
+    List<AIPortraitGeneration> selectByCondition(Map<String, Object> condition);
 
     /**
      * 批量插入生成记录
      * 使用XML映射实现批量操作
      */
-    int batchInsert(List<AIPortraitGenerationEntity> generations);
+    int batchInsert(List<AIPortraitGeneration> generations);
 
     /**
      * 批量更新生成记录
      * 使用XML映射实现批量操作
      */
-    int batchUpdate(List<AIPortraitGenerationEntity> generations);
+    int batchUpdate(List<AIPortraitGeneration> generations);
 
     /**
      * 批量删除生成记录
@@ -193,7 +193,7 @@ public interface AIPortraitGenerationMapper {
      * 搜索生成记录（根据提示词或模型名称）
      * 使用XML映射实现全文搜索
      */
-    List<AIPortraitGenerationEntity> search(@Param("keyword") String keyword);
+    List<AIPortraitGeneration> search(@Param("keyword") String keyword);
 
     /**
      * 获取生成记录统计信息
@@ -211,13 +211,13 @@ public interface AIPortraitGenerationMapper {
      * 获取最近创建的生成记录
      * 使用XML映射实现排序查询
      */
-    List<AIPortraitGenerationEntity> getRecentGenerations(@Param("limit") int limit);
+    List<AIPortraitGeneration> getRecentGenerations(@Param("limit") int limit);
 
     /**
      * 根据用户ID获取最近的生成记录
      * 使用XML映射实现用户特定查询
      */
-    List<AIPortraitGenerationEntity> selectRecentByUserId(@Param("userId") Long userId, @Param("limit") int limit);
+    List<AIPortraitGeneration> selectRecentByUserId(@Param("userId") Long userId, @Param("limit") int limit);
 
     /**
      * 根据条件统计生成记录数量

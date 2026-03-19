@@ -1,8 +1,0 @@
-com/example/writemyself/WriteMyselfApplicationTests.class
-com/example/writemyself/service/VolcengineServiceTest.class
-com/example/writemyself/controller/AIPortraitControllerVolcengineIntegrationTest.class
-com/example/writemyself/GameRepositoryImplTest.class
-com/example/writemyself/GameMapperTest.class
-com/example/writemyself/DatabaseVersionManagerTest.class
-com/example/writemyself/AIPortraitTaskMapperTest.class
-com/example/writemyself/DatabaseConnectionTest.class

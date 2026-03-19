@@ -1,6 +1,5 @@
 package com.example.writemyself.repository;
 
-import com.example.writemyself.entity.AIPortraitGenerationEntity;
 import com.example.writemyself.mapper.AIPortraitGenerationMapper;
 import com.example.writemyself.model.AIPortraitGeneration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * AI肖像生成记录仓储实现
@@ -29,18 +28,15 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public void save(AIPortraitGeneration generation) {
-        AIPortraitGenerationEntity generationEntity = convertToEntity(generation);
-
         if (generation.getId() == null) {
             // 插入新生成记录
-            generationEntity.setCreatedAt(LocalDateTime.now());
-            generationEntity.setUpdatedAt(LocalDateTime.now());
-            aiPortraitGenerationMapper.insert(generationEntity);
-            generation.setId(generationEntity.getId());
+            generation.setCreatedAt(LocalDateTime.now());
+            generation.setUpdatedAt(LocalDateTime.now());
+            aiPortraitGenerationMapper.insert(generation);
         } else {
             // 更新现有生成记录
-            generationEntity.setUpdatedAt(LocalDateTime.now());
-            aiPortraitGenerationMapper.update(generationEntity);
+            generation.setUpdatedAt(LocalDateTime.now());
+            aiPortraitGenerationMapper.update(generation);
         }
     }
 
@@ -48,24 +44,16 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      * 根据 ID 查询生成记录
      */
     @Override
-    public AIPortraitGeneration findById(Long id) {
-        AIPortraitGenerationEntity generationEntity = aiPortraitGenerationMapper.selectById(id);
-        if (generationEntity == null) {
-            return null;
-        }
-        return convertToModel(generationEntity);
+    public Optional<AIPortraitGeneration> findById(Long id) {
+        return Optional.ofNullable(aiPortraitGenerationMapper.selectById(id));
     }
 
     /**
      * 根据任务ID查找生成记录
      */
     @Override
-    public AIPortraitGeneration findByTaskId(String taskId) {
-        AIPortraitGenerationEntity generationEntity = aiPortraitGenerationMapper.selectByTaskId(taskId);
-        if (generationEntity == null) {
-            return null;
-        }
-        return convertToModel(generationEntity);
+    public Optional<AIPortraitGeneration> findByTaskId(String taskId) {
+        return Optional.ofNullable(aiPortraitGenerationMapper.selectByTaskId(taskId));
     }
 
     /**
@@ -73,8 +61,7 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public List<AIPortraitGeneration> findAll() {
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.selectAll();
-        return convertToModelList(generationEntities);
+        return aiPortraitGenerationMapper.selectAll();
     }
 
     /**
@@ -82,8 +69,7 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public List<AIPortraitGeneration> findByUserId(Long userId) {
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.selectByUserId(userId);
-        return convertToModelList(generationEntities);
+        return aiPortraitGenerationMapper.selectByUserId(userId);
     }
 
     /**
@@ -100,8 +86,7 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public List<AIPortraitGeneration> findByStatus(String status) {
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.selectByStatus(status);
-        return convertToModelList(generationEntities);
+        return aiPortraitGenerationMapper.selectByStatus(status);
     }
 
     /**
@@ -128,9 +113,9 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
     public void deleteAll() {
         // 注意：这个方法应该只在测试环境中使用
         // 实际生产环境中应该禁用或限制使用
-        List<AIPortraitGenerationEntity> allGenerations = aiPortraitGenerationMapper.selectAll();
+        List<AIPortraitGeneration> allGenerations = aiPortraitGenerationMapper.selectAll();
         List<Long> ids = new ArrayList<>();
-        for (AIPortraitGenerationEntity generation : allGenerations) {
+        for (AIPortraitGeneration generation : allGenerations) {
             ids.add(generation.getId());
         }
         if (!ids.isEmpty()) {
@@ -176,8 +161,8 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
     @Override
     public List<AIPortraitGeneration> findByPage(int page, int size) {
         int offset = (page - 1) * size;
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.selectByPage(offset, size);
-        return convertToModelList(generationEntities);
+        List<AIPortraitGeneration> generationEntities = aiPortraitGenerationMapper.selectByPage(offset, size);
+        return generationEntities;
     }
 
     /**
@@ -185,8 +170,8 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public List<AIPortraitGeneration> findByCondition(Map<String, Object> condition) {
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.selectByCondition(condition);
-        return convertToModelList(generationEntities);
+        List<AIPortraitGeneration> generationEntities = aiPortraitGenerationMapper.selectByCondition(condition);
+        return generationEntities;
     }
 
     /**
@@ -194,8 +179,8 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public List<AIPortraitGeneration> search(String keyword) {
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.search(keyword);
-        return convertToModelList(generationEntities);
+        List<AIPortraitGeneration> generationEntities = aiPortraitGenerationMapper.search(keyword);
+        return generationEntities;
     }
 
     /**
@@ -203,8 +188,8 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public List<AIPortraitGeneration> getRecentGenerations(int limit) {
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.getRecentGenerations(limit);
-        return convertToModelList(generationEntities);
+        List<AIPortraitGeneration> generationEntities = aiPortraitGenerationMapper.getRecentGenerations(limit);
+        return generationEntities;
     }
 
     /**
@@ -212,11 +197,7 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public void batchSave(List<AIPortraitGeneration> generations) {
-        List<AIPortraitGenerationEntity> generationEntities = new ArrayList<>();
-        for (AIPortraitGeneration generation : generations) {
-            generationEntities.add(convertToEntity(generation));
-        }
-        aiPortraitGenerationMapper.batchInsert(generationEntities);
+        aiPortraitGenerationMapper.batchInsert(generations);
     }
 
     /**
@@ -224,11 +205,7 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public void batchUpdate(List<AIPortraitGeneration> generations) {
-        List<AIPortraitGenerationEntity> generationEntities = new ArrayList<>();
-        for (AIPortraitGeneration generation : generations) {
-            generationEntities.add(convertToEntity(generation));
-        }
-        aiPortraitGenerationMapper.batchUpdate(generationEntities);
+        aiPortraitGenerationMapper.batchUpdate(generations);
     }
 
     /**
@@ -260,8 +237,7 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
      */
     @Override
     public List<AIPortraitGeneration> findRecentByUserId(Long userId, int limit) {
-        List<AIPortraitGenerationEntity> generationEntities = aiPortraitGenerationMapper.selectRecentByUserId(userId, limit);
-        return convertToModelList(generationEntities);
+        return aiPortraitGenerationMapper.selectRecentByUserId(userId, limit);
     }
 
     /**
@@ -272,49 +248,5 @@ public class AIPortraitGenerationRepositoryImpl implements AIPortraitGenerationR
         aiPortraitGenerationMapper.deleteByCreatedAtBefore(dateTime);
     }
 
-    /**
-     * 将AIPortraitGeneration模型转换为AIPortraitGenerationEntity实体
-     */
-    private AIPortraitGenerationEntity convertToEntity(AIPortraitGeneration generation) {
-        AIPortraitGenerationEntity entity = new AIPortraitGenerationEntity(generation);
-
-        // 处理元数据（JSON格式）
-        if (generation.getMetadata() != null && !generation.getMetadata().isEmpty()) {
-            // 这里需要将Map转换为JSON字符串
-            // 实际项目中可以使用Jackson或Gson
-            // 这里简单实现
-            entity.setMetadata(generation.getMetadata().toString());
-        }
-
-        return entity;
-    }
-
-    /**
-     * 将AIPortraitGenerationEntity实体转换为AIPortraitGeneration模型
-     */
-    private AIPortraitGeneration convertToModel(AIPortraitGenerationEntity entity) {
-        AIPortraitGeneration generation = entity.toAIPortraitGeneration();
-
-        // 处理元数据（JSON格式）
-        if (entity.getMetadata() != null && !entity.getMetadata().isEmpty()) {
-            // 这里需要将JSON字符串转换为Map
-            // 实际项目中可以使用Jackson或Gson
-            // 这里简单实现，返回空Map
-            generation.setMetadata(new HashMap<>());
-        }
-
-        return generation;
-    }
-
-    /**
-     * 将AIPortraitGenerationEntity列表转换为AIPortraitGeneration模型列表
-     */
-    private List<AIPortraitGeneration> convertToModelList(List<AIPortraitGenerationEntity> entities) {
-        List<AIPortraitGeneration> generations = new ArrayList<>();
-        for (AIPortraitGenerationEntity entity : entities) {
-            generations.add(convertToModel(entity));
-        }
-        return generations;
-    }
 }
 

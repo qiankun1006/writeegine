@@ -2,7 +2,9 @@ package com.example.writemyself.repository;
 
 import com.example.writemyself.model.AIPortraitGeneration;
 
+import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 
 /**
@@ -18,12 +20,12 @@ public interface AIPortraitGenerationRepository {
     /**
      * 根据 ID 查询生成记录
      */
-    AIPortraitGeneration findById(Long id);
+    Optional<AIPortraitGeneration> findById(Long id);
 
     /**
      * 根据任务ID查找生成记录
      */
-    AIPortraitGeneration findByTaskId(String taskId);
+    Optional<AIPortraitGeneration> findByTaskId(String taskId);
 
     /**
      * 获取所有生成记录
