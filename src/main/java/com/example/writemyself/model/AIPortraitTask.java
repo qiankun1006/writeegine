@@ -1,5 +1,10 @@
 package com.example.writemyself.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -8,6 +13,10 @@ import java.util.Map;
 /**
  * AI肖像任务模型
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class AIPortraitTask implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -112,145 +121,6 @@ public class AIPortraitTask implements Serializable {
     /**
      * 额外元数据
      */
-    private Map<String, Object> metadata;
-
-    /**
-     * 构造函数
-     */
-    public AIPortraitTask() {
-        this.metadata = new HashMap<>();
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.status = Status.PENDING.getValue();
-    }
-
-    public AIPortraitTask(String taskId, Long generationId) {
-        this();
-        this.taskId = taskId;
-        this.generationId = generationId;
-    }
-
-    // ===== Getters and Setters =====
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
-    public Long getGenerationId() {
-        return generationId;
-    }
-
-    public void setGenerationId(Long generationId) {
-        this.generationId = generationId;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Integer getProgress() {
-        return progress;
-    }
-
-    public void setProgress(Integer progress) {
-        this.progress = progress;
-    }
-
-    public Integer getRetryCount() {
-        return retryCount;
-    }
-
-    public void setRetryCount(Integer retryCount) {
-        this.retryCount = retryCount;
-    }
-
-    public Integer getMaxRetries() {
-        return maxRetries;
-    }
-
-    public void setMaxRetries(Integer maxRetries) {
-        this.maxRetries = maxRetries;
-    }
-
-    public String getLastError() {
-        return lastError;
-    }
-
-    public void setLastError(String lastError) {
-        this.lastError = lastError;
-    }
-
-    public LocalDateTime getStartedAt() {
-        return startedAt;
-    }
-
-    public void setStartedAt(LocalDateTime startedAt) {
-        this.startedAt = startedAt;
-    }
-
-    public LocalDateTime getCompletedAt() {
-        return completedAt;
-    }
-
-    public void setCompletedAt(LocalDateTime completedAt) {
-        this.completedAt = completedAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Map<String, Object> getMetadata() {
-        if (metadata == null) {
-            metadata = new HashMap<>();
-        }
-        return metadata;
-    }
-
-    public void setMetadata(Map<String, Object> metadata) {
-        this.metadata = metadata;
-    }
-
-    @Override
-    public String toString() {
-        return "AIPortraitTask{" +
-                "id=" + id +
-                ", taskId='" + taskId + '\'' +
-                ", generationId=" + generationId +
-                ", status='" + status + '\'' +
-                ", progress=" + progress +
-                ", retryCount=" + retryCount +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+    private Map<String, Object> metadata = new HashMap<>();
 }
 

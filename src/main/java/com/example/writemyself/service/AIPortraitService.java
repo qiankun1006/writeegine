@@ -107,10 +107,8 @@ public class AIPortraitService {
         try {
             log.info("🚀 开始异步处理生成任务: taskId={}, generationId={}", taskId, generationId);
 
-            AIPortraitGeneration generation = generationRepository.findById(generationId);
-            if (generation == null) {
-                throw new RuntimeException("生成记录不存在: " + generationId);
-            }
+            AIPortraitGeneration generation = generationRepository.findById(generationId)
+                .orElseThrow(() -> new RuntimeException("生成记录不存在: " + generationId));
 
             taskRepository.updateTaskStart(taskId, LocalDateTime.now(), LocalDateTime.now());
             log.info("✓ 任务开始处理，更新状态为 PROCESSING");
@@ -164,16 +162,12 @@ public class AIPortraitService {
             log.debug("🔍 查询生成进度: taskId={}", taskId);
 
             // 步骤1：获取任务记录
-            AIPortraitTask task = taskRepository.findByTaskId(taskId);
-            if (task == null) {
-                throw new RuntimeException("任务不存在: " + taskId);
-            }
+            AIPortraitTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("任务不存在: " + taskId));
 
             // 步骤2：获取关联的生成记录
-            AIPortraitGeneration generation = generationRepository.findById(task.getGenerationId());
-            if (generation == null) {
-                throw new RuntimeException("生成记录不存在");
-            }
+            AIPortraitGeneration generation = generationRepository.findById(task.getGenerationId())
+                .orElseThrow(() -> new RuntimeException("生成记录不存在"));
 
             log.debug("✓ 获取任务信息成功: status={}, progress={}%", task.getStatus(), task.getProgress());
 
@@ -285,10 +279,8 @@ public class AIPortraitService {
         try {
             log.info("💾 保存生成结果到资源库: taskId={}, resourceName={}", taskId, resourceName);
 
-            AIPortraitGeneration generation = generationRepository.findByTaskId(taskId);
-            if (generation == null) {
-                throw new RuntimeException("生成记录不存在: " + taskId);
-            }
+            AIPortraitGeneration generation = generationRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("生成记录不存在: " + taskId));
 
             // 验证任务是否已成功完成
             if (!"SUCCESS".equals(generation.getStatus())) {
@@ -356,12 +348,13 @@ public class AIPortraitService {
                 .inferenceSteps(request.getSteps())
                 .samplerName(request.getSampler())
                 .seed(request.getSeed().longValue())
-                .count(request.getGenerateCount())
+                .generationCount(request.getGenerateCount())
                 .faceEnhance(request.getFaceEnhance())
                 .outputFormat(request.getOutputFormat())
                 .status("PENDING")
                 .build();
-        return generationRepository.save(generation);
+        generationRepository.save(generation);
+        return generation;
     }
 
     /**
@@ -374,7 +367,8 @@ public class AIPortraitService {
                 .status("PENDING")
                 .progress(0)
                 .build();
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        return task;
     }
 
     /**
@@ -424,12 +418,12 @@ public class AIPortraitService {
             );
         } else {
             // 文生图模式
-            log.info("✍️ 使用文生图模式，生成数量: {}", generation.getCount());
+            log.info("✍️ 使用文生图模式，生成数量: {}", generation.getGenerationCount());
             return modelService.generateImage(
                     generation.getPrompt(),
                     generation.getWidth(),
                     generation.getHeight(),
-                    generation.getCount(),
+                    generation.getGenerationCount(),
                     generation.getSeed()
             );
         }
@@ -460,10 +454,8 @@ public class AIPortraitService {
             taskRepository.updateTaskStatus(taskId, "FAILED", 0, LocalDateTime.now());
             log.info("✓ 任务状态已更新为 FAILED");
 
-            AIPortraitGeneration generation = generationRepository.findByTaskId(taskId);
-            if (generation == null) {
-                throw new RuntimeException("生成记录不存在");
-            }
+            AIPortraitGeneration generation = generationRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("生成记录不存在"));
             generation.setStatus("FAILED");
             generation.setErrorMessage(e.getMessage());
             generationRepository.save(generation);

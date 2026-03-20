@@ -2,10 +2,9 @@ package com.example.writemyself.repository;
 
 import com.example.writemyself.model.AIPortraitModelConfig;
 
-import java.util.Optional;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * AI肖像模型配置仓储接口
@@ -20,12 +19,12 @@ public interface AIPortraitModelConfigRepository {
     /**
      * 根据 ID 查询模型配置
      */
-    AIPortraitModelConfig findById(Long id);
+    Optional<AIPortraitModelConfig> findById(Long id);
 
     /**
      * 根据模型名称查找配置
      */
-    AIPortraitModelConfig findByModelName(String modelName);
+    Optional<AIPortraitModelConfig> findByModelName(String modelName);
 
     /**
      * 获取所有模型配置

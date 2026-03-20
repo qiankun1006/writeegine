@@ -20,6 +20,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/TilemapEditorController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitGenerationRepository.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitGenerationEntity.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/util/MapperGeneratorUtil.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitModelConfigRepositoryImpl.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/mapper/GameMapper.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitUserPreset.java

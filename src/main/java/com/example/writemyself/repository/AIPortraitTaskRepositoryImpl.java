@@ -6,13 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * AI肖像任务仓储实现
@@ -47,11 +45,7 @@ public class AIPortraitTaskRepositoryImpl implements AIPortraitTaskRepository {
      */
     @Override
     public Optional<AIPortraitTask> findById(Long id) {
-        AIPortraitTask taskEntity = aiPortraitTaskMapper.selectById(id);
-        if (taskEntity == null) {
-            return null;
-        }
-        return convertToModel(taskEntity);
+        return Optional.ofNullable(aiPortraitTaskMapper.selectById(id));
     }
 
     /**
@@ -59,11 +53,7 @@ public class AIPortraitTaskRepositoryImpl implements AIPortraitTaskRepository {
      */
     @Override
     public Optional<AIPortraitTask> findByTaskId(String taskId) {
-        AIPortraitTask taskEntity = aiPortraitTaskMapper.selectByTaskId(taskId);
-        if (taskEntity == null) {
-            return null;
-        }
-        return convertToModel(taskEntity);
+        return Optional.ofNullable(aiPortraitTaskMapper.selectByTaskId(taskId));
     }
 
     /**
@@ -71,11 +61,7 @@ public class AIPortraitTaskRepositoryImpl implements AIPortraitTaskRepository {
      */
     @Override
     public Optional<AIPortraitTask> findByGenerationId(Long generationId) {
-        AIPortraitTask taskEntity = aiPortraitTaskMapper.selectByGenerationId(generationId);
-        if (taskEntity == null) {
-            return null;
-        }
-        return convertToModel(taskEntity);
+        return Optional.ofNullable(aiPortraitTaskMapper.selectByGenerationId(generationId));
     }
 
     /**
@@ -213,11 +199,7 @@ public class AIPortraitTaskRepositoryImpl implements AIPortraitTaskRepository {
      */
     @Override
     public void batchSave(List<AIPortraitTask> tasks) {
-        List<AIPortraitTask> taskEntities = new ArrayList<>();
-        for (AIPortraitTask task : tasks) {
-            taskEntities.add(convertToEntity(task));
-        }
-        aiPortraitTaskMapper.batchInsert(taskEntities);
+        aiPortraitTaskMapper.batchInsert(tasks);
     }
 
     /**
@@ -225,11 +207,7 @@ public class AIPortraitTaskRepositoryImpl implements AIPortraitTaskRepository {
      */
     @Override
     public void batchUpdate(List<AIPortraitTask> tasks) {
-        List<AIPortraitTask> taskEntities = new ArrayList<>();
-        for (AIPortraitTask task : tasks) {
-            taskEntities.add(convertToEntity(task));
-        }
-        aiPortraitTaskMapper.batchUpdate(taskEntities);
+        aiPortraitTaskMapper.batchUpdate(tasks);
     }
 
     /**

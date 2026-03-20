@@ -6,13 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * AI肖像模型配置仓储实现
@@ -30,18 +28,15 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
      */
     @Override
     public void save(AIPortraitModelConfig config) {
-        AIPortraitModelConfig configEntity = convertToEntity(config);
-
         if (config.getId() == null) {
             // 插入新模型配置
-            configEntity.setCreatedAt(LocalDateTime.now());
-            configEntity.setUpdatedAt(LocalDateTime.now());
-            aiPortraitModelConfigMapper.insert(configEntity);
-            config.setId(configEntity.getId());
+            config.setCreatedAt(LocalDateTime.now());
+            config.setUpdatedAt(LocalDateTime.now());
+            aiPortraitModelConfigMapper.insert(config);
         } else {
             // 更新现有模型配置
-            configEntity.setUpdatedAt(LocalDateTime.now());
-            aiPortraitModelConfigMapper.update(configEntity);
+            config.setUpdatedAt(LocalDateTime.now());
+            aiPortraitModelConfigMapper.update(config);
         }
     }
 
@@ -50,11 +45,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
      */
     @Override
     public Optional<AIPortraitModelConfig> findById(Long id) {
-        AIPortraitModelConfig configEntity = aiPortraitModelConfigMapper.selectById(id);
-        if (configEntity == null) {
-            return null;
-        }
-        return convertToModel(configEntity);
+        return Optional.ofNullable(aiPortraitModelConfigMapper.selectById(id));
     }
 
     /**
@@ -62,11 +53,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
      */
     @Override
     public Optional<AIPortraitModelConfig> findByModelName(String modelName) {
-        AIPortraitModelConfig configEntity = aiPortraitModelConfigMapper.selectByModelName(modelName);
-        if (configEntity == null) {
-            return null;
-        }
-        return convertToModel(configEntity);
+        return Optional.ofNullable(aiPortraitModelConfigMapper.selectByModelName(modelName));
     }
 
     /**
@@ -75,7 +62,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     @Override
     public List<AIPortraitModelConfig> findAll() {
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.selectAll();
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -84,7 +71,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     @Override
     public List<AIPortraitModelConfig> findByIsActiveTrue() {
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.selectByIsActiveTrue();
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -93,7 +80,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     @Override
     public List<AIPortraitModelConfig> findByProvider(String provider) {
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.selectByProvider(provider);
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -102,7 +89,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     @Override
     public List<AIPortraitModelConfig> findByProviderAndIsActiveTrue(String provider) {
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.selectByProviderAndIsActiveTrue(provider);
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -161,7 +148,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     public List<AIPortraitModelConfig> findByPage(int page, int size) {
         int offset = (page - 1) * size;
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.selectByPage(offset, size);
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -170,7 +157,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     @Override
     public List<AIPortraitModelConfig> findByCondition(Map<String, Object> condition) {
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.selectByCondition(condition);
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -179,7 +166,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     @Override
     public List<AIPortraitModelConfig> search(String keyword) {
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.search(keyword);
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -188,7 +175,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     @Override
     public List<AIPortraitModelConfig> getRecentConfigs(int limit) {
         List<AIPortraitModelConfig> configEntities = aiPortraitModelConfigMapper.getRecentConfigs(limit);
-        return convertToModelList(configEntities);
+        return configEntities;
     }
 
     /**
@@ -196,11 +183,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
      */
     @Override
     public void batchSave(List<AIPortraitModelConfig> configs) {
-        List<AIPortraitModelConfig> configEntities = new ArrayList<>();
-        for (AIPortraitModelConfig config : configs) {
-            configEntities.add(convertToEntity(config));
-        }
-        aiPortraitModelConfigMapper.batchInsert(configEntities);
+        aiPortraitModelConfigMapper.batchInsert(configs);
     }
 
     /**
@@ -208,11 +191,7 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
      */
     @Override
     public void batchUpdate(List<AIPortraitModelConfig> configs) {
-        List<AIPortraitModelConfig> configEntities = new ArrayList<>();
-        for (AIPortraitModelConfig config : configs) {
-            configEntities.add(convertToEntity(config));
-        }
-        aiPortraitModelConfigMapper.batchUpdate(configEntities);
+        aiPortraitModelConfigMapper.batchUpdate(configs);
     }
 
     /**
@@ -254,17 +233,5 @@ public class AIPortraitModelConfigRepositoryImpl implements AIPortraitModelConfi
     public void batchUpdateStatus(List<Long> ids, Boolean isActive) {
         aiPortraitModelConfigMapper.batchUpdateStatus(ids, isActive);
     }
-
-    /**
-     * 将AIPortraitModelConfig模型转换为AIPortraitModelConfig实体
-     */
-
-    /**
-     * 将AIPortraitModelConfig实体转换为AIPortraitModelConfig模型
-     */
-
-    /**
-     * 将AIPortraitModelConfig列表转换为AIPortraitModelConfig模型列表
-     */
 }
 
