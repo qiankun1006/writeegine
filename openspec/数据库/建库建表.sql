@@ -300,7 +300,9 @@ ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
 INSERT INTO ai_portrait_model_config (model_name, display_name, provider, is_active, description) VALUES
 ('stable-diffusion-v1.5', 'Stable Diffusion v1.5', 'local', true, '本地 Stable Diffusion 模型'),
 ('sd-xl', 'Stable Diffusion XL', 'local', true, '本地 Stable Diffusion XL 模型'),
-('volcengine-portrait', 'VolcEngine 肖像生成', 'volcengine', false, '火山引擎肖像生成模型')
+('volcengine-portrait', 'VolcEngine 肖像生成', 'volcengine', false, '火山引擎肖像生成模型'),
+('Qwen-Image-Meituan', '千问-美团图像生成', 'meituan', true, '美团千问图像生成模型，支持高质量文生图'),
+('Qwen-Image-Edit-Meituan', '千问-美团图像编辑', 'meituan', true, '美团千问图像编辑模型，支持图生图')
 ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
 
 -- ============================================

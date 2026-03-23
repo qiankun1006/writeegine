@@ -13,6 +13,7 @@ public class AIModelServiceFactory {
 
     private final AliyunTongYiService aliyunTongYiService;
     private final VolcengineService volcengineService;
+    private final MeituanQwenService meituanQwenService;
 
     /**
      * 根据模型名称获取对应的服务
@@ -30,6 +31,11 @@ public class AIModelServiceFactory {
         // 阿里云通义模型
         if (modelName.startsWith("wanx-") || modelName.startsWith("tongyi-")) {
             return aliyunTongYiService;
+        }
+
+        // 美团千问模型
+        if (modelName.startsWith("Qwen-Image-") || modelName.startsWith("qwen-")) {
+            return meituanQwenService;
         }
 
         // 默认回退到火山引擎

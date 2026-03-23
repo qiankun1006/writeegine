@@ -100,25 +100,27 @@ public class GeneratePortraitRequest {
      * 服务提供商 - 必填
      *
      * 选择使用哪个云服务商的文生图 API。
-     * 支持的值：aliyun (阿里云), volcengine (火山引擎)
+     * 支持的值：aliyun (阿里云), volcengine (火山引擎), meituan (千问-美团)
      *
      * 映射自：portraitStore.params.provider
      */
     @NotBlank(message = "服务提供商不能为空")
-    @Pattern(regexp = "^(aliyun|volcengine)$",
-             message = "服务提供商只支持 aliyun 或 volcengine")
+    @Pattern(regexp = "^(aliyun|volcengine|meituan)$",
+             message = "服务提供商只支持 aliyun, volcengine 或 meituan")
     private String provider;
 
     /**
      * 模型版本 - 必填
      *
      * 使用的模型版本号。不同版本支持不同的功能和效果。
-     * 例如：wanx-v1 (阿里云), flux (火山引擎)
+     * 例如：wanx-v1 (阿里云), flux (火山引擎), Qwen-Image-Meituan (千问-美团)
      *
      * 映射自：portraitStore.params.modelVersion
      */
     @NotBlank(message = "模型版本不能为空")
     @Size(max = 50, message = "模型版本长度不能超过 50 字")
+    @Pattern(regexp = "^(wanx-v1|flux|Qwen-Image-Meituan|Qwen-Image-Edit-Meituan|doubao-.*)$",
+             message = "模型版本支持: wanx-v1, flux, Qwen-Image-Meituan, Qwen-Image-Edit-Meituan, doubao-* ")
     private String modelVersion;
 
     // ============ 高级参数 ============

@@ -95,6 +95,7 @@ com/example/writemyself/repository/GameRepository.class
 com/example/writemyself/controller/UnityController$3.class
 com/example/writemyself/model/UnityMaterial.class
 com/example/writemyself/controller/AssetController.class
+com/example/writemyself/demo/QwenDemoRunner.class
 com/example/writemyself/service/UnityService$26.class
 com/example/writemyself/model/UnityScene.class
 com/example/writemyself/dto/GameMapResultDTO$GameMapResultDTOBuilder.class
@@ -130,4 +131,5 @@ com/example/writemyself/entity/AIPortraitTaskEntity.class
 com/example/writemyself/util/JsonTypeHandler$1.class
 com/example/writemyself/dto/GeneratePortraitResponse.class
 com/example/writemyself/WriteMyselfApplication.class
+com/example/writemyself/service/MeituanQwenService.class
 com/example/writemyself/repository/AIPortraitTaskRepository.class

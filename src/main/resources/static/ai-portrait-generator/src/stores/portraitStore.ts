@@ -12,7 +12,7 @@ export interface PortraitParams {
   height: number
 
   // 模型选择
-  provider: 'aliyun' | 'volcengine'
+  provider: 'aliyun' | 'volcengine' | 'meituan'
   modelVersion: string
 
   // 高级参数
