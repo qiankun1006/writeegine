@@ -40,7 +40,7 @@ public class RepositoriesQuickTest {
     void testGenerationInsertSelect() {
         // 插入
         AIPortraitGeneration gen = new AIPortraitGeneration();
-        gen.setUserId("user1");
+        gen.setUserId(1L);
         gen.setTaskId("task_gen_" + System.currentTimeMillis());
         gen.setPrompt("test prompt");
         gen.setStatus("PENDING");
@@ -54,7 +54,7 @@ public class RepositoriesQuickTest {
         // 查询
         Optional<AIPortraitGeneration> found = generationRepository.findById(gen.getId());
         assertThat(found).isPresent();
-        assertThat(found.get().getUserId()).isEqualTo("user1");
+        assertThat(found.get().getUserId()).isEqualTo(1L);
         assertThat(found.get().getPrompt()).isEqualTo("test prompt");
         System.out.println("✅ AIPortraitGeneration 通过测试");
     }
@@ -64,7 +64,7 @@ public class RepositoriesQuickTest {
     void testTaskInsertSelect() {
         // 先创建 generation
         AIPortraitGeneration gen = new AIPortraitGeneration();
-        gen.setUserId("user2");
+        gen.setUserId(2L);
         gen.setTaskId("gen_" + System.nanoTime());
         gen.setPrompt("test");
         gen.setStatus("PENDING");
@@ -147,7 +147,7 @@ public class RepositoriesQuickTest {
 
         // 2. 创建生成记录
         AIPortraitGeneration gen = new AIPortraitGeneration();
-        gen.setUserId("flow_user");
+        gen.setUserId(100L);
         gen.setTaskId("flow_" + System.nanoTime());
         gen.setPrompt("Generate portrait");
         gen.setModelName(config.getModelName());
@@ -206,7 +206,7 @@ public class RepositoriesQuickTest {
 
         // AIPortraitGeneration
         AIPortraitGeneration gen = new AIPortraitGeneration();
-        gen.setUserId("all");
+        gen.setUserId(999L);
         gen.setTaskId("all_" + System.nanoTime());
         gen.setPrompt("test");
         gen.setStatus("PENDING");
