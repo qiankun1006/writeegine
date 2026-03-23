@@ -1,6 +1,5 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/AIPortraitController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/SaveResultRequest.java
-/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/config/DruidConfig.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/config/MyBatisConfig.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitTaskEntity.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/mapper/AIPortraitModelConfigMapper.java
@@ -50,6 +49,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitModelConfigEntity.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitTask.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/FileStorageService.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/util/JsonTypeHandler.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/Game.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/GameMapService.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitGenerationRepositoryImpl.java

@@ -16,7 +16,8 @@
         <result property="completedAt" column="completed_at"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
-        <result property="metadata" column="metadata"/>
+        <!-- metadata 为 JSON 类型，由 MyBatis 自动处理，不指定 typeHandler -->
+        <!-- result property="metadata" column="metadata"/ -->
     </resultMap>
 
     <!-- 分页查询任务 -->
@@ -81,12 +82,12 @@
     <!-- 批量插入任务 -->
     <insert id="batchInsert" parameterType="list">
         INSERT INTO ai_portrait_task (task_id, generation_id, status, progress, retry_count, max_retries,
-        last_error, started_at, completed_at, created_at, updated_at, metadata)
+        last_error, started_at, completed_at, created_at, updated_at)
         VALUES
         <foreach collection="list" item="task" separator=",">
             (#{task.taskId}, #{task.generationId}, #{task.status}, #{task.progress}, #{task.retryCount},
             #{task.maxRetries}, #{task.lastError}, #{task.startedAt}, #{task.completedAt}, #{task.createdAt},
-            #{task.updatedAt}, #{task.metadata})
+            #{task.updatedAt})
         </foreach>
     </insert>
 
@@ -103,8 +104,7 @@
             last_error = #{task.lastError},
             started_at = #{task.startedAt},
             completed_at = #{task.completedAt},
-            updated_at = #{task.updatedAt},
-            metadata = #{task.metadata}
+            updated_at = #{task.updatedAt}
             WHERE id = #{task.id}
         </foreach>
     </update>

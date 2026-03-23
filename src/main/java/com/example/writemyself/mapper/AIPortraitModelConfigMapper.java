@@ -19,21 +19,7 @@ public interface AIPortraitModelConfigMapper {
      * 根据ID查询模型配置
      */
     @Select("SELECT * FROM ai_portrait_model_config WHERE id = #{id}")
-    @Results(id = "aiPortraitModelConfigResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "modelName", column = "model_name"),
-            @Result(property = "displayName", column = "display_name"),
-            @Result(property = "provider", column = "provider"),
-            @Result(property = "endpointUrl", column = "endpoint_url"),
-            @Result(property = "isActive", column = "is_active"),
-            @Result(property = "description", column = "description"),
-            @Result(property = "supportedStyles", column = "supported_styles"),
-            @Result(property = "maxWidth", column = "max_width"),
-            @Result(property = "maxHeight", column = "max_height"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at"),
-            @Result(property = "metadata", column = "metadata")
-    })
+    @ResultMap("aiPortraitModelConfigResultMap")
     AIPortraitModelConfig selectById(@Param("id") Long id);
 
     /**
@@ -75,9 +61,9 @@ public interface AIPortraitModelConfigMapper {
      * 插入模型配置
      */
     @Insert("INSERT INTO ai_portrait_model_config (model_name, display_name, provider, endpoint_url, is_active, " +
-            "description, supported_styles, max_width, max_height, created_at, updated_at, metadata) " +
+            "description, supported_styles, max_width, max_height, created_at, updated_at) " +
             "VALUES (#{modelName}, #{displayName}, #{provider}, #{endpointUrl}, #{isActive}, " +
-            "#{description}, #{supportedStyles}, #{maxWidth}, #{maxHeight}, #{createdAt}, #{updatedAt}, #{metadata})")
+            "#{description}, #{supportedStyles}, #{maxWidth}, #{maxHeight}, #{createdAt}, #{updatedAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(AIPortraitModelConfig config);
 
@@ -94,8 +80,7 @@ public interface AIPortraitModelConfigMapper {
             "supported_styles = #{supportedStyles}, " +
             "max_width = #{maxWidth}, " +
             "max_height = #{maxHeight}, " +
-            "updated_at = #{updatedAt}, " +
-            "metadata = #{metadata} " +
+            "updated_at = #{updatedAt} " +
             "WHERE id = #{id}")
     int update(AIPortraitModelConfig config);
 

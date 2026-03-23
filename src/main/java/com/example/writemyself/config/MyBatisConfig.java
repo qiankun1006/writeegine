@@ -13,7 +13,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 
 /**
  * MyBatis配置类
@@ -51,8 +50,11 @@ public class MyBatisConfig {
 
         sessionFactory.setConfiguration(configuration);
 
-        // 设置类型别名包
-        sessionFactory.setTypeAliasesPackage("com.example.writemyself.model,com.example.writemyself.entity");
+        // 设置类型别名包 (仅使用 model 包，避免与 entity 包中的类名冲突)
+        sessionFactory.setTypeAliasesPackage("com.example.writemyself.model");
+
+        // 注册类型处理器
+        configuration.getTypeHandlerRegistry().register(com.example.writemyself.util.JsonTypeHandler.class);
 
         // 设置XML映射文件位置
         Resource[] resources = new PathMatchingResourcePatternResolver()

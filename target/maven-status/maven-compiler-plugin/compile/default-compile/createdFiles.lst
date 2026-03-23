@@ -1,11 +1,13 @@
 com/example/writemyself/dto/GenerateProgressResponse$GenerateProgressResponseBuilder.class
 com/example/writemyself/dto/GameMapGenerationRequestDTO$GameMapGenerationRequestDTOBuilder.class
 com/example/writemyself/entity/GameEntity.class
+com/example/writemyself/util/JsonTypeHandler.class
 com/example/writemyself/service/AIPortraitService.class
 com/example/writemyself/service/UnityService$22.class
 com/example/writemyself/controller/GlobalExceptionHandler.class
 com/example/writemyself/model/Game.class
 com/example/writemyself/service/AssetService.class
+com/example/writemyself/util/JsonTypeHandler$3.class
 com/example/writemyself/controller/GameMapController.class
 com/example/writemyself/service/UnityService$14.class
 com/example/writemyself/controller/UnityController$2.class
@@ -49,7 +51,6 @@ com/example/writemyself/service/AIModelServiceFactory.class
 com/example/writemyself/service/UnityService$24.class
 com/example/writemyself/service/VolcengineHealthIndicator.class
 com/example/writemyself/service/UnityService$13.class
-com/example/writemyself/config/DruidConfig$DruidHealthIndicator.class
 com/example/writemyself/model/AIPortraitGeneration$AIPortraitGenerationBuilder.class
 com/example/writemyself/util/DatabaseVersionManager.class
 com/example/writemyself/service/UnityService$19.class
@@ -104,7 +105,6 @@ com/example/writemyself/model/UnityPhysicsComponent.class
 com/example/writemyself/util/MapperGeneratorUtil$TableInfo.class
 com/example/writemyself/model/AIPortraitGeneration.class
 com/example/writemyself/entity/AIPortraitModelConfigEntity.class
-com/example/writemyself/config/DruidConfig.class
 com/example/writemyself/entity/AIPortraitGeneration.class
 com/example/writemyself/dto/SaveResultRequest$SaveResultRequestBuilder.class
 com/example/writemyself/controller/GameController.class
@@ -121,11 +121,13 @@ com/example/writemyself/model/AIPortraitTask$Status.class
 com/example/writemyself/dto/GameMapGenerationRequestDTO.class
 com/example/writemyself/repository/AIPortraitGenerationRepository.class
 com/example/writemyself/dto/GeneratePortraitResponse$GeneratedImage.class
+com/example/writemyself/util/JsonTypeHandler$2.class
 com/example/writemyself/service/VolcengineException.class
 com/example/writemyself/controller/UnityController$4.class
 com/example/writemyself/config/TransactionConfig.class
 com/example/writemyself/util/MapperGeneratorUtil$ColumnInfo.class
 com/example/writemyself/entity/AIPortraitTaskEntity.class
+com/example/writemyself/util/JsonTypeHandler$1.class
 com/example/writemyself/dto/GeneratePortraitResponse.class
 com/example/writemyself/WriteMyselfApplication.class
 com/example/writemyself/repository/AIPortraitTaskRepository.class

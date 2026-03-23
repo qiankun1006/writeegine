@@ -94,30 +94,25 @@ public class DatabaseConnectionTester implements HealthIndicator {
     }
 
     /**
-     * 获取数据库连接池状态（如果使用Druid）
+     * 获取数据库连接池状态（支持 HikariCP，Druid 已禁用）
      */
     public Map<String, Object> getConnectionPoolStatus() {
         Map<String, Object> status = new HashMap<>();
 
-        if (dataSource instanceof com.alibaba.druid.pool.DruidDataSource) {
-            com.alibaba.druid.pool.DruidDataSource druidDataSource = (com.alibaba.druid.pool.DruidDataSource) dataSource;
+        // 检查是否为 HikariCP 数据源
+        if (dataSource instanceof com.zaxxer.hikari.HikariDataSource) {
+            com.zaxxer.hikari.HikariDataSource hikariDataSource = (com.zaxxer.hikari.HikariDataSource) dataSource;
 
-            status.put("activeCount", druidDataSource.getActiveCount());
-            status.put("poolingCount", druidDataSource.getPoolingCount());
-            status.put("maxActive", druidDataSource.getMaxActive());
-            status.put("initialSize", druidDataSource.getInitialSize());
-            status.put("minIdle", druidDataSource.getMinIdle());
-            status.put("maxWait", druidDataSource.getMaxWait());
-            status.put("connectCount", druidDataSource.getConnectCount());
-            status.put("closeCount", druidDataSource.getCloseCount());
-            status.put("errorCount", druidDataSource.getErrorCount());
-            status.put("recycleCount", druidDataSource.getRecycleCount());
-            status.put("removeAbandonedCount", druidDataSource.getRemoveAbandonedCount());
+            status.put("activeConnections", hikariDataSource.getHikariPoolMXBean().getActiveConnections());
+            status.put("idleConnections", hikariDataSource.getHikariPoolMXBean().getIdleConnections());
+            status.put("totalConnections", hikariDataSource.getHikariPoolMXBean().getTotalConnections());
+            status.put("threadsAwaitingConnection", hikariDataSource.getHikariPoolMXBean().getThreadsAwaitingConnection());
+            status.put("poolName", hikariDataSource.getPoolName());
 
-            logger.info("获取Druid连接池状态成功");
+            logger.info("获取 HikariCP 连接池状态成功");
         } else {
-            status.put("info", "数据源不是Druid类型");
-            logger.info("数据源不是Druid类型，无法获取连接池状态");
+            status.put("info", "数据源不是 HikariCP 类型");
+            logger.info("数据源不是 HikariCP 类型，无法获取详细的连接池状态");
         }
 
         return status;

@@ -19,17 +19,7 @@ public interface GameMapper {
      * 根据ID查询游戏
      */
     @Select("SELECT * FROM game WHERE id = #{id}")
-    @Results(id = "gameResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "name", column = "name"),
-            @Result(property = "type", column = "type"),
-            @Result(property = "description", column = "description"),
-            @Result(property = "thumbnailUrl", column = "thumbnail_url"),
-            @Result(property = "config", column = "config"),
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
+    @ResultMap("gameResultMap")
     Game selectById(@Param("id") String id);
 
     /**

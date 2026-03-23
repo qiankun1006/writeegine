@@ -20,21 +20,7 @@ public interface AIPortraitTaskMapper {
      * 根据ID查询任务
      */
     @Select("SELECT * FROM ai_portrait_task WHERE id = #{id}")
-    @Results(id = "aiPortraitTaskResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "taskId", column = "task_id"),
-            @Result(property = "generationId", column = "generation_id"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "progress", column = "progress"),
-            @Result(property = "retryCount", column = "retry_count"),
-            @Result(property = "maxRetries", column = "max_retries"),
-            @Result(property = "lastError", column = "last_error"),
-            @Result(property = "startedAt", column = "started_at"),
-            @Result(property = "completedAt", column = "completed_at"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at"),
-            @Result(property = "metadata", column = "metadata")
-    })
+    @ResultMap("aiPortraitTaskResultMap")
     AIPortraitTask selectById(@Param("id") Long id);
 
     /**
@@ -76,9 +62,9 @@ public interface AIPortraitTaskMapper {
      * 插入任务
      */
     @Insert("INSERT INTO ai_portrait_task (task_id, generation_id, status, progress, retry_count, max_retries, " +
-            "last_error, started_at, completed_at, created_at, updated_at, metadata) " +
+            "last_error, started_at, completed_at, created_at, updated_at) " +
             "VALUES (#{taskId}, #{generationId}, #{status}, #{progress}, #{retryCount}, #{maxRetries}, " +
-            "#{lastError}, #{startedAt}, #{completedAt}, #{createdAt}, #{updatedAt}, #{metadata})")
+            "#{lastError}, #{startedAt}, #{completedAt}, #{createdAt}, #{updatedAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(AIPortraitTask task);
 
@@ -95,8 +81,7 @@ public interface AIPortraitTaskMapper {
             "last_error = #{lastError}, " +
             "started_at = #{startedAt}, " +
             "completed_at = #{completedAt}, " +
-            "updated_at = #{updatedAt}, " +
-            "metadata = #{metadata} " +
+            "updated_at = #{updatedAt} " +
             "WHERE id = #{id}")
     int update(AIPortraitTask task);
 

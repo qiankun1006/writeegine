@@ -32,7 +32,7 @@
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <result property="completedAt" column="completed_at"/>
-        <result property="metadata" column="metadata"/>
+        <result property="metadata" column="metadata" typeHandler="com.example.writemyself.util.JsonTypeHandler"/>
     </resultMap>
 
     <!-- 分页查询生成记录 -->
@@ -94,7 +94,7 @@
         INSERT INTO ai_portrait_generation (user_id, task_id, prompt, negative_prompt, reference_image_url,
         image_strength, width, height, provider, model_name, model_version, model_weight, style_preset,
         inference_steps, sampler_name, seed, generation_count, face_enhance, output_format, generated_image_urls,
-        status, error_message, generation_time, queue_wait_time, created_at, updated_at, completed_at, metadata)
+        status, error_message, generation_time, queue_wait_time, created_at, updated_at, completed_at)
         VALUES
         <foreach collection="list" item="generation" separator=",">
             (#{generation.userId}, #{generation.taskId}, #{generation.prompt}, #{generation.negativePrompt},
@@ -104,7 +104,7 @@
             #{generation.generationCount}, #{generation.faceEnhance}, #{generation.outputFormat},
             #{generation.generatedImageUrls}, #{generation.status}, #{generation.errorMessage},
             #{generation.generationTime}, #{generation.queueWaitTime}, #{generation.createdAt},
-            #{generation.updatedAt}, #{generation.completedAt}, #{generation.metadata})
+            #{generation.updatedAt}, #{generation.completedAt})
         </foreach>
     </insert>
 
@@ -137,8 +137,7 @@
             generation_time = #{generation.generationTime},
             queue_wait_time = #{generation.queueWaitTime},
             updated_at = #{generation.updatedAt},
-            completed_at = #{generation.completedAt},
-            metadata = #{generation.metadata}
+            completed_at = #{generation.completedAt}
             WHERE id = #{generation.id}
         </foreach>
     </update>

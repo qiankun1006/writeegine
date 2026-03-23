@@ -127,12 +127,31 @@
             <version>2.3.1</version>
         </dependency>
 
-        <!-- Druid 连接池 -->
+        <!-- HikariCP 连接池 (Spring Boot 默认，更稳定) -->
+        <!-- Druid 的相关问题已转为使用 HikariCP -->
+        <!--
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.2.20</version>
         </dependency>
+        -->
+
+        <!-- Log4j 依赖 (仅当需要 Druid 时) -->
+        <!--
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+        </dependency>
+        -->
 
         <!-- 阿里云通义 SDK (暂不需要，当前使用模拟实现) -->
         <!--

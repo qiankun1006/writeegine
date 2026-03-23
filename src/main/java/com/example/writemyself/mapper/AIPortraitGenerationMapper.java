@@ -19,37 +19,7 @@ public interface AIPortraitGenerationMapper {
      * 根据ID查询生成记录
      */
     @Select("SELECT * FROM ai_portrait_generation WHERE id = #{id}")
-    @Results(id = "aiPortraitGenerationResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "taskId", column = "task_id"),
-            @Result(property = "prompt", column = "prompt"),
-            @Result(property = "negativePrompt", column = "negative_prompt"),
-            @Result(property = "referenceImageUrl", column = "reference_image_url"),
-            @Result(property = "imageStrength", column = "image_strength"),
-            @Result(property = "width", column = "width"),
-            @Result(property = "height", column = "height"),
-            @Result(property = "provider", column = "provider"),
-            @Result(property = "modelName", column = "model_name"),
-            @Result(property = "modelVersion", column = "model_version"),
-            @Result(property = "modelWeight", column = "model_weight"),
-            @Result(property = "stylePreset", column = "style_preset"),
-            @Result(property = "inferenceSteps", column = "inference_steps"),
-            @Result(property = "samplerName", column = "sampler_name"),
-            @Result(property = "seed", column = "seed"),
-            @Result(property = "generationCount", column = "generation_count"),
-            @Result(property = "faceEnhance", column = "face_enhance"),
-            @Result(property = "outputFormat", column = "output_format"),
-            @Result(property = "generatedImageUrls", column = "generated_image_urls"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "errorMessage", column = "error_message"),
-            @Result(property = "generationTime", column = "generation_time"),
-            @Result(property = "queueWaitTime", column = "queue_wait_time"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at"),
-            @Result(property = "completedAt", column = "completed_at"),
-            @Result(property = "metadata", column = "metadata")
-    })
+    @ResultMap("aiPortraitGenerationResultMap")
     AIPortraitGeneration selectById(@Param("id") Long id);
 
     /**
@@ -91,7 +61,7 @@ public interface AIPortraitGenerationMapper {
             "#{imageStrength}, #{width}, #{height}, #{provider}, #{modelName}, #{modelVersion}, #{modelWeight}, " +
             "#{stylePreset}, #{inferenceSteps}, #{samplerName}, #{seed}, #{generationCount}, #{faceEnhance}, " +
             "#{outputFormat}, #{generatedImageUrls}, #{status}, #{errorMessage}, #{generationTime}, #{queueWaitTime}, " +
-            "#{createdAt}, #{updatedAt}, #{completedAt}, #{metadata})")
+            "#{createdAt}, #{updatedAt}, #{completedAt}, #{metadata, typeHandler=com.example.writemyself.util.JsonTypeHandler})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(AIPortraitGeneration generation);
 
@@ -125,7 +95,7 @@ public interface AIPortraitGenerationMapper {
             "queue_wait_time = #{queueWaitTime}, " +
             "updated_at = #{updatedAt}, " +
             "completed_at = #{completedAt}, " +
-            "metadata = #{metadata} " +
+            "metadata = #{metadata, typeHandler=com.example.writemyself.util.JsonTypeHandler} " +
             "WHERE id = #{id}")
     int update(AIPortraitGeneration generation);
 
