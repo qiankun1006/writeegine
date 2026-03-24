@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -93,7 +92,7 @@ public class AIPortraitGeneration implements Serializable {
     /**
      * 参考图片强度
      */
-    private BigDecimal imageStrength;
+    private Double imageStrength;
 
     /**
      * 生成图片的宽度（像素）
@@ -123,7 +122,7 @@ public class AIPortraitGeneration implements Serializable {
     /**
      * 模型权重
      */
-    private BigDecimal modelWeight;
+    private Double modelWeight;
 
     /**
      * 风格预设
@@ -255,11 +254,11 @@ public class AIPortraitGeneration implements Serializable {
         this.referenceImageUrl = referenceImageUrl;
     }
 
-    public BigDecimal getImageStrength() {
+    public Double getImageStrength() {
         return imageStrength;
     }
 
-    public void setImageStrength(BigDecimal imageStrength) {
+    public void setImageStrength(Double imageStrength) {
         this.imageStrength = imageStrength;
     }
 
@@ -303,11 +302,11 @@ public class AIPortraitGeneration implements Serializable {
         this.modelVersion = modelVersion;
     }
 
-    public BigDecimal getModelWeight() {
+    public Double getModelWeight() {
         return modelWeight;
     }
 
-    public void setModelWeight(BigDecimal modelWeight) {
+    public void setModelWeight(Double modelWeight) {
         this.modelWeight = modelWeight;
     }
 

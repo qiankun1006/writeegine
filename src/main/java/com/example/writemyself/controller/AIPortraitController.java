@@ -52,12 +52,42 @@ public class AIPortraitController {
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody GeneratePortraitRequest request) {
         try {
-            // 记录请求日志，包含用户 ID 和提示词（截断以保护隐私）
-            log.info("收到生成请求: userId={}, prompt={}, provider={}, generateCount={}",
+            // 记录详细的请求日志，用于调试
+            log.info("收到生成请求: userId={}, prompt={}, provider={}, modelVersion={}",
                     userId,
                     request.getPrompt().substring(0, Math.min(50, request.getPrompt().length())),
                     request.getProvider(),
-                    request.getGenerateCount());
+                    request.getModelVersion());
+
+            // 调试日志：记录所有参数
+            log.debug("生成请求参数详情: \n" +
+                    "  - prompt: {} (长度: {})\n" +
+                    "  - negativePrompt: {} (长度: {})\n" +
+                    "  - referenceImageBase64: {}\n" +
+                    "  - modelWeight: {} (类型: {})\n" +
+                    "  - width: {}, height: {}\n" +
+                    "  - provider: {}, modelVersion: {}\n" +
+                    "  - imageStrength: {}\n" +
+                    "  - generateCount: {}\n" +
+                    "  - sampler: {}, steps: {}\n" +
+                    "  - stylePreset: {}\n" +
+                    "  - seed: {} (类型: {})\n" +
+                    "  - faceEnhance: {}\n" +
+                    "  - outputFormat: {}",
+                    request.getPrompt(), request.getPrompt().length(),
+                    request.getNegativePrompt(),
+                    request.getNegativePrompt() != null ? request.getNegativePrompt().length() : 0,
+                    request.getReferenceImageBase64() != null ? "有" : "无",
+                    request.getModelWeight(), request.getModelWeight() != null ? request.getModelWeight().getClass().getName() : "null",
+                    request.getWidth(), request.getHeight(),
+                    request.getProvider(), request.getModelVersion(),
+                    request.getImageStrength(),
+                    request.getGenerateCount(),
+                    request.getSampler(), request.getSteps(),
+                    request.getStylePreset(),
+                    request.getSeed(), request.getSeed() != null ? request.getSeed().getClass().getName() : "null",
+                    request.getFaceEnhance(),
+                    request.getOutputFormat());
 
             // 调用服务层创建生成任务
             GeneratePortraitResponse response = aiPortraitService.createGenerationTask(userId, request);
@@ -101,27 +131,58 @@ public class AIPortraitController {
     }
 
     /**
-     * 获取生成结果
+     * 查询生成结果
      * GET /api/ai/portrait/result/{taskId}
+     *
+     * 前端轮询此接口以获取生成任务的最终结果。
+     * 由于生成图片耗时较长，此接口采用异步查询模式：
+     * 1. 如果任务还在处理中（PENDING/PROCESSING），返回 202 Accepted 和当前进度
+     * 2. 如果任务已完成（SUCCESS），返回 200 OK 和生成的图片 URL
+     * 3. 如果任务失败（FAILED），返回 200 OK 和错误信息
+     *
+     * 前端轮询策略：
+     * 1. 用户点击"开始生成"后，获取 taskId
+     * 2. 每 1-3 秒调用此接口查询结果
+     * 3. 根据返回的状态码和结果更新 UI
+     *    - 202: 继续轮询，显示进度条
+     *    - 200 + imageUrls: 显示生成的图片
+     *    - 200 + errorMessage: 显示错误信息
+     *
+     * @param userId 用户 ID，从请求头 X-User-Id 中获取
+     * @param taskId 任务 ID，由 /generate 接口返回
+     * @return ResponseEntity 包含任务状态和结果
      */
     @GetMapping("/result/{taskId}")
-    public ResponseEntity<GenerateProgressResponse> getResult(
+    public ResponseEntity<GenerateProgressResponse> getGenerationResult(
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable String taskId) {
         try {
-            log.info("获取结果: userId={}, taskId={}", userId, taskId);
+            log.info("查询生成结果: userId={}, taskId={}", userId, taskId);
 
             GenerateProgressResponse response = aiPortraitService.getGenerationProgress(taskId);
 
-            // 如果还未完成，返回 202 Accepted
+            // 如果任务还未完成，返回 202 Accepted（继续轮询）
             if (!response.getCompleted()) {
+                log.debug("任务未完成，返回 202 Accepted: taskId={}, status={}, progress={}%",
+                        taskId, response.getStatus(), response.getProgress());
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
             }
 
+            // 任务已完成
+            log.info("任务已完成: taskId={}, status={}, imageCount={}",
+                    taskId, response.getStatus(),
+                    response.getImageUrls() != null ? response.getImageUrls().size() : 0);
+
             return ResponseEntity.ok(response);
 
+        } catch (RuntimeException e) {
+            // 任务不存在等业务异常
+            log.warn("查询结果失败（业务异常）: userId={}, taskId={}, error={}", userId, taskId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
         } catch (Exception e) {
-            log.error("获取结果失败", e);
+            // 系统错误
+            log.error("查询结果失败（系统错误）: userId={}, taskId={}", userId, taskId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

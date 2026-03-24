@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.*;
-import java.math.BigDecimal;
 
 /**
  * AI 人物立绘生成请求 DTO
@@ -70,7 +69,7 @@ public class GeneratePortraitRequest {
     @NotNull(message = "模型权重不能为空")
     @DecimalMin(value = "0.0", message = "模型权重最小值为 0.0")
     @DecimalMax(value = "1.0", message = "模型权重最大值为 1.0")
-    private BigDecimal modelWeight;
+    private Double modelWeight;
 
     /**
      * 生成宽度 - 必填
@@ -137,7 +136,7 @@ public class GeneratePortraitRequest {
     @DecimalMin(value = "0.0", message = "参考图片强度最小值为 0.0")
     @DecimalMax(value = "1.0", message = "参考图片强度最大值为 1.0")
     @Builder.Default
-    private BigDecimal imageStrength = new BigDecimal("0.6");
+    private Double imageStrength = 0.6;
 
     /**
      * 生成数量 - 必填

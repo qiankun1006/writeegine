@@ -144,8 +144,12 @@ const pollGenerationProgress = async () => {
     // 获取用户 ID（从 localStorage 或其他地方）
     const userId = localStorage.getItem('userId') || '1'
 
-    // 调用后端进度查询接口
-    const response = await fetch(`/api/ai/portrait/progress/${currentTaskId.value}`, {
+    // 调用后端生成结果查询接口
+    // 使用 /result 接口而不是 /progress 接口，因为：
+    // 1. /result 接口专门用于查询生成结果
+    // 2. 返回 202 Accepted 如果任务未完成（继续轮询）
+    // 3. 返回 200 OK 如果任务已完成（包含图片URL）
+    const response = await fetch(`/api/ai/portrait/result/${currentTaskId.value}`, {
       method: 'GET',
       headers: {
         'X-User-Id': userId,
@@ -158,11 +162,54 @@ const pollGenerationProgress = async () => {
     }
 
     const data = await response.json()
-    console.log('📊 进度更新:', data)
 
-    // 更新本地 store 中的进度
-    if (data.progress !== undefined) {
-      store.updateProgress(data.progress)
+    // 根据 HTTP 状态码处理响应
+    if (response.status === 202) {
+      // 202 Accepted: 任务还在处理中，继续轮询
+      console.log('🔄 任务处理中:', data.status, '进度:', data.progress + '%')
+
+      // 更新本地 store 中的进度
+      if (data.progress !== undefined) {
+        store.updateProgress(data.progress)
+      }
+
+    } else if (response.status === 200) {
+      // 200 OK: 任务已完成
+      console.log('✅ 任务完成:', data.status, '图片数量:',
+                  data.imageUrls ? data.imageUrls.length : 0)
+
+      // 任务完成，停止轮询
+      if (pollInterval) {
+        clearInterval(pollInterval)
+        pollInterval = null
+      }
+
+      // 处理生成结果
+      if (data.status === 'SUCCESS' && data.imageUrls && data.imageUrls.length > 0) {
+        // 生成成功，为每张图片创建结果记录
+        data.imageUrls.forEach((url, index) => {
+          const result = {
+            id: `result_${Date.now()}_${index}`,
+            imageUrl: url,
+            generatedAt: new Date().toISOString(),
+            params: { ...store.params }
+          }
+          store.completeGeneration(result)
+        })
+        store.endGeneration()
+        ElMessage.success(`生成成功！共生成 ${data.imageUrls.length} 张图片`)
+
+      } else if (data.status === 'FAILED') {
+        // 生成失败
+        store.failGeneration(data.errorMessage || '生成失败')
+        store.endGeneration()
+        ElMessage.error(data.errorMessage || '生成失败')
+
+      } else {
+        // 其他完成状态
+        store.endGeneration()
+        console.log('任务完成，状态:', data.status)
+      }
     }
 
     // 根据任务状态处理

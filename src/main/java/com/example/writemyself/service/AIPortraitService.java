@@ -347,7 +347,7 @@ public class AIPortraitService {
                 .stylePreset(request.getStylePreset())
                 .inferenceSteps(request.getSteps())
                 .samplerName(request.getSampler())
-                .seed(request.getSeed().longValue())
+                .seed(request.getSeed() != null ? request.getSeed().longValue() : -1L)
                 .generationCount(request.getGenerateCount())
                 .faceEnhance(request.getFaceEnhance())
                 .outputFormat(request.getOutputFormat())

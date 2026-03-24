@@ -41,11 +41,11 @@ export const usePortraitStore = defineStore('portrait', () => {
     referenceImage: null,
     referenceImagePreview: '',
     modelWeight: 0.8,
-    width: 768,
-    height: 512,
+    width: 512,
+    height: 768,
 
-    provider: 'aliyun',
-    modelVersion: 'wanx-v1',
+    provider: 'meituan',
+    modelVersion: 'Qwen-Image-Meituan',
 
     imageStrength: 0.6,
     generateCount: 1,
@@ -125,10 +125,10 @@ export const usePortraitStore = defineStore('portrait', () => {
     params.referenceImage = null
     params.referenceImagePreview = ''
     params.modelWeight = 0.8
-    params.width = 768
-    params.height = 512
-    params.provider = 'aliyun'
-    params.modelVersion = 'wanx-v1'
+    params.width = 512
+    params.height = 768
+    params.provider = 'meituan'
+    params.modelVersion = 'Qwen-Image-Meituan'
     params.imageStrength = 0.6
     params.generateCount = 1
     params.sampler = 'euler'

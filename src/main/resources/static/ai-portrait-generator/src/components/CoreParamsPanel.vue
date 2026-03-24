@@ -14,6 +14,12 @@
       <StyleModelSelector />
     </div>
 
+    <!-- AI模型提供商选择模块：用户可以选择不同的AI模型提供商 -->
+    <div class="provider-module">
+      <!-- AI模型提供商选择组件 -->
+      <ModelProviderSelector />
+    </div>
+
     <!-- 提示词模块：包含正面和负面提示词输入框 -->
     <div class="prompt-module">
       <!-- 模块标题：📝 提示词 -->
@@ -69,6 +75,12 @@
       </div>
     </div>
 
+    <!-- 生成尺寸模块：选择图片生成尺寸 -->
+    <div class="size-module">
+      <!-- 尺寸选择组件 -->
+      <SizeSelector />
+    </div>
+
     <!-- 参考图片模块：允许用户上传参考图片来指导生成 -->
     <div class="reference-module">
       <!-- 模块标题：🖼️ 参考图片 -->
@@ -105,6 +117,10 @@ import ReferenceImageUpload from './ReferenceImageUpload.vue'
 import AssetTypeSelector from './AssetTypeSelector.vue'
 // 导入风格模型选择组件
 import StyleModelSelector from './StyleModelSelector.vue'
+// 导入AI模型提供商选择组件
+import ModelProviderSelector from './ModelProviderSelector.vue'
+// 导入尺寸选择组件
+import SizeSelector from './SizeSelector.vue'
 
 // ========== 初始化存储 ==========
 // 创建肖像生成器的 Pinia 存储实例，用来管理全局的参数状态
@@ -159,8 +175,22 @@ const handleParamChange = () => {
   gap: 8px;
 }
 
+// ========== AI模型提供商选择模块 ==========
+.provider-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 // ========== 提示词模块 ==========
 .prompt-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ========== 尺寸模块 ==========
+.size-module {
   display: flex;
   flex-direction: column;
   gap: 8px;

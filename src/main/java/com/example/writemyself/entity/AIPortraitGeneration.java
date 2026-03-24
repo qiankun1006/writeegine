@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -81,7 +80,7 @@ public class AIPortraitGeneration {
      * 控制参考图片对生成结果的影响程度（0.0-1.0）
      */
     @Column(name = "image_strength", precision = 3, scale = 2)
-    private BigDecimal imageStrength;
+    private Double imageStrength;
 
     // ============ 生成尺寸 ============
 
@@ -125,7 +124,7 @@ public class AIPortraitGeneration {
      * 控制模型对输入参数的遵循程度（0.0-1.0）
      */
     @Column(name = "model_weight", precision = 3, scale = 2)
-    private BigDecimal modelWeight;
+    private Double modelWeight;
 
     // ============ 高级参数 ============
 

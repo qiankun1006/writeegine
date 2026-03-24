@@ -5,7 +5,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -42,7 +41,7 @@ public class AIPortraitGenerationEntity {
     private String referenceImageUrl;
 
     @Column(name = "image_strength", precision = 5, scale = 2)
-    private BigDecimal imageStrength;
+    private Double imageStrength;
 
     @Column(name = "width")
     private Integer width;
@@ -60,7 +59,7 @@ public class AIPortraitGenerationEntity {
     private String modelVersion;
 
     @Column(name = "model_weight", precision = 5, scale = 2)
-    private BigDecimal modelWeight;
+    private Double modelWeight;
 
     @Column(name = "style_preset", length = 100)
     private String stylePreset;
@@ -234,11 +233,11 @@ public class AIPortraitGenerationEntity {
         this.referenceImageUrl = referenceImageUrl;
     }
 
-    public BigDecimal getImageStrength() {
+    public Double getImageStrength() {
         return imageStrength;
     }
 
-    public void setImageStrength(BigDecimal imageStrength) {
+    public void setImageStrength(Double imageStrength) {
         this.imageStrength = imageStrength;
     }
 
@@ -282,11 +281,11 @@ public class AIPortraitGenerationEntity {
         this.modelVersion = modelVersion;
     }
 
-    public BigDecimal getModelWeight() {
+    public Double getModelWeight() {
         return modelWeight;
     }
 
-    public void setModelWeight(BigDecimal modelWeight) {
+    public void setModelWeight(Double modelWeight) {
         this.modelWeight = modelWeight;
     }
 
