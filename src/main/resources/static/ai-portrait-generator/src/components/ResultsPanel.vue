@@ -288,7 +288,6 @@ const handleGenerate = async () => {
   try {
     // 标记开始生成
     store.startGeneration()
-    ElMessage.loading('正在提交生成任务...')
 
     // 获取用户 ID
     const userId = localStorage.getItem('userId') || '1'

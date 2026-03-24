@@ -184,6 +184,27 @@ export const usePortraitStore = defineStore('portrait', () => {
     generationError.value = error
   }
 
+  // 方法：设置生成错误信息
+  const setGenerationError = (error: string) => {
+    generationError.value = error
+  }
+
+  // 方法：结束生成
+  const endGeneration = () => {
+    isGenerating.value = false
+  }
+
+  // 方法：添加生成结果（支持部分字段的对象）
+  const addResult = (resultData: any) => {
+    const result: GenerationResult = {
+      id: resultData.id || `result_${Date.now()}`,
+      imageUrl: resultData.imageUrl || resultData.url || '',
+      generatedAt: resultData.generatedAt || new Date().toISOString(),
+      params: resultData.params || { ...params }
+    }
+    results.value.unshift(result)
+  }
+
   // 方法：清除结果
   const clearResults = () => {
     results.value = []
@@ -213,6 +234,9 @@ export const usePortraitStore = defineStore('portrait', () => {
     updateProgress,
     completeGeneration,
     failGeneration,
+    setGenerationError,
+    endGeneration,
+    addResult,
     clearResults,
   }
 })
