@@ -19,7 +19,10 @@
 
         async function loadApp() {
             try {
+                console.log('📥 开始加载应用，URL:', sourceUrl);
                 const response = await fetch(sourceUrl);
+                console.log('📊 响应状态:', response.status, response.statusText);
+
                 if (!response.ok) {
                     if (isDevelopment) {
                         console.warn('Vite Dev Server 未运行，回退到生产构建');
@@ -31,6 +34,7 @@
                 }
 
                 const html = await response.text();
+                console.log('✓ HTML内容已获取，长度:', html.length);
 
                 // 提取 CSS 文件
                 const cssRegex = /<link[^>]*href="([^"]*\.css)"[^>]*>/g;
@@ -39,6 +43,7 @@
                 while ((match = cssRegex.exec(html)) !== null) {
                     cssFiles.push(match[1]);
                 }
+                console.log('🎨 找到CSS文件:', cssFiles);
 
                 // 提取 JS 脚本
                 const scriptRegex = /<script[^>]*src="([^"]*\.js)"[^>]*>/g;
@@ -46,9 +51,11 @@
                 while ((match = scriptRegex.exec(html)) !== null) {
                     jsFiles.push(match[1]);
                 }
+                console.log('📦 找到JS文件:', jsFiles);
 
                 // 加载 CSS 文件
                 for (const cssPath of cssFiles) {
+                    console.log('⏳ 加载CSS:', cssPath);
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
                     link.href = cssPath;
@@ -57,16 +64,22 @@
 
                 // 加载 JS 脚本
                 for (const jsPath of jsFiles) {
+                    console.log('⏳ 加载JS:', jsPath);
                     const script = document.createElement('script');
                     script.type = 'module';
                     script.src = jsPath;
+                    script.onerror = (err) => {
+                        console.error('❌ JS加载错误:', jsPath, err);
+                    };
                     document.body.appendChild(script);
                 }
 
+                console.log('✅ 应用加载完成');
+
             } catch (err) {
-                console.error('应用加载失败:', err);
-                console.error('尝试的URL:', sourceUrl);
-                console.error('开发模式:', isDevelopment);
+                console.error('❌ 应用加载失败:', err);
+                console.error('🔍 尝试的URL:', sourceUrl);
+                console.error('📋 开发模式:', isDevelopment);
                 document.getElementById('app').innerHTML = `
                     <div style="padding: 40px; max-width: 600px; margin: 50px auto; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;">
                         <h2 style="color: #d32f2f; margin-top: 0;">⚠️ 应用加载失败</h2>
