@@ -59,36 +59,6 @@ public class AIPortraitController {
                     request.getProvider(),
                     request.getModelVersion());
 
-            // 调试日志：记录所有参数
-            log.debug("生成请求参数详情: \n" +
-                    "  - prompt: {} (长度: {})\n" +
-                    "  - negativePrompt: {} (长度: {})\n" +
-                    "  - referenceImageBase64: {}\n" +
-                    "  - modelWeight: {} (类型: {})\n" +
-                    "  - width: {}, height: {}\n" +
-                    "  - provider: {}, modelVersion: {}\n" +
-                    "  - imageStrength: {}\n" +
-                    "  - generateCount: {}\n" +
-                    "  - sampler: {}, steps: {}\n" +
-                    "  - stylePreset: {}\n" +
-                    "  - seed: {} (类型: {})\n" +
-                    "  - faceEnhance: {}\n" +
-                    "  - outputFormat: {}",
-                    request.getPrompt(), request.getPrompt().length(),
-                    request.getNegativePrompt(),
-                    request.getNegativePrompt() != null ? request.getNegativePrompt().length() : 0,
-                    request.getReferenceImageBase64() != null ? "有" : "无",
-                    request.getModelWeight(), request.getModelWeight() != null ? request.getModelWeight().getClass().getName() : "null",
-                    request.getWidth(), request.getHeight(),
-                    request.getProvider(), request.getModelVersion(),
-                    request.getImageStrength(),
-                    request.getGenerateCount(),
-                    request.getSampler(), request.getSteps(),
-                    request.getStylePreset(),
-                    request.getSeed(), request.getSeed() != null ? request.getSeed().getClass().getName() : "null",
-                    request.getFaceEnhance(),
-                    request.getOutputFormat());
-
             // 调用服务层创建生成任务
             GeneratePortraitResponse response = aiPortraitService.createGenerationTask(userId, request);
 
