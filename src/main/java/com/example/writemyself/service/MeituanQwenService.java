@@ -259,5 +259,107 @@ public class MeituanQwenService implements ImageGenerationService {
     public String getModel() {
         return defaultModel;
     }
+
+    /**
+     * 使用文本生成图片并返回 Base64
+     */
+    @Override
+    public String generateImageBase64(String prompt, String negativePrompt, String referenceImageBase64,
+                                      Integer width, Integer height, String style) {
+        try {
+            log.info("使用美团千问生成图片(Base64): 提示词={}, 尺寸={}x{}, 风格={}",
+                    prompt, width, height, style);
+
+            // 构建请求体
+            Map<String, Object> requestBody = new HashMap<>();
+
+            // 构建消息内容
+            List<Map<String, Object>> messages = new ArrayList<>();
+            Map<String, Object> message = new HashMap<>();
+            message.put("role", "user");
+
+            List<Map<String, Object>> content = new ArrayList<>();
+
+            // 添加文本内容
+            Map<String, Object> textContent = new HashMap<>();
+            textContent.put("type", "text");
+
+            // 组装提示词（包含负面提示词）
+            StringBuilder fullPrompt = new StringBuilder(prompt);
+            if (negativePrompt != null && !negativePrompt.isEmpty()) {
+                fullPrompt.append("\nNegative prompt: ").append(negativePrompt);
+            }
+            // 添加风格提示词
+            if (style != null && !style.isEmpty() && !"none".equals(style)) {
+                fullPrompt.append("\nStyle: ").append(style);
+            }
+            textContent.put("text", fullPrompt.toString());
+            content.add(textContent);
+
+            // 添加参考图片（如果有）
+            if (referenceImageBase64 != null && !referenceImageBase64.isEmpty()) {
+                Map<String, Object> imageContent = new HashMap<>();
+                imageContent.put("type", "image_url");
+
+                Map<String, String> imageUrl = new HashMap<>();
+                imageUrl.put("url", referenceImageBase64);
+                imageContent.put("image_url", imageUrl);
+                content.add(imageContent);
+            }
+
+            message.put("content", content);
+            messages.add(message);
+
+            requestBody.put("messages", messages);
+            requestBody.put("model", defaultModel);
+            requestBody.put("num_inference_steps", 50);
+
+            // 设置宽高比
+            if (width != null && height != null) {
+                requestBody.put("aspect_ratio", width + ":" + height);
+            }
+
+            requestBody.put("guidance_scale", 4.0);
+
+            // 发送HTTP请求
+            String response = sendRequest(requestBody);
+
+            // 解析响应并提取图片 Base64
+            String base64 = parseImageBase64Response(response);
+
+            log.info("✓ 美团千问图片生成成功(Base64)");
+            return base64;
+
+        } catch (Exception e) {
+            log.error("美团千问生成图片(Base64)失败", e);
+            throw new RuntimeException("生成图片失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 解析API响应并提取图片Base64
+     */
+    private String parseImageBase64Response(String response) throws JsonProcessingException {
+        // 解析JSON响应
+        Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
+
+        // 提取choices数组
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
+        if (choices != null && !choices.isEmpty()) {
+            Map<String, Object> choice = choices.get(0);
+            Map<String, Object> message = (Map<String, Object>) choice.get("message");
+            if (message != null) {
+                Object content = message.get("content");
+                if (content != null) {
+                    // TODO: 根据实际API响应格式解析Base64
+                    // 假设返回的是base64格式的图片数据
+                    // 这里返回空字符串作为占位，实际需要根据API响应格式调整
+                    return content.toString();
+                }
+            }
+        }
+
+        return "";
+    }
 }
 

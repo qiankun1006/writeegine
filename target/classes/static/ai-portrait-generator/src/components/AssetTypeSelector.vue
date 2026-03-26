@@ -243,6 +243,11 @@ interface AssetType {
   icon: string
 }
 
+// 定义 emit 事件
+const emit = defineEmits<{
+  (e: 'asset-type-changed', typeId: string | null): void
+}>()
+
 const store = usePortraitStore()
 
 // 显示模态对话框的控制变量
@@ -261,6 +266,7 @@ const assetGroups = reactive({
     { id: 'character-sd', name: 'Q版/SD战棋', description: 'Q版模型设计', icon: '🤏' },
     { id: 'character-animation', name: '战斗动画', description: '制作战斗动画', icon: '⚔️' },
     { id: 'character-frame-sequence', name: '动画帧序列', description: '骨骼动画编辑', icon: '🎬' },
+    { id: 'character-skeleton', name: '骨骼素材生成', description: '生成可拆分肢体部件', icon: '🦴' },
     { id: 'character-avatar', name: '角色头像', description: '头像制作', icon: '👤' },
     { id: 'character-job', name: '职业转职', description: '转职形态设计', icon: '💼' },
     { id: 'character-skill-icon', name: '技能图标', description: '技能图标设计', icon: '✨' },
@@ -324,15 +330,16 @@ const selectType = (type: AssetType) => {
  * 将临时选中的类型设为最终选中的类型，并保存到存储
  */
 const confirmSelection = () => {
-  if (tempSelectedType) {
-    // 更新选中的类型
-    selectedType.value = tempSelectedType
-    // 可以在这里保存到 Pinia 存储
-    // store.params.assetType = tempSelectedType.id
-    // store.saveParams()
-  }
-  // 关闭对话框
-  showModal.value = false
+if (tempSelectedType) {
+// 更新选中的类型
+selectedType.value = tempSelectedType
+// 通知父组件选中的类型
+emit('asset-type-changed', tempSelectedType.id)
+// 更新 store 中的当前素材类型
+store.setCurrentAssetType(tempSelectedType.id)
+}
+// 关闭对话框
+showModal.value = false
 }
 
 /**

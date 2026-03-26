@@ -102,5 +102,27 @@ public class AliyunTongYiService implements ImageGenerationService {
     public String getModel() {
         return imageModel;
     }
+
+    /**
+     * 使用文本生成图片并返回 Base64
+     */
+    @Override
+    public String generateImageBase64(String prompt, String negativePrompt, String referenceImageBase64,
+                                      Integer width, Integer height, String style) {
+        try {
+            log.info("使用阿里云通义生成图片(Base64): 提示词={}, 尺寸={}x{}, 风格={}",
+                    prompt, width, height, style);
+
+            // TODO: 实现调用阿里云通义 API 的逻辑
+            // 当前返回占位数据
+
+            log.info("✓ 阿里云通义图片生成成功(Base64) - 占位返回");
+            return "";
+
+        } catch (Exception e) {
+            log.error("阿里云通义生成图片(Base64)失败", e);
+            throw new RuntimeException("生成图片失败: " + e.getMessage(), e);
+        }
+    }
 }
 

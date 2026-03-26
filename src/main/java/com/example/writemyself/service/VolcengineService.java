@@ -262,6 +262,65 @@ public class VolcengineService implements ImageGenerationService {
         return defaultModel;
     }
 
+    /**
+     * 使用文本生成图片并返回 Base64
+     */
+    @Override
+    public String generateImageBase64(String prompt, String negativePrompt, String referenceImageBase64,
+                                      Integer width, Integer height, String style) {
+        try {
+            log.info("使用火山引擎生成图片(Base64): 提示词={}, 尺寸={}x{}, 风格={}",
+                    prompt, width, height, style);
+
+            // 确保服务已初始化
+            initialize();
+
+            if (arkService == null) {
+                throw new IllegalStateException("火山引擎服务未正确配置，请检查API密钥");
+            }
+
+            // 构建尺寸字符串
+            String size = mapSizeToVolcengineFormat(width, height);
+
+            // 构建提示词（包含负面提示词和风格）
+            StringBuilder fullPrompt = new StringBuilder(prompt);
+            if (negativePrompt != null && !negativePrompt.isEmpty()) {
+                fullPrompt.append("\nNegative: ").append(negativePrompt);
+            }
+            if (style != null && !style.isEmpty() && !"none".equals(style)) {
+                fullPrompt.append("\nStyle: ").append(style);
+            }
+
+            // 构建生成请求
+            GenerateImagesRequest generateRequest = GenerateImagesRequest.builder()
+                    .model(defaultModel)
+                    .prompt(fullPrompt.toString())
+                    .size(size)
+                    .sequentialImageGeneration("disabled")
+                    .responseFormat(ResponseFormat.Base64)
+                    .stream(false)
+                    .watermark(true)
+                    .build();
+
+            // 调用API生成图片
+            ImagesResponse imagesResponse = arkService.generateImages(generateRequest);
+
+            // 解析响应结果并提取 Base64
+            if (imagesResponse.getData() != null && !imagesResponse.getData().isEmpty()) {
+                String base64 = imagesResponse.getData().get(0).getB64Json();
+                log.info("✓ 火山引擎图片生成成功(Base64)");
+                return base64;
+            }
+
+            log.warn("火山引擎返回数据为空");
+            return "";
+
+        } catch (Exception e) {
+            log.error("火山引擎生成图片(Base64)失败", e);
+            throw new VolcengineException("生成图片失败: " + e.getMessage(), e, null, null, 0);
+        }
+    }
+
     @PreDestroy
     public void shutdown() {
         if (arkService != null) {

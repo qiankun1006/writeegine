@@ -82,11 +82,39 @@
     </div>
 
     <!-- 参考图片模块：允许用户上传参考图片来指导生成 -->
-    <div class="reference-module">
+    <div class="reference-module" v-if="!isSkeletonMode">
       <!-- 模块标题：🖼️ 参考图片 -->
       <h3 class="module-title">🖼️ 参考图片</h3>
       <!-- 参考图片上传组件，监听@image-selected事件 -->
       <ReferenceImageUpload @image-selected="handleImageSelected" />
+    </div>
+
+    <!-- 骨骼素材生成参数面板：当选中骨骼素材类型时显示 -->
+    <div class="skeleton-module" v-if="isSkeletonMode">
+      <!-- 模块标题：🦴 骨骼素材参数 -->
+      <h3 class="module-title">🦴 骨骼素材参数</h3>
+      <!-- 骨骼素材参数面板组件 -->
+      <SkeletonAssetPanel v-model="skeletonParams" />
+    </div>
+
+    <!-- 生成进度显示：当正在生成时显示 -->
+    <div class="progress-module" v-if="store.isGenerating">
+      <GenerationProgress />
+    </div>
+
+    <!-- 骨骼素材结果展示：当有骨骼素材结果时显示 -->
+    <div class="results-module" v-if="isSkeletonMode && store.skeletonResults.length > 0">
+      <h3 class="module-title">🎨 生成结果</h3>
+      <div class="results-container">
+        <SkeletonResultPanel
+          v-for="result in store.skeletonResults"
+          :key="result.id"
+          :result="{
+            fullImageUrl: result.fullImageUrl,
+            parts: result.parts
+          }"
+        />
+      </div>
     </div>
 
     <!-- 错误提示框：当图片生成过程中出现错误时显示 -->
@@ -121,6 +149,16 @@ import StyleModelSelector from './StyleModelSelector.vue'
 import ModelProviderSelector from './ModelProviderSelector.vue'
 // 导入尺寸选择组件
 import SizeSelector from './SizeSelector.vue'
+// 导入骨骼参数类型
+import type {SkeletonParams} from './SkeletonAssetPanel.vue'
+// 导入骨骼素材参数面板组件
+import SkeletonAssetPanel from './SkeletonAssetPanel.vue'
+// 导入进度显示组件
+import GenerationProgress from './GenerationProgress.vue'
+// 导入结果展示组件
+import SkeletonResultPanel from './SkeletonResultPanel.vue'
+// 导入计算属性
+import {computed, ref} from 'vue'
 
 // ========== 初始化存储 ==========
 // 创建肖像生成器的 Pinia 存储实例，用来管理全局的参数状态
@@ -129,6 +167,18 @@ const store = usePortraitStore()
 // ========== 页面初始化 ==========
 // 加载用户之前保存的参数配置（从 localStorage 中恢复）
 store.loadParams()
+
+// ========== 骨骼素材相关 ==========
+// 计算属性：检查是否为骨骼素材模式
+const isSkeletonMode = computed(() => store.currentAssetType === 'character-skeleton')
+
+// 骨骼素材参数（用于 v-model 绑定）
+const skeletonParams = ref<SkeletonParams>({
+  style: 'anime',
+  template: 'animation',
+  pose: 'standing',
+  referenceImageBase64: '',
+})
 
 // ========== 事件处理函数 ==========
 /**
@@ -201,6 +251,45 @@ const handleParamChange = () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+// ========== 骨骼素材模块 ==========
+.skeleton-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+// ========== 进度模块 ==========
+.progress-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #f0f8ff;
+  border-radius: 8px;
+  border: 1px solid #d6e4ff;
+}
+
+// ========== 结果模块 ==========
+.results-module {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: #f6ffed;
+  border-radius: 8px;
+  border: 1px solid #b7eb8f;
+}
+
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 // ========== 模块标题 ==========

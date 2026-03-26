@@ -26,5 +26,18 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean("portraitTaskExecutor")
+    public Executor portraitTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(8);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("Portrait-Task-Thread-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
+        executor.initialize();
+        return executor;
+    }
 }
 

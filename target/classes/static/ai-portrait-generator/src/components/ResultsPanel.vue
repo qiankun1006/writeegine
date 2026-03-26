@@ -274,7 +274,7 @@ const pollGenerationProgress = async () => {
  *
  * 流程：
  * 1. 验证所有参数是否有效
- * 2. 调用后端生成 API
+ * 2. 根据素材类型调用对应的后端生成 API
  * 3. 获取 taskId
  * 4. 启动轮询查询进度
  */
@@ -286,75 +286,18 @@ const handleGenerate = async () => {
   }
 
   try {
-    // 标记开始生成
-    store.startGeneration()
-
     // 获取用户 ID
     const userId = localStorage.getItem('userId') || '1'
 
-    // 步骤2：构建请求参数
-    // 前端 store 参数映射到后端 DTO
-    const generateRequest = {
-      prompt: store.params.prompt,                           // 正面提示词
-      negativePrompt: store.params.negativePrompt,           // 负面提示词
-      referenceImageBase64: store.params.referenceImagePreview || null,  // 参考图片（Base64）
-      modelWeight: store.params.modelWeight,                 // 模型权重
-      width: store.params.width,                             // 宽度
-      height: store.params.height,                           // 高度
-      provider: store.params.provider,                       // 服务提供商
-      modelVersion: store.params.modelVersion,               // 模型版本
-      imageStrength: store.params.imageStrength || 0.6,      // 参考图片强度
-      generateCount: store.params.generateCount,             // 生成数量
-      sampler: store.params.sampler,                         // 采样器
-      steps: store.params.steps,                             // 迭代步数
-      stylePreset: store.params.stylePreset,                 // 风格预设
-      seed: store.params.seed,                               // 随机种子
-      faceEnhance: store.params.faceEnhance,                 // 面部增强
-      outputFormat: store.params.outputFormat                // 输出格式
-    }
+    // 检查是否为骨骼素材模式
+    const isSkeletonMode = store.currentAssetType === 'character-skeleton'
 
-    console.log('📤 发送生成请求:', generateRequest)
-
-    // 步骤3：调用后端生成 API
-    const response = await fetch('/api/ai/portrait/generate', {
-      method: 'POST',
-      headers: {
-        'X-User-Id': userId,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(generateRequest)
-    })
-
-    // 处理响应
-    if (!response.ok) {
-      throw new Error(`生成请求失败: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    console.log('📥 后端返回响应:', data)
-
-    // 步骤4：获取 taskId 并启动轮询
-    if (data.taskId) {
-      currentTaskId.value = data.taskId
-      console.log('🔄 开始轮询进度，taskId:', currentTaskId.value)
-
-      // 清空之前的轮询
-      if (pollInterval) {
-        clearInterval(pollInterval)
-      }
-
-      // 立即查询一次进度
-      await pollGenerationProgress()
-
-      // 每秒轮询一次进度
-      pollInterval = setInterval(() => {
-        pollGenerationProgress()
-      }, 1000)
-
-      ElMessage.success('生成任务已提交，正在处理中...')
-
+    if (isSkeletonMode) {
+      // 骨骼素材生成流程
+      await handleSkeletonGeneration(userId)
     } else {
-      throw new Error('后端未返回 taskId')
+      // 普通立绘生成流程
+      await handlePortraitGeneration(userId)
     }
 
   } catch (error) {
@@ -363,6 +306,140 @@ const handleGenerate = async () => {
     store.setGenerationError(errorMsg)
     store.endGeneration()
     ElMessage.error(errorMsg)
+  }
+}
+
+/**
+ * 处理骨骼素材生成
+ */
+const handleSkeletonGeneration = async (userId: string) => {
+  // 标记开始生成
+  store.startGeneration()
+  ElMessage.loading('正在提交骨骼素材生成任务...')
+
+  // 构建骨骼素材生成请求参数
+  const skeletonRequest = {
+    prompt: store.params.prompt,
+    negativePrompt: store.params.negativePrompt,
+    referenceImageBase64: store.skeletonParams.referenceImageBase64 || '',
+    style: store.skeletonParams.style,
+    template: store.skeletonParams.template,
+    pose: store.skeletonParams.pose,
+    width: store.params.width,
+    height: store.params.height
+  }
+
+  console.log('🦴 发送骨骼素材生成请求:', skeletonRequest)
+
+  // 调用骨骼素材生成 API
+  const response = await fetch('/api/ai/portrait/skeleton/generate', {
+    method: 'POST',
+    headers: {
+      'X-User-Id': userId,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(skeletonRequest)
+  })
+
+  // 处理响应
+  if (!response.ok) {
+    throw new Error(`骨骼素材生成请求失败: ${response.status} ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  console.log('📥 后端返回骨骼素材响应:', data)
+
+  // 获取 taskId 并启动骨骼素材轮询
+  if (data.taskId) {
+    currentTaskId.value = data.taskId
+    console.log('🔄 开始骨骼素材轮询进度，taskId:', currentTaskId.value)
+
+    // 清空之前的轮询
+    if (pollInterval) {
+      clearInterval(pollInterval)
+    }
+
+    // 启动骨骼素材进度轮询
+    store.startSkeletonGeneration(data.taskId)
+
+    ElMessage.success('骨骼素材生成任务已提交，正在处理中...')
+
+  } else {
+    throw new Error('后端未返回 taskId')
+  }
+}
+
+/**
+ * 处理普通立绘生成
+ */
+const handlePortraitGeneration = async (userId: string) => {
+  // 标记开始生成
+  store.startGeneration()
+  ElMessage.loading('正在提交生成任务...')
+
+  // 步骤2：构建请求参数
+  // 前端 store 参数映射到后端 DTO
+  const generateRequest = {
+    prompt: store.params.prompt,                           // 正面提示词
+    negativePrompt: store.params.negativePrompt,           // 负面提示词
+    referenceImageBase64: store.params.referenceImagePreview || null,  // 参考图片（Base64）
+    modelWeight: store.params.modelWeight,                 // 模型权重
+    width: store.params.width,                             // 宽度
+    height: store.params.height,                           // 高度
+    provider: store.params.provider,                       // 服务提供商
+    modelVersion: store.params.modelVersion,               // 模型版本
+    imageStrength: store.params.imageStrength || 0.6,      // 参考图片强度
+    generateCount: store.params.generateCount,             // 生成数量
+    sampler: store.params.sampler,                         // 采样器
+    steps: store.params.steps,                             // 迭代步数
+    stylePreset: store.params.stylePreset,                 // 风格预设
+    seed: store.params.seed,                               // 随机种子
+    faceEnhance: store.params.faceEnhance,                 // 面部增强
+    outputFormat: store.params.outputFormat                // 输出格式
+  }
+
+  console.log('📤 发送生成请求:', generateRequest)
+
+  // 步骤3：调用后端生成 API
+  const response = await fetch('/api/ai/portrait/generate', {
+    method: 'POST',
+    headers: {
+      'X-User-Id': userId,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(generateRequest)
+  })
+
+  // 处理响应
+  if (!response.ok) {
+    throw new Error(`生成请求失败: ${response.status} ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  console.log('📥 后端返回响应:', data)
+
+  // 步骤4：获取 taskId 并启动轮询
+  if (data.taskId) {
+    currentTaskId.value = data.taskId
+    console.log('🔄 开始轮询进度，taskId:', currentTaskId.value)
+
+    // 清空之前的轮询
+    if (pollInterval) {
+      clearInterval(pollInterval)
+    }
+
+    // 立即查询一次进度
+    await pollGenerationProgress()
+
+    // 每秒轮询一次进度
+    pollInterval = setInterval(() => {
+      pollGenerationProgress()
+    }, 1000)
+
+    ElMessage.success('生成任务已提交，正在处理中...')
+
+  } else {
+    throw new Error('后端未返回 taskId')
   }
 }
 

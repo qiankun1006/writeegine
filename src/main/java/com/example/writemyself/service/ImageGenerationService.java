@@ -38,5 +38,18 @@ public interface ImageGenerationService {
      * 获取当前使用的模型
      */
     String getModel();
+
+    /**
+     * 使用文本生成图片并返回 Base64
+     * @param prompt 提示词
+     * @param negativePrompt 负面提示词
+     * @param referenceImageBase64 参考图片 Base64
+     * @param width 图片宽度
+     * @param height 图片高度
+     * @param style 风格预设
+     * @return 生成的图片 Base64 编码
+     */
+    String generateImageBase64(String prompt, String negativePrompt, String referenceImageBase64,
+                               Integer width, Integer height, String style);
 }
 

@@ -87,9 +87,9 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, reactive, ref, computed} from 'vue'
+import {computed, onMounted, reactive, ref} from 'vue'
 import {usePortraitStore} from '@/stores/portraitStore'
-import {ArrowRight, Refresh, SuccessFilled, Cloudy, Service, MagicStick} from '@element-plus/icons-vue'
+import {ArrowRight, Cloudy, MagicStick, Refresh, Service, SuccessFilled} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
 
 interface ModelVersion {
@@ -168,8 +168,8 @@ const selectedModelVersions = reactive<Record<string, string>>({
   'volcengine': 'doubao-seedream-5-0-lite'
 })
 
-// 展开/折叠状态
-const isExpanded = ref(true)
+  // 展开/折叠状态（默认不展开）
+  const isExpanded = ref(false)
 
 // 刷新状态
 const isRefreshing = ref(false)

@@ -33,6 +33,34 @@ export interface GenerationResult {
   params: PortraitParams
 }
 
+// 骨骼素材参数
+export interface SkeletonParams {
+  style: 'anime' | 'realistic' | 'chibi' | 'cartoon' | 'pixel'
+  template: 'standard' | 'animation'
+  pose: string
+  referenceImageBase64: string
+}
+
+// 骨骼素材部件
+export interface SkeletonParts {
+  head: string
+  torso: string
+  leftArm: string
+  rightArm: string
+  leftLeg: string
+  rightLeg: string
+}
+
+// 骨骼素材生成结果
+export interface SkeletonResult {
+  id: string
+  fullImageUrl: string
+  parts: SkeletonParts
+  generatedAt: string
+  params: PortraitParams
+  skeletonParams: SkeletonParams
+}
+
 export const usePortraitStore = defineStore('portrait', () => {
   // 状态：参数
   const params = reactive<PortraitParams>({
@@ -60,11 +88,27 @@ export const usePortraitStore = defineStore('portrait', () => {
   // 状态：生成过程
   const isGenerating = ref(false)
   const generationProgress = ref(0)
+  const currentStage = ref('准备生成...')
   const generationError = ref<string | null>(null)
   const results = ref<GenerationResult[]>([])
+  const pollInterval = ref<number | null>(null)
 
   // 状态：UI
   const showAdvanced = ref(false)
+
+  // 状态：当前选中的素材类型
+  const currentAssetType = ref<string | null>(null)
+
+  // 状态：骨骼素材参数
+  const skeletonParams = reactive<SkeletonParams>({
+    style: 'anime',
+    template: 'animation',
+    pose: 'standing',
+    referenceImageBase64: '',
+  })
+
+  // 状态：骨骼素材生成结果
+  const skeletonResults = ref<SkeletonResult[]>([])
 
   // 计算属性：验证状态
   const isPromptValid = computed(() => params.prompt.length >= 1 && params.prompt.length <= 500)
@@ -163,12 +207,73 @@ export const usePortraitStore = defineStore('portrait', () => {
     }
     isGenerating.value = true
     generationProgress.value = 0
+    currentStage.value = '准备生成...'
     generationError.value = null
   }
 
+  // 方法：开始骨骼素材生成
+  const startSkeletonGeneration = (taskId: string) => {
+    if (!isAllValid.value) {
+      generationError.value = '请检查参数是否有效'
+      return
+    }
+    isGenerating.value = true
+    generationProgress.value = 0
+    currentStage.value = '任务已提交，等待处理...'
+    generationError.value = null
+
+    // 开始进度轮询
+    startProgressPolling(taskId)
+  }
+
   // 方法：更新进度
-  const updateProgress = (progress: number) => {
+  const updateProgress = (progress: number, stage?: string) => {
     generationProgress.value = Math.min(100, Math.max(0, progress))
+    if (stage) {
+      currentStage.value = stage
+    }
+  }
+
+  // 方法：开始进度轮询
+  const startProgressPolling = (taskId: string) => {
+    const pollIntervalMs = 2000 // 每2秒轮询一次
+
+    pollInterval.value = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/ai/portrait/skeleton/status/${taskId}`)
+        const status = await response.json()
+
+        // 更新进度和阶段
+        updateProgress(status.progress, status.progressMessage)
+
+        // 检查是否完成
+        if (status.status === 'SUCCESS' || status.status === 'FAILED') {
+          clearProgressPolling()
+          isGenerating.value = false
+
+          if (status.status === 'SUCCESS') {
+            // 获取完整结果
+            const resultResponse = await fetch(`/api/ai/portrait/skeleton/result/${taskId}`)
+            const result = await resultResponse.json()
+            addSkeletonResult(result)
+          } else {
+            generationError.value = status.errorMessage || '生成失败'
+          }
+        }
+
+      } catch (error) {
+        console.error('进度轮询失败:', error)
+        clearProgressPolling()
+      }
+    }, pollIntervalMs) as any
+  }
+
+  // 方法：清除进度轮询
+  const clearProgressPolling = () => {
+    if (pollInterval.value) {
+      clearInterval(pollInterval.value)
+      pollInterval.value = null
+    }
   }
 
   // 方法：完成生成
@@ -192,6 +297,7 @@ export const usePortraitStore = defineStore('portrait', () => {
   // 方法：结束生成
   const endGeneration = () => {
     isGenerating.value = false
+    clearProgressPolling()
   }
 
   // 方法：添加生成结果（支持部分字段的对象）
@@ -210,14 +316,64 @@ export const usePortraitStore = defineStore('portrait', () => {
     results.value = []
   }
 
+  // 方法：清除骨骼素材结果
+  const clearSkeletonResults = () => {
+    skeletonResults.value = []
+  }
+
+  // 方法：添加骨骼素材结果
+  const addSkeletonResult = (resultData: Partial<SkeletonResult>) => {
+    const result: SkeletonResult = {
+      id: resultData.id || `skeleton_${Date.now()}`,
+      fullImageUrl: resultData.fullImageUrl || '',
+      parts: resultData.parts || {
+        head: '',
+        torso: '',
+        leftArm: '',
+        rightArm: '',
+        leftLeg: '',
+        rightLeg: '',
+      },
+      generatedAt: resultData.generatedAt || new Date().toISOString(),
+      params: resultData.params || { ...params },
+      skeletonParams: resultData.skeletonParams || { ...skeletonParams },
+    }
+    skeletonResults.value.unshift(result)
+  }
+
+  // 方法：设置当前素材类型
+  const setCurrentAssetType = (type: string | null) => {
+    currentAssetType.value = type
+  }
+
+  // 方法：更新骨骼参数
+  const updateSkeletonParams = (newParams: Partial<SkeletonParams>) => {
+    Object.assign(skeletonParams, newParams)
+  }
+
+  // 方法：重置骨骼参数
+  const resetSkeletonParams = () => {
+    skeletonParams.style = 'anime'
+    skeletonParams.template = 'animation'
+    skeletonParams.pose = 'standing'
+    skeletonParams.referenceImageBase64 = ''
+  }
+
+  // 方法：检查是否为骨骼素材模式
+  const isSkeletonMode = computed(() => currentAssetType.value === 'character-skeleton')
+
   return {
     // 状态
     params,
     isGenerating,
     generationProgress,
+    currentStage,
     generationError,
     results,
     showAdvanced,
+    currentAssetType,
+    skeletonParams,
+    skeletonResults,
 
     // 计算属性
     isPromptValid,
@@ -238,6 +394,17 @@ export const usePortraitStore = defineStore('portrait', () => {
     endGeneration,
     addResult,
     clearResults,
+    clearSkeletonResults,
+    addSkeletonResult,
+    setCurrentAssetType,
+    updateSkeletonParams,
+    resetSkeletonParams,
+    startSkeletonGeneration,
+    startProgressPolling,
+    clearProgressPolling,
+
+    // 计算属性
+    isSkeletonMode,
   }
 })
 

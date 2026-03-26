@@ -1,5 +1,6 @@
 com/example/writemyself/dto/GenerateProgressResponse$GenerateProgressResponseBuilder.class
 com/example/writemyself/dto/GameMapGenerationRequestDTO$GameMapGenerationRequestDTOBuilder.class
+com/example/writemyself/dto/SkeletonGenerationRequest.class
 com/example/writemyself/entity/GameEntity.class
 com/example/writemyself/util/JsonTypeHandler.class
 com/example/writemyself/service/AIPortraitService.class
@@ -14,6 +15,7 @@ com/example/writemyself/controller/UnityController$2.class
 com/example/writemyself/service/UnityService$4.class
 com/example/writemyself/repository/AIPortraitGenerationRepositoryImpl.class
 com/example/writemyself/entity/AIPortraitTask$AIPortraitTaskBuilder.class
+com/example/writemyself/controller/SkeletonAssetController$4.class
 com/example/writemyself/repository/GameRepositoryImpl.class
 com/example/writemyself/controller/DatabaseHealthController.class
 com/example/writemyself/dto/GameMapResultDTO.class
@@ -26,6 +28,8 @@ com/example/writemyself/model/UnityObject$PhysicsComponent.class
 com/example/writemyself/entity/AIPortraitGeneration$AIPortraitGenerationBuilder.class
 com/example/writemyself/entity/AIPortraitGenerationEntity.class
 com/example/writemyself/mapper/GameMapper.class
+com/example/writemyself/controller/SkeletonAssetController$2.class
+com/example/writemyself/controller/SkeletonAssetController$1.class
 com/example/writemyself/model/AIPortraitModelConfig$Provider.class
 com/example/writemyself/model/AIPortraitTask.class
 com/example/writemyself/dto/GenerateProgressResponse.class
@@ -53,6 +57,7 @@ com/example/writemyself/service/VolcengineHealthIndicator.class
 com/example/writemyself/service/UnityService$13.class
 com/example/writemyself/model/AIPortraitGeneration$AIPortraitGenerationBuilder.class
 com/example/writemyself/util/DatabaseVersionManager.class
+com/example/writemyself/model/SAMSegmentationResult$Mask.class
 com/example/writemyself/service/UnityService$19.class
 com/example/writemyself/dto/SaveResultRequest.class
 com/example/writemyself/service/UnityService$9.class
@@ -73,6 +78,7 @@ com/example/writemyself/service/UnityService$6.class
 com/example/writemyself/service/UnityService$21.class
 com/example/writemyself/service/UnityService$16.class
 com/example/writemyself/model/AIPortraitModelConfig.class
+com/example/writemyself/model/SAMSegmentationResult.class
 com/example/writemyself/util/MapperGeneratorUtil$1.class
 com/example/writemyself/model/AIPortraitGeneration$Status.class
 com/example/writemyself/service/UnityService$15.class
@@ -86,19 +92,25 @@ com/example/writemyself/model/UnityObject.class
 com/example/writemyself/util/MapperGeneratorUtil.class
 com/example/writemyself/service/UnityService$5.class
 com/example/writemyself/service/AsyncTaskService.class
+com/example/writemyself/service/SkeletonAssetService$BoundingBox.class
 com/example/writemyself/dto/GameDTO.class
 com/example/writemyself/config/AsyncConfig.class
 com/example/writemyself/mapper/AIPortraitModelConfigMapper.class
+com/example/writemyself/controller/SkeletonAssetController$5.class
 com/example/writemyself/service/UnityService.class
+com/example/writemyself/service/SAMService.class
 com/example/writemyself/entity/AIPortraitResourceLibrary$AIPortraitResourceLibraryBuilder.class
 com/example/writemyself/repository/GameRepository.class
+com/example/writemyself/dto/SkeletonGenerationResponse.class
 com/example/writemyself/controller/UnityController$3.class
 com/example/writemyself/model/UnityMaterial.class
 com/example/writemyself/controller/AssetController.class
-com/example/writemyself/demo/QwenDemoRunner.class
 com/example/writemyself/service/UnityService$26.class
 com/example/writemyself/model/UnityScene.class
+com/example/writemyself/controller/SkeletonAssetController$3.class
 com/example/writemyself/dto/GameMapResultDTO$GameMapResultDTOBuilder.class
+com/example/writemyself/dto/SkeletonGenerationRequest$SkeletonGenerationRequestBuilder.class
+com/example/writemyself/dto/SkeletonGenerationResponse$SkeletonGenerationResponseBuilder.class
 com/example/writemyself/controller/UnityController$1.class
 com/example/writemyself/util/DatabaseConnectionTester.class
 com/example/writemyself/service/UnityService$10.class
@@ -106,6 +118,7 @@ com/example/writemyself/model/UnityPhysicsComponent.class
 com/example/writemyself/util/MapperGeneratorUtil$TableInfo.class
 com/example/writemyself/model/AIPortraitGeneration.class
 com/example/writemyself/entity/AIPortraitModelConfigEntity.class
+com/example/writemyself/service/SAMService$Point.class
 com/example/writemyself/entity/AIPortraitGeneration.class
 com/example/writemyself/dto/SaveResultRequest$SaveResultRequestBuilder.class
 com/example/writemyself/controller/GameController.class
@@ -113,10 +126,12 @@ com/example/writemyself/mapper/AIPortraitTaskMapper.class
 com/example/writemyself/controller/UnityController.class
 com/example/writemyself/dto/GeneratePortraitRequest.class
 com/example/writemyself/model/AIPortraitTask$AIPortraitTaskBuilder.class
+com/example/writemyself/service/SkeletonAssetService.class
 com/example/writemyself/entity/AIPortraitUserPreset$AIPortraitUserPresetBuilder.class
 com/example/writemyself/controller/UnityController$4$1.class
 com/example/writemyself/controller/TilemapEditorController.class
 com/example/writemyself/entity/AIPortraitResourceLibrary.class
+com/example/writemyself/controller/SkeletonAssetController.class
 com/example/writemyself/repository/AIPortraitModelConfigRepositoryImpl.class
 com/example/writemyself/model/AIPortraitTask$Status.class
 com/example/writemyself/dto/GameMapGenerationRequestDTO.class
