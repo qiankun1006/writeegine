@@ -253,7 +253,7 @@ onMounted(() => {
 .size-selector {
   display: flex;           // 开启弹性布局
   flex-direction: column;  // 从上到下排列
-  gap: 64px;              // 元素之间间隔 12 像素
+  gap: 24px;              // 元素之间间隔 12 像素
 }
 
 // ========== 模块标题样式（"📐 生成尺寸"） ==========
@@ -281,7 +281,8 @@ onMounted(() => {
   :deep(.el-radio-group) {
     display: grid;                      // 网格布局（表格一样的排列方式）
     grid-template-columns: repeat(2, 1fr); // 分成 2 列，每列宽度相等
-    gap: 24px;                          // 方块之间的间距 24 像素（横向和纵向都是）
+    column-gap: 24px;                   // 横向间距：左右两个方块之间的距离 24 像素
+    row-gap: 24px;                      // 纵向间距：上下两个方块之间的距离 16 像素
     width: 100%;                        // 占满整个容器宽度
   }
 }
