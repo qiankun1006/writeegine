@@ -43,7 +43,7 @@
                 <input
                   type="radio"
                   :id="`type-${type.id}`"
-                  :name="type.id"
+                  name="asset-type"
                   :checked="selectedType?.id === type.id"
                   @change="selectType(type)"
                 />
@@ -76,7 +76,7 @@
                 <input
                   type="radio"
                   :id="`type-${type.id}`"
-                  :name="type.id"
+                  name="asset-type"
                   :checked="selectedType?.id === type.id"
                   @change="selectType(type)"
                 />
@@ -108,7 +108,7 @@
                 <input
                   type="radio"
                   :id="`type-${type.id}`"
-                  :name="type.id"
+                  name="asset-type"
                   :checked="selectedType?.id === type.id"
                   @change="selectType(type)"
                 />
@@ -140,7 +140,7 @@
                 <input
                   type="radio"
                   :id="`type-${type.id}`"
-                  :name="type.id"
+                  name="asset-type"
                   :checked="selectedType?.id === type.id"
                   @change="selectType(type)"
                 />
@@ -172,7 +172,7 @@
                 <input
                   type="radio"
                   :id="`type-${type.id}`"
-                  :name="type.id"
+                  name="asset-type"
                   :checked="selectedType?.id === type.id"
                   @change="selectType(type)"
                 />
@@ -204,7 +204,7 @@
                 <input
                   type="radio"
                   :id="`type-${type.id}`"
-                  :name="type.id"
+                  name="asset-type"
                   :checked="selectedType?.id === type.id"
                   @change="selectType(type)"
                 />
@@ -222,17 +222,12 @@
         </div>
       </div>
 
-      <!-- 对话框底部按钮 -->
-      <template #footer>
-        <el-button @click="showModal = false">取消</el-button>
-        <el-button type="primary" @click="confirmSelection">确认选择</el-button>
-      </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import {reactive, ref} from 'vue'
+import {onMounted, reactive, ref} from 'vue'
 import {usePortraitStore} from '@/stores/portraitStore'
 import {ArrowRight, DocumentCopy} from '@element-plus/icons-vue'
 
@@ -253,8 +248,6 @@ const store = usePortraitStore()
 // 显示模态对话框的控制变量
 const showModal = ref(false)
 
-// 临时选中的类型（用于对话框内部选择）
-let tempSelectedType: AssetType | null = null
 
 // 最终选中的类型（确认后更新）
 const selectedType = ref<AssetType | null>(null)
@@ -321,35 +314,52 @@ const assetGroups = reactive({
  * @param type - 被选中的素材类型
  */
 const selectType = (type: AssetType) => {
-  // 更新临时选中的类型
-  tempSelectedType = type
+  // 更新选中的类型
+  selectedType.value = type
+  // 通知父组件选中的类型
+  emit('asset-type-changed', type.id)
+  // 更新 store 中的当前素材类型
+  store.setCurrentAssetType(type.id)
+  // 自动关闭对话框
+  showModal.value = false
 }
 
 /**
- * 确认选择
- * 将临时选中的类型设为最终选中的类型，并保存到存储
+ * 恢复之前选中的状态
  */
-const confirmSelection = () => {
-if (tempSelectedType) {
-// 更新选中的类型
-selectedType.value = tempSelectedType
-// 通知父组件选中的类型
-emit('asset-type-changed', tempSelectedType.id)
-// 更新 store 中的当前素材类型
-store.setCurrentAssetType(tempSelectedType.id)
-}
-// 关闭对话框
-showModal.value = false
+const restorePreviousSelection = () => {
+  const savedTypeId = store.currentAssetType
+  if (savedTypeId) {
+    // 在所有分组中查找对应的AssetType
+    const allTypes = [
+      ...assetGroups.character,
+      ...assetGroups.map,
+      ...assetGroups.ui,
+      ...assetGroups.effect,
+      ...assetGroups.icon,
+      ...assetGroups.story
+    ]
+    const foundType = allTypes.find(type => type.id === savedTypeId)
+    if (foundType) {
+      selectedType.value = foundType
+      // 通知父组件
+      emit('asset-type-changed', foundType.id)
+    }
+  }
 }
 
 /**
  * 处理对话框关闭
- * 关闭对话框时重置临时选中的类型
+ * 关闭对话框时的处理
  */
 const handleModalClose = () => {
-  // 如果用户点击取消，则恢复为之前的选择
-  tempSelectedType = selectedType.value
+  // 对话框关闭时的清理工作（目前不需要特殊处理）
 }
+
+// 组件挂载时恢复之前选中的状态
+onMounted(() => {
+  restorePreviousSelection()
+})
 </script>
 
 <style scoped lang="scss">
@@ -444,6 +454,21 @@ const handleModalClose = () => {
 
   &:hover {
     background: #8d8d8d;
+  }
+}
+
+// 优化点击区域
+.type-option {
+  cursor: pointer;
+
+  // 确保整行都是可点击的
+  * {
+    pointer-events: none;
+  }
+
+  // 单选框除外
+  .radio-wrapper {
+    pointer-events: auto;
   }
 }
 
