@@ -1,570 +1,1006 @@
 # Design: enhance-skeleton-asset-generator
 
-## 概述
+## 1. 系统架构设计
 
-增强骨骼素材生成功能，实现真正的肢体自动分割、透明底导出和用户友好的结果展示。
-
-## 技术架构
+### 1.1 整体架构
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      前端 (Vue 3 + TypeScript)              │
-├─────────────────────────────────────────────────────────────┤
-│  SkeletonAssetPanel.vue  │  SkeletonResultPanel.vue       │
-│  (参数配置)               │  (结果展示和下载)              │
-├─────────────────────────────────────────────────────────────┤
-│                    portraitStore.ts                        │
-│              (状态管理和进度轮询)                          │
-├─────────────────────────────────────────────────────────────┤
-│                      后端 (Spring Boot)                    │
-├─────────────────────────────────────────────────────────────┤
-│  SkeletonAssetController │  SkeletonAssetService          │
-│  (API 路由)               │  (核心业务逻辑)                │
-├─────────────────────────────────────────────────────────────┤
-│                   AI 模型服务层                             │
-├─────────────────────────────────────────────────────────────┤
-│  Flux.1-dev + LoRA   │  SAM 分割模型  │  透明底处理      │
-│  (生成全身图)          │  (自动分割)    │  (Alpha 通道)     │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   前端界面      │───▶│   后端API服务    │───▶│   AI模型服务    │
+│ - 参数配置      │    │ - 任务管理      │    │ - OpenPose     │
+│ - 进度展示      │◀───│ - 流水线控制    │◀───│ - ControlNet   │
+│ - 结果展示      │    │ - 结果处理      │    │ - IP-Adapter   │
+└─────────────────┘    └──────────────────┘    │ - Flux.1-dev   │
+                                              │ - RMBG-2.0     │
+                                              │ - SAM 2        │
+                                              └─────────────────┘
 ```
 
-## 1. SAM 分割集成设计
+### 1.2 核心组件
 
-### 1.1 SAM 服务封装
+#### 1.2.1 OpenPoseTemplateService
+负责生成标准T-pose骨骼线图和模板数据
 
 ```java
-// SAMService.java
+@Service
+public class OpenPoseTemplateService {
+
+    /**
+     * 生成OpenPose骨骼模板
+     */
+    public OpenPoseTemplate generateTemplate(String templateType) {
+        // 支持18点和25点模板
+        List<OpenPosePoint> points = getTemplatePoints(templateType);
+        BufferedImage skeletonImage = drawSkeletonImage(points);
+        String skeletonImageBase64 = convertToBase64(skeletonImage);
+
+        return OpenPoseTemplate.builder()
+            .templateType(templateType)
+            .points(points)
+            .skeletonImageBase64(skeletonImageBase64)
+            .build();
+    }
+
+    /**
+     * 获取模板关键点坐标
+     */
+    private List<OpenPosePoint> getTemplatePoints(String templateType) {
+        if ("openpose_18".equals(templateType)) {
+            return Arrays.asList(
+                new OpenPosePoint(0, "Nose", 0.5f, 0.2f),
+                new OpenPosePoint(1, "Neck", 0.5f, 0.3f),
+                new OpenPosePoint(2, "RShoulder", 0.6f, 0.3f),
+                new OpenPosePoint(3, "RElbow", 0.7f, 0.45f),
+                new OpenPosePoint(4, "RWrist", 0.8f, 0.6f),
+                new OpenPosePoint(5, "LShoulder", 0.4f, 0.3f),
+                new OpenPosePoint(6, "LElbow", 0.3f, 0.45f),
+                new OpenPosePoint(7, "LWrist", 0.2f, 0.6f),
+                new OpenPosePoint(8, "RHip", 0.55f, 0.5f),
+                new OpenPosePoint(9, "RKnee", 0.55f, 0.7f),
+                new OpenPosePoint(10, "RAnkle", 0.55f, 0.9f),
+                new OpenPosePoint(11, "LHip", 0.45f, 0.5f),
+                new OpenPosePoint(12, "LKnee", 0.45f, 0.7f),
+                new OpenPosePoint(13, "LAnkle", 0.45f, 0.9f),
+                new OpenPosePoint(14, "REye", 0.53f, 0.18f),
+                new OpenPosePoint(15, "LEye", 0.47f, 0.18f),
+                new OpenPosePoint(16, "REar", 0.57f, 0.2f),
+                new OpenPosePoint(17, "LEar", 0.43f, 0.2f)
+            );
+        } else {
+            // 25点模板
+            return getOpenPose25Points();
+        }
+    }
+}
+```
+
+#### 1.2.2 EnhancedSkeletonAssetService
+增强的骨骼素材生成服务，实现完整的8步流水线
+
+```java
 @Service
 @Slf4j
-public class SAMService {
+public class EnhancedSkeletonAssetService {
 
-    @Value("${sam.api.url:http://localhost:8080/sam/predict}")
-    private String samApiUrl;
-
-    @Value("${sam.api.key:}")
-    private String samApiKey;
+    private final OpenPoseTemplateService openPoseService;
+    private final ControlNetService controlNetService;
+    private final IPAdapterService ipAdapterService;
+    private final FluxGenerationService fluxService;
+    private final BackgroundRemovalService bgRemovalService;
+    private final EnhancedSAMService samService;
+    private final SkeletonBindingService bindingService;
 
     /**
-     * 调用 SAM 模型进行图像分割
-     * @param imageBase64 输入图像 Base64
-     * @param points 可选的点提示（用于指定分割区域）
-     * @return 分割结果（包含 masks）
+     * 执行完整的骨骼素材生成流水线
      */
-    public SAMSegmentationResult segmentImage(String imageBase64, List<Point> points) {
+    @Async("skeletonTaskExecutor")
+    public void processEnhancedSkeletonGeneration(String taskId,
+            SkeletonGenerationRequest request, String userId) {
         try {
-            // 构建 SAM 请求
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("image", imageBase64);
-            requestBody.put("points", points);
-            requestBody.put("return_json", true);
+            // 步骤1: 生成OpenPose骨骼模板
+            updateProgress(taskId, 5, "生成OpenPose骨骼模板...");
+            OpenPoseTemplate template = openPoseService.generateTemplate(request.getTemplate());
 
-            // 发送请求到 SAM 服务
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            if (samApiKey != null && !samApiKey.isEmpty()) {
-                headers.set("Authorization", "Bearer " + samApiKey);
+            // 步骤2: ControlNet姿势约束
+            updateProgress(taskId, 10, "应用ControlNet姿势约束...");
+            ControlNetCondition controlNetCondition = controlNetService
+                .createOpenPoseCondition(template.getSkeletonImageBase64());
+
+            // 步骤3: IP-Adapter特征提取
+            updateProgress(taskId, 15, "提取参考图特征...");
+            IPAdapterCondition ipAdapterCondition = null;
+            if (request.getReferenceImageBase64() != null) {
+                ipAdapterCondition = ipAdapterService
+                    .extractFeatures(request.getReferenceImageBase64());
             }
 
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(samApiUrl, request, String.class);
+            // 步骤4: Flux.1-dev高清人体生成
+            updateProgress(taskId, 25, "生成高清人体图...");
+            String fullPrompt = buildEnhancedPrompt(request, template);
+            String generatedImageBase64 = fluxService.generateImage(
+                fullPrompt, request.getNegativePrompt(),
+                controlNetCondition, ipAdapterCondition,
+                request.getWidth(), request.getHeight()
+            );
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                return parseSegmentationResult(response.getBody());
-            } else {
-                throw new RuntimeException("SAM API 调用失败: " + response.getStatusCode());
-            }
+            // 步骤5: 背景去除
+            updateProgress(taskId, 50, "去除背景...");
+            String transparentImageBase64 = bgRemovalService
+                .removeBackground(generatedImageBase64);
+
+            // 步骤6: SAM 2肢体分割
+            updateProgress(taskId, 70, "分割肢体部件...");
+            Map<String, String> limbParts = samService.segmentLimbsWithGuidance(
+                transparentImageBase64, template.getPoints()
+            );
+
+            // 步骤7: 骨骼绑定数据生成
+            updateProgress(taskId, 85, "生成骨骼绑定数据...");
+            SkeletonBindingData bindingData = bindingService
+                .generateBindingData(template, limbParts.keySet());
+
+            // 步骤8: 保存结果
+            updateProgress(taskId, 95, "保存生成结果...");
+            saveEnhancedResults(taskId, transparentImageBase64, limbParts, bindingData);
+
+            updateProgress(taskId, 100, "生成完成");
 
         } catch (Exception e) {
-            log.error("SAM 分割失败", e);
-            throw new RuntimeException("图像分割失败: " + e.getMessage(), e);
+            log.error("增强骨骼素材生成失败: taskId={}", taskId, e);
+            saveError(taskId, e.getMessage());
         }
+    }
+}
+```
+
+#### 1.2.3 EnhancedSAMService
+增强的SAM分割服务，支持关键点引导的精确分割
+
+```java
+@Service
+public class EnhancedSAMService {
+
+    /**
+     * 使用OpenPose关键点引导的肢体分割
+     */
+    public Map<String, String> segmentLimbsWithGuidance(
+            String imageBase64, List<OpenPosePoint> keyPoints) {
+
+        Map<String, String> parts = new HashMap<>();
+
+        // 基于关键点定义肢体区域
+        Map<String, LimbRegion> limbRegions = defineLimbRegions(keyPoints);
+
+        for (Map.Entry<String, LimbRegion> entry : limbRegions.entrySet()) {
+            String partName = entry.getKey();
+            LimbRegion region = entry.getValue();
+
+            // 使用区域中心点作为SAM提示
+            Point promptPoint = region.getCenterPoint();
+
+            // 调用SAM进行精确分割
+            SAMSegmentationResult result = samService.segmentWithPoint(
+                imageBase64, promptPoint, region.getBoundingBox()
+            );
+
+            if (result.isSuccess()) {
+                // 提取分割结果并添加透明背景
+                String partImageBase64 = extractPartWithAlpha(
+                    imageBase64, result.getMask(), region
+                );
+                parts.put(partName, partImageBase64);
+            }
+        }
+
+        return parts;
     }
 
     /**
-     * 解析 SAM 响应结果
+     * 定义基于关键点的肢体区域
      */
-    private SAMSegmentationResult parseSegmentationResult(String responseBody) {
-        // 解析 JSON 响应，提取 masks 和 scores
-        // 返回结构化的分割结果
-        return new SAMSegmentationResult();
-    }
-}
-```
+    private Map<String, LimbRegion> defineLimbRegions(List<OpenPosePoint> keyPoints) {
+        Map<String, LimbRegion> regions = new HashMap<>();
 
-### 1.2 肢体分割算法
-
-```java
-// SkeletonAssetService.java - 增强的 segmentLimbs 方法
-private Map<String, String> segmentLimbs(String fullImageBase64, String template) {
-    try {
-        log.info("开始 SAM 分割: template={}", template);
-
-        // 步骤1: 调用 SAM 进行初步分割
-        SAMSegmentationResult samResult = samService.segmentImage(fullImageBase64, null);
-
-        // 步骤2: 根据人体关键点识别肢体区域
-        Map<String, BoundingBox> limbBoxes = detectLimbBoundingBoxes(fullImageBase64);
-
-        // 步骤3: 对每个肢体区域进行精确分割
-        Map<String, String> parts = new HashMap<>();
-
-        for (Map.Entry<String, BoundingBox> entry : limbBoxes.entrySet()) {
-            String partName = entry.getKey();
-            BoundingBox box = entry.getValue();
-
-            // 使用 bounding box 作为提示进行精确分割
-            List<Point> promptPoints = Arrays.asList(
-                new Point(box.getCenterX(), box.getCenterY())
-            );
-
-            SAMSegmentationResult partResult = samService.segmentImage(
-                fullImageBase64, promptPoints
-            );
-
-            // 步骤4: 从原图中裁剪出部件
-            String partBase64 = cropPartFromImage(
-                fullImageBase64, partResult.getBestMask(), box
-            );
-
-            // 步骤5: 添加透明背景
-            String transparentPart = addAlphaChannel(partBase64);
-
-            parts.put(partName, transparentPart);
+        // 头部区域（基于鼻子和眼睛）
+        Point nose = findPoint(keyPoints, "Nose");
+        Point neck = findPoint(keyPoints, "Neck");
+        if (nose != null && neck != null) {
+            regions.put("head", new LimbRegion(
+                new Point(nose.x, nose.y - (neck.y - nose.y) * 0.8),
+                new Point(nose.x, neck.y),
+                0.3, 0.4
+            ));
         }
 
-        log.info("SAM 分割完成: parts={}", parts.keySet());
-        return parts;
+        // 右臂区域
+        Point rShoulder = findPoint(keyPoints, "RShoulder");
+        Point rElbow = findPoint(keyPoints, "RElbow");
+        Point rWrist = findPoint(keyPoints, "RWrist");
+        if (rShoulder != null && rElbow != null && rWrist != null) {
+            regions.put("rightArm", createLimbRegionFromPoints(
+                rShoulder, rElbow, rWrist
+            ));
+        }
 
-    } catch (Exception e) {
-        log.error("肢体分割失败", e);
-        throw new RuntimeException("肢体分割失败: " + e.getMessage(), e);
+        // 左臂区域
+        Point lShoulder = findPoint(keyPoints, "LShoulder");
+        Point lElbow = findPoint(keyPoints, "LElbow");
+        Point lWrist = findPoint(keyPoints, "LWrist");
+        if (lShoulder != null && lElbow != null && lWrist != null) {
+            regions.put("leftArm", createLimbRegionFromPoints(
+                lShoulder, lElbow, lWrist
+            ));
+        }
+
+        // 躯干区域
+        if (rShoulder != null && lShoulder != null) {
+            Point rHip = findPoint(keyPoints, "RHip");
+            Point lHip = findPoint(keyPoints, "LHip");
+            if (rHip != null && lHip != null) {
+                regions.put("torso", new LimbRegion(
+                    new Point((lShoulder.x + rShoulder.x) / 2,
+                             (lShoulder.y + rShoulder.y) / 2),
+                    new Point((lHip.x + rHip.x) / 2,
+                             (lHip.y + rHip.y) / 2),
+                    0.6, 0.4
+                ));
+            }
+        }
+
+        // 腿部区域
+        Point rHip = findPoint(keyPoints, "RHip");
+        Point rKnee = findPoint(keyPoints, "RKnee");
+        Point rAnkle = findPoint(keyPoints, "RAnkle");
+        if (rHip != null && rKnee != null && rAnkle != null) {
+            regions.put("rightLeg", createLimbRegionFromPoints(
+                rHip, rKnee, rAnkle
+            ));
+        }
+
+        Point lHip = findPoint(keyPoints, "LHip");
+        Point lKnee = findPoint(keyPoints, "LKnee");
+        Point lAnkle = findPoint(keyPoints, "LAnkle");
+        if (lHip != null && lKnee != null && lAnkle != null) {
+            regions.put("leftLeg", createLimbRegionFromPoints(
+                lHip, lKnee, lAnkle
+            ));
+        }
+
+        return regions;
     }
-}
-
-/**
- * 检测肢体边界框
- */
-private Map<String, BoundingBox> detectLimbBoundingBoxes(String imageBase64) {
-    Map<String, BoundingBox> boxes = new HashMap<>();
-
-    // 基于人体比例预设的边界框（可根据模板调整）
-    if ("animation".equals(template)) {
-        // 动画骨骼比例
-        boxes.put("head", new BoundingBox(0.4, 0.1, 0.6, 0.3));
-        boxes.put("torso", new BoundingBox(0.3, 0.3, 0.7, 0.6));
-        boxes.put("leftArm", new BoundingBox(0.1, 0.35, 0.35, 0.7));
-        boxes.put("rightArm", new BoundingBox(0.65, 0.35, 0.9, 0.7));
-        boxes.put("leftLeg", new BoundingBox(0.35, 0.6, 0.5, 0.95));
-        boxes.put("rightLeg", new BoundingBox(0.5, 0.6, 0.65, 0.95));
-    } else {
-        // 标准人体比例
-        boxes.put("head", new BoundingBox(0.4, 0.1, 0.6, 0.25));
-        boxes.put("torso", new BoundingBox(0.3, 0.25, 0.7, 0.55));
-        boxes.put("leftArm", new BoundingBox(0.1, 0.3, 0.35, 0.7));
-        boxes.put("rightArm", new BoundingBox(0.65, 0.3, 0.9, 0.7));
-        boxes.put("leftLeg", new BoundingBox(0.35, 0.55, 0.5, 0.95));
-        boxes.put("rightLeg", new BoundingBox(0.5, 0.55, 0.65, 0.95));
-    }
-
-    return boxes;
 }
 ```
 
-## 2. 透明底导出设计
-
-### 2.1 Alpha 通道处理
+#### 1.2.4 SkeletonBindingService
+骨骼绑定数据生成服务
 
 ```java
-/**
- * 为部件添加透明背景
- */
-private String addAlphaChannel(String imageBase64) {
-    try {
-        // 解码 Base64
-        byte[] imageBytes = Base64.getDecoder().decode(imageBase64);
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+@Service
+public class SkeletonBindingService {
 
-        // 创建带 Alpha 通道的图像
-        BufferedImage transparentImage = new BufferedImage(
-            image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB
+    /**
+     * 生成骨骼绑定数据
+     */
+    public SkeletonBindingData generateBindingData(
+            OpenPoseTemplate template, Set<String> partNames) {
+
+        // 创建骨骼树结构
+        SkeletonTree skeletonTree = createSkeletonTree(template.getPoints());
+
+        // 创建部件映射
+        Map<String, BoneMapping> boneMappings = createBoneMappings(
+            template.getPoints(), partNames
         );
 
-        Graphics2D g2d = transparentImage.createGraphics();
-        g2d.drawImage(image, 0, 0, null);
-        g2d.dispose();
+        // 生成Spine兼容数据
+        SpineSkeletonData spineData = generateSpineData(skeletonTree, boneMappings);
 
-        // 处理边缘抗锯齿
-        transparentImage = applyAntiAliasing(transparentImage);
+        // 生成DragonBones兼容数据
+        DragonBonesSkeletonData dbData = generateDragonBonesData(
+            skeletonTree, boneMappings
+        );
 
-        // 转换回 Base64
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(transparentImage, "PNG", baos);
-        return Base64.getEncoder().encodeToString(baos.toByteArray());
-
-    } catch (Exception e) {
-        log.error("透明底处理失败", e);
-        return imageBase64; // 失败时返回原图
+        return SkeletonBindingData.builder()
+            .skeletonTree(skeletonTree)
+            .boneMappings(boneMappings)
+            .spineData(spineData)
+            .dragonBonesData(dbData)
+            .build();
     }
-}
 
-/**
- * 应用抗锯齿处理
- */
-private BufferedImage applyAntiAliasing(BufferedImage image) {
-    // 实现边缘平滑算法
-    // 可以使用形态学操作或高斯模糊
-    return image;
+    /**
+     * 创建骨骼树结构
+     */
+    private SkeletonTree createSkeletonTree(List<OpenPosePoint> points) {
+        SkeletonTree tree = new SkeletonTree();
+
+        // 创建根骨骼（骨盆）
+        Bone rootBone = tree.createBone("root", null);
+        rootBone.setPosition(0, 0);
+
+        // 创建脊椎骨骼
+        Bone spineBone = tree.createBone("spine", rootBone.getId());
+        Point neck = findPoint(points, "Neck");
+        Point hip = findAveragePoint(points, "LHip", "RHip");
+        if (neck != null && hip != null) {
+            spineBone.setPosition(0, neck.y - hip.y);
+            spineBone.setLength(Math.abs(neck.y - hip.y));
+        }
+
+        // 创建头部骨骼
+        Bone headBone = tree.createBone("head", spineBone.getId());
+        Point nose = findPoint(points, "Nose");
+        if (nose != null && neck != null) {
+            headBone.setPosition(0, neck.y - nose.y);
+            headBone.setLength(Math.abs(neck.y - nose.y));
+        }
+
+        // 创建手臂骨骼
+        createArmBones(tree, points, spineBone.getId(), "right");
+        createArmBones(tree, points, spineBone.getId(), "left");
+
+        // 创建腿部骨骼
+        createLegBones(tree, points, rootBone.getId(), "right");
+        createLegBones(tree, points, rootBone.getId(), "left");
+
+        return tree;
+    }
+
+    /**
+     * 生成Spine兼容的骨骼数据
+     */
+    private SpineSkeletonData generateSpineData(
+            SkeletonTree tree, Map<String, BoneMapping> mappings) {
+
+        JSONObject spineJson = new JSONObject();
+
+        // 基本信息
+        spineJson.put("skeleton", new JSONObject()
+            .put("hash", generateHash())
+            .put("spine", "3.8.99")
+            .put("width", 1024)
+            .put("height", 1024)
+        );
+
+        // 骨骼数据
+        JSONArray bonesArray = new JSONArray();
+        for (Bone bone : tree.getAllBones()) {
+            JSONObject boneJson = new JSONObject()
+                .put("name", bone.getName())
+                .put("parent", bone.getParentId())
+                .put("x", bone.getPosition().getX())
+                .put("y", bone.getPosition().getY())
+                .put("rotation", bone.getRotation())
+                .put("length", bone.getLength());
+            bonesArray.put(boneJson);
+        }
+        spineJson.put("bones", bonesArray);
+
+        // 插槽数据
+        JSONArray slotsArray = new JSONArray();
+        for (BoneMapping mapping : mappings.values()) {
+            JSONObject slotJson = new JSONObject()
+                .put("name", mapping.getPartName())
+                .put("bone", mapping.getBoneName())
+                .put("attachment", mapping.getPartName());
+            slotsArray.put(slotJson);
+        }
+        spineJson.put("slots", slotsArray);
+
+        // 皮肤数据
+        JSONObject skins = new JSONObject();
+        JSONObject defaultSkin = new JSONObject();
+
+        for (BoneMapping mapping : mappings.values()) {
+            JSONObject attachment = new JSONObject()
+                .put("type", "region")
+                .put("x", 0)
+                .put("y", 0)
+                .put("scaleX", 1)
+                .put("scaleY", 1)
+                .put("rotation", 0)
+                .put("width", 200)
+                .put("height", 200);
+            defaultSkin.put(mapping.getPartName(), attachment);
+        }
+
+        skins.put("default", defaultSkin);
+        spineJson.put("skins", skins);
+
+        return new SpineSkeletonData(spineJson.toJSONString());
+    }
 }
 ```
 
-## 3. 前端结果展示设计
+## 2. 前端设计
 
-### 3.1 SkeletonResultPanel.vue
+### 2.1 增强的骨骼素材参数面板
 
 ```vue
-<!-- SkeletonResultPanel.vue -->
 <template>
-  <div class="skeleton-result-panel">
-    <!-- 完整图预览 -->
-    <div class="full-image-section">
-      <h4>完整人体图</h4>
-      <div class="image-preview">
-        <img :src="result.fullImageUrl" alt="完整图" />
-        <el-button size="small" @click="downloadFullImage">下载完整图</el-button>
+  <div class="enhanced-skeleton-panel">
+    <!-- OpenPose模板选择 -->
+    <div class="param-section">
+      <label class="section-label">
+        OpenPose骨骼模板
+        <el-tooltip content="选择骨骼关键点模板：18点适合基础动画，25点适合高级动画">
+          <el-icon><QuestionFilled /></el-icon>
+        </el-tooltip>
+      </label>
+      <el-radio-group v-model="openPoseTemplate" size="default">
+        <el-radio-button label="openpose_18">OpenPose 18点</el-radio-button>
+        <el-radio-button label="openpose_25">OpenPose 25点</el-radio-button>
+      </el-radio-group>
+
+      <!-- 骨骼预览 -->
+      <div class="skeleton-preview" v-if="skeletonPreviewUrl">
+        <img :src="skeletonPreviewUrl" alt="骨骼预览" />
+        <div class="preview-label">T-Pose骨骼预览</div>
       </div>
     </div>
 
-    <!-- 部件网格 -->
-    <div class="parts-section">
-      <h4>分离的肢体部件</h4>
-      <div class="parts-grid">
+    <!-- 风格LoRA选择 -->
+    <div class="param-section">
+      <label class="section-label">
+        风格LoRA
+        <el-tooltip content="选择生成风格，不同LoRA会产生不同的艺术效果">
+          <el-icon><QuestionFilled /></el-icon>
+        </el-tooltip>
+      </label>
+      <div class="lora-grid">
         <div
-          v-for="(partUrl, partName) in result.parts"
-          :key="partName"
-          class="part-item"
-          @mouseover="highlightPart(partName)"
-          @mouseleave="clearHighlight"
+          v-for="lora in availableLoras"
+          :key="lora.id"
+          class="lora-item"
+          :class="{ active: selectedLora === lora.id }"
+          @click="selectLora(lora.id)"
         >
-          <div class="part-preview">
-            <img :src="partUrl" :alt="getPartDisplayName(partName)" />
-          </div>
-          <div class="part-info">
-            <span class="part-name">{{ getPartDisplayName(partName) }}</span>
-            <el-button size="small" @click="downloadPart(partName, partUrl)">
-              下载
-            </el-button>
+          <img :src="lora.previewUrl" :alt="lora.name" />
+          <div class="lora-name">{{ lora.name }}</div>
+          <div class="lora-description">{{ lora.description }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 高级选项 -->
+    <el-collapse v-model="activeAdvancedOptions">
+      <el-collapse-item name="advanced">
+        <template #title>
+          <span class="collapse-title">高级选项</span>
+        </template>
+
+        <!-- ControlNet权重 -->
+        <div class="param-section">
+          <label class="param-label">
+            ControlNet权重: {{ controlNetWeight }}
+          </label>
+          <el-slider
+            v-model="controlNetWeight"
+            :min="0.1"
+            :max="1.0"
+            :step="0.1"
+          />
+          <div class="param-hint">控制姿势约束的强度，值越高越严格遵循T-pose</div>
+        </div>
+
+        <!-- IP-Adapter权重 -->
+        <div class="param-section">
+          <label class="param-label">
+            IP-Adapter权重: {{ ipAdapterWeight }}
+          </label>
+          <el-slider
+            v-model="ipAdapterWeight"
+            :min="0.1"
+            :max="1.0"
+            :step="0.1"
+          />
+          <div class="param-hint">控制参考图特征的影响程度</div>
+        </div>
+
+        <!-- 生成质量 -->
+        <div class="param-section">
+          <label class="param-label">生成质量</label>
+          <el-select v-model="generationQuality" size="default">
+            <el-option label="标准 (1024x1024)" value="standard" />
+            <el-option label="高清 (2048x2048)" value="high" />
+            <el-option label="超高清 (4096x4096)" value="ultra" />
+          </el-select>
+        </div>
+      </el-collapse-item>
+    </el-collapse>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue'
+import { QuestionFilled } from '@element-plus/icons-vue'
+
+const props = defineProps<{
+  modelValue: EnhancedSkeletonParams
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: EnhancedSkeletonParams): void
+}>()
+
+// 状态
+const openPoseTemplate = ref('openpose_18')
+const selectedLora = ref('anime_style')
+const controlNetWeight = ref(0.8)
+const ipAdapterWeight = ref(0.6)
+const generationQuality = ref('high')
+const activeAdvancedOptions = ref([])
+const skeletonPreviewUrl = ref('')
+
+// 可用LoRA列表
+const availableLoras = [
+  {
+    id: 'anime_style',
+    name: '日系二次元',
+    description: '适合动漫风格角色',
+    previewUrl: '/assets/lora-previews/anime.jpg'
+  },
+  {
+    id: 'realistic_style',
+    name: '写实风格',
+    description: '适合写实风格角色',
+    previewUrl: '/assets/lora-previews/realistic.jpg'
+  },
+  {
+    id: 'game_style',
+    name: '游戏风格',
+    description: '适合游戏角色',
+    previewUrl: '/assets/lora-previews/game.jpg'
+  }
+]
+
+// 监听变化并更新父组件
+watch([openPoseTemplate, selectedLora, controlNetWeight, ipAdapterWeight, generationQuality], () => {
+  emit('update:modelValue', {
+    openPoseTemplate: openPoseTemplate.value,
+    selectedLora: selectedLora.value,
+    controlNetWeight: controlNetWeight.value,
+    ipAdapterWeight: ipAdapterWeight.value,
+    generationQuality: generationQuality.value,
+    // ... 其他参数
+  })
+})
+
+// 选择LoRA
+const selectLora = (loraId: string) => {
+  selectedLora.value = loraId
+}
+
+// 加载骨骼预览
+const loadSkeletonPreview = async () => {
+  try {
+    const response = await fetch(`/api/ai/skeleton/template-preview?type=${openPoseTemplate.value}`)
+    const data = await response.json()
+    skeletonPreviewUrl.value = data.previewUrl
+  } catch (error) {
+    console.error('加载骨骼预览失败:', error)
+  }
+}
+
+// 监听模板变化
+watch(openPoseTemplate, () => {
+  loadSkeletonPreview()
+})
+
+onMounted(() => {
+  loadSkeletonPreview()
+})
+</script>
+```
+
+### 2.2 增强的进度展示组件
+
+```vue
+<template>
+  <div class="enhanced-progress-panel">
+    <!-- 整体进度 -->
+    <div class="overall-progress">
+      <div class="progress-header">
+        <h4>骨骼素材生成进度</h4>
+        <span class="progress-percent">{{ currentProgress }}%</span>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" :style="{ width: currentProgress + '%' }">
+          <div class="progress-particles" v-if="isGenerating">
+            <div
+              v-for="i in 20"
+              :key="i"
+              class="particle"
+              :style="{
+                left: Math.random() * 100 + '%',
+                animationDelay: Math.random() * 2 + 's'
+              }"
+            ></div>
           </div>
         </div>
       </div>
 
-      <!-- 批量下载 -->
-      <div class="batch-actions">
-        <el-button type="primary" @click="downloadAllParts">
-          批量下载所有部件 (ZIP)
-        </el-button>
+      <div class="progress-info">
+        <span class="current-stage">{{ currentStage }}</span>
+        <span class="estimated-time" v-if="estimatedTime > 0">
+          预计还需 {{ formatTime(estimatedTime) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 详细步骤 -->
+    <div class="detailed-steps">
+      <div
+        v-for="(step, index) in generationSteps"
+        :key="index"
+        class="step-item"
+        :class="getStepClass(step)"
+      >
+        <div class="step-icon">
+          <el-icon v-if="step.status === 'completed'"><Check /></el-icon>
+          <el-icon v-else-if="step.status === 'processing'"><Loading /></el-icon>
+          <el-icon v-else-if="step.status === 'error'"><Close /></el-icon>
+          <span v-else>{{ index + 1 }}</span>
+        </div>
+
+        <div class="step-content">
+          <div class="step-name">{{ step.name }}</div>
+          <div class="step-description">{{ step.description }}</div>
+          <div class="step-progress" v-if="step.status === 'processing'">
+            {{ step.progress || 0 }}%
+          </div>
+        </div>
+
+        <div class="step-time" v-if="step.duration">
+          {{ formatTime(step.duration) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 生成日志 -->
+    <div class="generation-logs" v-if="logs.length > 0">
+      <h5>生成日志</h5>
+      <div class="logs-container">
+        <div
+          v-for="(log, index) in logs"
+          :key="index"
+          class="log-entry"
+          :class="log.level"
+        >
+          <span class="log-time">{{ formatLogTime(log.timestamp) }}</span>
+          <span class="log-message">{{ log.message }}</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import JSZip from 'jszip'
-import { saveAs } from 'file-saver'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Check, Loading, Close } from '@element-plus/icons-vue'
 
-interface Props {
-  result: {
-    fullImageUrl: string
-    parts: Record<string, string>
+interface GenerationStep {
+  name: string
+  description: string
+  status: 'pending' | 'processing' | 'completed' | 'error'
+  progress?: number
+  duration?: number
+}
+
+interface LogEntry {
+  timestamp: number
+  level: 'info' | 'warning' | 'error'
+  message: string
+}
+
+const props = defineProps<{
+  taskId: string
+}>()
+
+// 状态
+const currentProgress = ref(0)
+const currentStage = ref('准备生成...')
+const estimatedTime = ref(0)
+const isGenerating = ref(false)
+const logs = ref<LogEntry[]>([])
+
+// 生成步骤定义
+const generationSteps = ref<GenerationStep[]>([
+  {
+    name: '生成OpenPose骨骼模板',
+    description: '创建标准T-pose骨骼线图和关键点数据',
+    status: 'pending'
+  },
+  {
+    name: 'ControlNet姿势约束',
+    description: '加载骨骼线图作为生成约束',
+    status: 'pending'
+  },
+  {
+    name: 'IP-Adapter特征提取',
+    description: '提取参考图的人物特征',
+    status: 'pending'
+  },
+  {
+    name: 'Flux.1-dev高清生成',
+    description: '生成2048x2048分辨率的完整人体',
+    status: 'pending'
+  },
+  {
+    name: '背景去除',
+    description: '使用RMBG-2.0去除背景，生成透明PNG',
+    status: 'pending'
+  },
+  {
+    name: 'SAM 2肢体分割',
+    description: '自动分割各肢体部件',
+    status: 'pending'
+  },
+  {
+    name: '骨骼绑定数据生成',
+    description: '创建骨骼树和部件映射关系',
+    status: 'pending'
+  },
+  {
+    name: '结果打包',
+    description: '整理生成结果并保存',
+    status: 'pending'
   }
-}
+])
 
-const props = defineProps<Props>()
+// 轮询进度
+let pollInterval: number | null = null
 
-// 部件显示名称映射
-const partDisplayNames: Record<string, string> = {
-  head: '头部',
-  torso: '躯干',
-  leftArm: '左臂',
-  rightArm: '右臂',
-  leftLeg: '左腿',
-  rightLeg: '右腿'
-}
-
-const getPartDisplayName = (partName: string) => {
-  return partDisplayNames[partName] || partName
-}
-
-// 下载单个部件
-const downloadPart = async (partName: string, partUrl: string) => {
-  try {
-    const response = await fetch(partUrl)
-    const blob = await response.blob()
-    saveAs(blob, `skeleton_${partName}.png`)
-  } catch (error) {
-    console.error('下载部件失败:', error)
-  }
-}
-
-// 下载完整图
-const downloadFullImage = async () => {
-  try {
-    const response = await fetch(props.result.fullImageUrl)
-    const blob = await response.blob()
-    saveAs(blob, 'skeleton_full.png')
-  } catch (error) {
-    console.error('下载完整图失败:', error)
-  }
-}
-
-// 批量下载所有部件
-const downloadAllParts = async () => {
-  try {
-    const zip = new JSZip()
-
-    // 添加完整图
-    const fullImageResponse = await fetch(props.result.fullImageUrl)
-    const fullImageBlob = await fullImageResponse.blob()
-    zip.file('skeleton_full.png', fullImageBlob)
-
-    // 添加所有部件
-    for (const [partName, partUrl] of Object.entries(props.result.parts)) {
-      const partResponse = await fetch(partUrl)
-      const partBlob = await partResponse.blob()
-      zip.file(`skeleton_${partName}.png`, partBlob)
-    }
-
-    // 生成并下载 ZIP
-    const zipBlob = await zip.generateAsync({ type: 'blob' })
-    saveAs(zipBlob, 'skeleton_assets.zip')
-
-  } catch (error) {
-    console.error('批量下载失败:', error)
-  }
-}
-
-// 高亮显示部件
-const highlightPart = (partName: string) => {
-  // 实现高亮逻辑
-}
-
-const clearHighlight = () => {
-  // 清除高亮
-}
-</script>
-
-<style scoped lang="scss">
-.skeleton-result-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 16px;
-}
-
-.full-image-section {
-  .image-preview {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-
-    img {
-      max-width: 300px;
-      max-height: 400px;
-      border: 1px solid #e8e8e8;
-      border-radius: 8px;
-    }
-  }
-}
-
-.parts-section {
-  .parts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin: 16px 0;
-  }
-
-  .part-item {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px;
-    border: 1px solid #e8e8e8;
-    border-radius: 8px;
-    background: #fafafa;
-
-    .part-preview {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 120px;
-      background: white;
-      border-radius: 4px;
-
-      img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-      }
-    }
-
-    .part-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      align-items: center;
-
-      .part-name {
-        font-size: 12px;
-        font-weight: 500;
-        color: #606266;
-      }
-    }
-  }
-
-  .batch-actions {
-    display: flex;
-    justify-content: center;
-    margin-top: 16px;
-  }
-}
-</style>
-```
-
-## 4. 进度轮询设计
-
-### 4.1 前端轮询机制
-
-```typescript
-// portraitStore.ts - 增强的进度轮询
-const startProgressPolling = (taskId: string) => {
-  const pollInterval = setInterval(async () => {
+const startPolling = () => {
+  pollInterval = window.setInterval(async () => {
     try {
-      const response = await fetch(`/api/ai/portrait/skeleton/status/${taskId}`)
-      const status = await response.json()
+      const response = await fetch(`/api/ai/portrait/skeleton/status/${props.taskId}`)
+      const data = await response.json()
 
       // 更新进度
-      generationProgress.value = status.progress
-      currentStage.value = status.progressMessage
+      currentProgress.value = data.progress || 0
+      currentStage.value = data.progressMessage || '处理中...'
+
+      // 更新步骤状态
+      updateStepStatus(data.detailedProgress)
+
+      // 添加日志
+      if (data.newLogs && data.newLogs.length > 0) {
+        data.newLogs.forEach((log: LogEntry) => {
+          logs.value.push(log)
+        })
+      }
 
       // 检查是否完成
-      if (status.status === 'SUCCESS' || status.status === 'FAILED') {
-        clearInterval(pollInterval)
+      if (data.status === 'SUCCESS' || data.status === 'FAILED') {
         isGenerating.value = false
-
-        if (status.status === 'SUCCESS') {
-          // 获取完整结果
-          const resultResponse = await fetch(`/api/ai/portrait/skeleton/result/${taskId}`)
-          const result = await resultResponse.json()
-          addSkeletonResult(result)
-        } else {
-          generationError.value = status.errorMessage
+        if (pollInterval) {
+          clearInterval(pollInterval)
         }
       }
 
     } catch (error) {
-      console.error('进度轮询失败:', error)
-      clearInterval(pollInterval)
+      console.error('轮询进度失败:', error)
     }
-  }, 2000) // 每2秒轮询一次
-
-  return pollInterval
+  }, 1000)
 }
-```
 
-### 4.2 进度展示组件
+// 更新步骤状态
+const updateStepStatus = (detailedProgress: any) => {
+  if (!detailedProgress) return
 
-```vue
-<!-- GenerationProgress.vue -->
-<template>
-  <div class="generation-progress">
-    <div class="progress-header">
-      <h4>生成进度</h4>
-      <span class="progress-text">{{ progress }}%</span>
-    </div>
+  detailedProgress.forEach((stepProgress: any, index: number) => {
+    if (index < generationSteps.value.length) {
+      const step = generationSteps.value[index]
+      step.status = stepProgress.status
+      step.progress = stepProgress.progress
+      step.duration = stepProgress.duration
+    }
+  })
+}
 
-    <el-progress
-      :percentage="progress"
-      :status="progressStatus"
-      :stroke-width="8"
-    />
+// 获取步骤样式类
+const getStepClass = (step: GenerationStep) => {
+  return {
+    'step-pending': step.status === 'pending',
+    'step-processing': step.status === 'processing',
+    'step-completed': step.status === 'completed',
+    'step-error': step.status === 'error'
+  }
+}
 
-    <div class="stage-info">
-      <p class="current-stage">{{ currentStage }}</p>
-      <div class="stage-steps">
-        <div
-          v-for="(step, index) in stages"
-          :key="index"
-          class="stage-step"
-          :class="{ 'stage-step--completed': progress >= step.progress }"
-        >
-          <div class="step-indicator">
-            <el-icon v-if="progress >= step.progress"><Check /></el-icon>
-            <span v-else>{{ index + 1 }}</span>
-          </div>
-          <span class="step-label">{{ step.label }}</span>
-        </div>
-      </div>
-    </div>
+// 格式化时间
+const formatTime = (seconds: number) => {
+  if (seconds < 60) {
+    return `${seconds}秒`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}分${remainingSeconds}秒`
+}
 
-    <el-button
-      v-if="canCancel"
-      type="danger"
-      size="small"
-      @click="cancelGeneration"
-    >
-      取消生成
-    </el-button>
-  </div>
-</template>
+// 格式化日志时间
+const formatLogTime = (timestamp: number) => {
+  const date = new Date(timestamp)
+  return date.toLocaleTimeString()
+}
 
-<script setup lang="ts">
-import { computed } from 'vue'
-import { usePortraitStore } from '@/stores/portraitStore'
-import { Check } from '@element-plus/icons-vue'
-
-const store = usePortraitStore()
-
-const stages = [
-  { label: '生成全身图', progress: 10 },
-  { label: '全身图完成', progress: 70 },
-  { label: '分割肢体', progress: 75 },
-  { label: '透明底处理', progress: 95 },
-  { label: '完成', progress: 100 }
-]
-
-const progressStatus = computed(() => {
-  if (store.generationError) return 'exception'
-  if (store.generationProgress === 100) return 'success'
-  return 'active'
+onMounted(() => {
+  isGenerating.value = true
+  startPolling()
 })
 
-const canCancel = computed(() => {
-  return store.isGenerating && store.generationProgress < 100
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval)
+  }
 })
-
-const cancelGeneration = () => {
-  // 实现取消生成逻辑
-}
 </script>
 ```
 
-## 5. 文件清单
+## 3. 数据模型设计
 
-### 新增文件
-| 文件路径 | 说明 |
-|---------|------|
-| `src/main/java/com/example/writemyself/service/SAMService.java` | SAM 模型服务 |
-| `src/main/java/com/example/writemyself/model/SAMSegmentationResult.java` | SAM 响应 DTO |
-| `src/main/resources/static/ai-portrait-generator/src/components/SkeletonResultPanel.vue` | 结果展示面板 |
-| `src/main/resources/static/ai-portrait-generator/src/components/GenerationProgress.vue` | 进度展示组件 |
+### 3.1 OpenPose模板数据
 
-### 修改文件
-| 文件路径 | 说明 |
-|---------|------|
-| `src/main/java/com/example/writemyself/service/SkeletonAssetService.java` | 集成 SAM 分割 |
-| `src/main/resources/static/ai-portrait-generator/src/stores/portraitStore.ts` | 添加进度轮询 |
-| `src/main/resources/static/ai-portrait-generator/src/components/CoreParamsPanel.vue` | 集成结果面板 |
+```java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class OpenPoseTemplate {
+    private String templateType;           // openpose_18, openpose_25
+    private List<OpenPosePoint> points;    // 关键点列表
+    private String skeletonImageBase64;    // 骨骼线图Base64
+    private Map<String, Object> metadata;  // 元数据
+}
+
+@Data
+public class OpenPosePoint {
+    private int id;           // 点ID
+    private String name;      // 点名称
+    private float x;          // X坐标 (0-1)
+    private float y;          // Y坐标 (0-1)
+    private float confidence; // 置信度
+
+    public OpenPosePoint(int id, String name, float x, float y) {
+        this.id = id;
+        this.name = name;
+        this.x = x;
+        this.y = y;
+        this.confidence = 1.0f;
+    }
+}
+```
+
+### 3.2 骨骼绑定数据
+
+```java
+@Data
+@Builder
+public class SkeletonBindingData {
+    private SkeletonTree skeletonTree;              // 骨骼树结构
+    private Map<String, BoneMapping> boneMappings;  // 部件映射
+    private SpineSkeletonData spineData;            // Spine兼容数据
+    private DragonBonesSkeletonData dragonBonesData; // DragonBones兼容数据
+    private String bindingJson;                      // 通用JSON格式
+}
+
+@Data
+public class BoneMapping {
+    private String partName;     // 部件名称
+    private String boneName;     // 对应骨骼名称
+    private Point offset;        // 偏移量
+    private float rotation;      // 旋转角度
+    private Scale scale;         // 缩放比例
+}
+```
+
+## 4. API接口设计
+
+### 4.1 增强的生成接口
+
+```
+POST /api/ai/portrait/skeleton/enhanced-generate
+
+Request:
+{
+  "prompt": "日系二次元少女角色立绘",
+  "negativePrompt": "低质量, 变形",
+  "style": "anime",
+  "openPoseTemplate": "openpose_18",
+  "selectedLora": "anime_style",
+  "controlNetWeight": 0.8,
+  "ipAdapterWeight": 0.6,
+  "generationQuality": "high",
+  "referenceImageBase64": "...",
+  "width": 2048,
+  "height": 2048
+}
+
+Response (202 Accepted):
+{
+  "taskId": "enhanced_skeleton_1712345678900",
+  "status": "PENDING",
+  "estimatedTime": 300
+}
+```
+
+### 4.2 详细进度查询接口
+
+```
+GET /api/ai/portrait/skeleton/enhanced-status/{taskId}
+
+Response (200 OK):
+{
+  "taskId": "enhanced_skeleton_1712345678900",
+  "status": "PROCESSING",
+  "progress": 65,
+  "progressMessage": "正在分割肢体部件...",
+  "detailedProgress": [
+    {
+      "step": "openpose_template",
+      "name": "生成OpenPose骨骼模板",
+      "status": "completed",
+      "progress": 100,
+      "duration": 2
+    },
+    {
+      "step": "controlnet_constraint",
+      "name": "ControlNet姿势约束",
+      "status": "completed",
+      "progress": 100,
+      "duration": 3
+    },
+    {
+      "step": "sam_segmentation",
+      "name": "SAM 2肢体分割",
+      "status": "processing",
+      "progress": 75,
+      "duration": 45
+    }
+  ],
+  "newLogs": [
+    {
+      "timestamp": 1712345678901,
+      "level": "info",
+      "message": "开始SAM分割处理"
+    }
+  ]
+}
+```
+
+### 4.3 骨骼数据查询接口
+
+```
+GET /api/ai/portrait/skeleton/binding-data/{taskId}
+
+Response (200 OK):
+{
+  "taskId": "enhanced_skeleton_1712345678900",
+  "skeletonTree": {
+    "bones": [
+      {
+        "name": "root",
+        "parent": null,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "spine",
+        "parent": "root",
+        "x": 0,
+        "y": -100
+      }
+    ]
+  },
+  "boneMappings": {
+    "head": {
+      "boneName": "head",
+      "offset": { "x": 0, "y": 0 }
+    }
+  },
+  "spineData": "{...}", // Spine JSON格式
+  "dragonBonesData": "{...}" // DragonBones JSON格式
+}
 

@@ -117,5 +117,35 @@ public class FileStorageService {
     public boolean fileExists(String filePath) {
         return Files.exists(Paths.get(filePath));
     }
+
+    /**
+     * 保存 JSON 数据到文件
+     * @param filename 文件名
+     * @param jsonData JSON 数据字符串
+     * @return 保存的文件路径
+     */
+    public String saveJsonData(String filename, String jsonData) {
+        try {
+            // 生成保存路径
+            String datePath = LocalDateTime.now().format(dateFormatter);
+            String savePath = storagePath + File.separator + datePath;
+
+            // 创建目录
+            Files.createDirectories(Paths.get(savePath));
+
+            // 保存文件
+            String filePath = savePath + File.separator + filename;
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+                fos.write(jsonData.getBytes());
+            }
+
+            log.info("✓ JSON 数据已保存: {}", filePath);
+            return filePath;
+
+        } catch (IOException e) {
+            log.error("保存 JSON 数据失败", e);
+            throw new RuntimeException("保存 JSON 数据失败: " + e.getMessage(), e);
+        }
+    }
 }
 

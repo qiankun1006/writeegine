@@ -107,6 +107,9 @@ export const usePortraitStore = defineStore('portrait', () => {
     referenceImageBase64: '',
   })
 
+  // 状态：生成模式
+  const currentGenerationMode = ref<'basic' | 'enhanced'>('basic')
+
   // 状态：骨骼素材生成结果
   const skeletonResults = ref<SkeletonResult[]>([])
 
@@ -359,6 +362,11 @@ export const usePortraitStore = defineStore('portrait', () => {
     skeletonParams.referenceImageBase64 = ''
   }
 
+  // 方法：设置生成模式
+  const setGenerationMode = (mode: 'basic' | 'enhanced') => {
+    currentGenerationMode.value = mode
+  }
+
   // 方法：检查是否为骨骼素材模式
   const isSkeletonMode = computed(() => currentAssetType.value === 'character-skeleton')
 
@@ -374,6 +382,7 @@ export const usePortraitStore = defineStore('portrait', () => {
     currentAssetType,
     skeletonParams,
     skeletonResults,
+    currentGenerationMode,
 
     // 计算属性
     isPromptValid,
@@ -399,6 +408,7 @@ export const usePortraitStore = defineStore('portrait', () => {
     setCurrentAssetType,
     updateSkeletonParams,
     resetSkeletonParams,
+    setGenerationMode,
     startSkeletonGeneration,
     startProgressPolling,
     clearProgressPolling,

@@ -4,19 +4,29 @@
     <div class="preview-area">
       <!-- 生成中的加载动画 -->
       <div v-if="store.isGenerating" class="loading-container">
-        <div class="progress-section">
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: store.generationProgress + '%' }"></div>
-            <div class="particles">
-              <div v-for="i in 15" :key="i" class="particle"></div>
+        <!-- 骨骼素材增强模式进度展示 -->
+        <div v-if="store.currentAssetType === 'character-skeleton' && store.currentGenerationMode === 'enhanced'">
+          <EnhancedGenerationProgress ref="enhancedProgressRef" />
+        </div>
+
+        <!-- 普通模式进度展示 -->
+        <div v-else class="simple-progress">
+          <div class="progress-section">
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: store.generationProgress + '%' }"></div>
+              <div class="particles">
+                <div v-for="i in 15" :key="i" class="particle"></div>
+              </div>
+            </div>
+            <div class="progress-info">
+              <span class="progress-text">生成中...{{ store.generationProgress }}%</span>
+              <span class="progress-time">预计还需 {{ estimatedTime }} 秒</span>
             </div>
           </div>
-          <div class="progress-info">
-            <span class="progress-text">生成中...{{ store.generationProgress }}%</span>
-            <span class="progress-time">预计还需 {{ estimatedTime }} 秒</span>
+          <div class="loading-hint">
+            🎨 AI 正在为您创作{{ store.currentAssetType === 'character-skeleton' ? '骨骼素材' : '人物立绘'}}，请稍候...
           </div>
         </div>
-        <div class="loading-hint">🎨 AI 正在为您创作绝美人物立绘，请稍候...</div>
       </div>
 
       <!-- 结果展示区 -->
@@ -92,11 +102,15 @@ import {computed, ref, watch} from 'vue'
 import {ElMessage} from 'element-plus'
 import {usePortraitStore} from '@/stores/portraitStore'
 import ResultCard from './ResultCard.vue'
+import EnhancedGenerationProgress from './EnhancedGenerationProgress.vue'
 
 const store = usePortraitStore()
 
 // 当前生成任务 ID（用于轮询查询进度）
 const currentTaskId = ref<string | null>(null)
+
+// 增强进度组件引用
+const enhancedProgressRef = ref<InstanceType<typeof EnhancedGenerationProgress> | null>(null)
 
 // 轮询计时器 ID
 let pollInterval: ReturnType<typeof setInterval> | null = null
@@ -144,12 +158,24 @@ const pollGenerationProgress = async () => {
     // 获取用户 ID（从 localStorage 或其他地方）
     const userId = localStorage.getItem('userId') || '1'
 
+    // 根据生成模式选择不同的进度查询端点
+    const isSkeletonMode = store.currentAssetType === 'character-skeleton'
+    const isEnhancedMode = store.currentGenerationMode === 'enhanced'
+
+    let apiEndpoint: string
+    if (isSkeletonMode && isEnhancedMode) {
+      // 骨骼素材增强模式的进度查询
+      apiEndpoint = `/api/ai/portrait/skeleton/enhanced-status/${currentTaskId.value}`
+    } else if (isSkeletonMode) {
+      // 骨骼素材基础模式的进度查询
+      apiEndpoint = `/api/ai/portrait/skeleton/status/${currentTaskId.value}`
+    } else {
+      // 普通立绘生成的进度查询
+      apiEndpoint = `/api/ai/portrait/result/${currentTaskId.value}`
+    }
+
     // 调用后端生成结果查询接口
-    // 使用 /result 接口而不是 /progress 接口，因为：
-    // 1. /result 接口专门用于查询生成结果
-    // 2. 返回 202 Accepted 如果任务未完成（继续轮询）
-    // 3. 返回 200 OK 如果任务已完成（包含图片URL）
-    const response = await fetch(`/api/ai/portrait/result/${currentTaskId.value}`, {
+    const response = await fetch(apiEndpoint, {
       method: 'GET',
       headers: {
         'X-User-Id': userId,
@@ -330,9 +356,15 @@ const handleSkeletonGeneration = async (userId: string) => {
   }
 
   console.log('🦴 发送骨骼素材生成请求:', skeletonRequest)
+  console.log('🔧 当前生成模式:', store.currentGenerationMode)
+
+  // 根据生成模式选择不同的API端点
+  const apiEndpoint = store.currentGenerationMode === 'enhanced'
+    ? '/api/ai/portrait/skeleton/enhanced-generate'
+    : '/api/ai/portrait/skeleton/generate'
 
   // 调用骨骼素材生成 API
-  const response = await fetch('/api/ai/portrait/skeleton/generate', {
+  const response = await fetch(apiEndpoint, {
     method: 'POST',
     headers: {
       'X-User-Id': userId,
@@ -362,7 +394,8 @@ const handleSkeletonGeneration = async (userId: string) => {
     // 启动骨骼素材进度轮询
     store.startSkeletonGeneration(data.taskId)
 
-    ElMessage.success('骨骼素材生成任务已提交，正在处理中...')
+    const modeText = store.currentGenerationMode === 'enhanced' ? '增强模式' : '基础模式'
+    ElMessage.success(`${modeText}骨骼素材生成任务已提交，正在处理中...`)
 
   } else {
     throw new Error('后端未返回 taskId')

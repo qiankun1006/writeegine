@@ -47,13 +47,30 @@ import {Check} from '@element-plus/icons-vue'
 
 const store = usePortraitStore()
 
-const stages = [
+// 基础模式阶段
+const basicStages = [
   { label: '生成全身图', progress: 10 },
   { label: '全身图完成', progress: 70 },
   { label: '分割肢体', progress: 75 },
   { label: '透明底处理', progress: 95 },
   { label: '完成', progress: 100 }
 ]
+
+// 增强模式阶段（8步AI流水线）
+const enhancedStages = [
+  { label: 'T-pose骨骼线图', progress: 5 },
+  { label: 'ControlNet约束', progress: 10 },
+  { label: 'IP-Adapter特征', progress: 15 },
+  { label: 'Flux.1-dev生成', progress: 60 },
+  { label: '背景去除', progress: 70 },
+  { label: 'SAM 2分割', progress: 85 },
+  { label: '骨骼绑定', progress: 95 },
+  { label: '完成', progress: 100 }
+]
+
+const stages = computed(() => {
+  return store.currentGenerationMode === 'enhanced' ? enhancedStages : basicStages
+})
 
 const progressStatus = computed(() => {
   if (store.generationError) return 'exception'

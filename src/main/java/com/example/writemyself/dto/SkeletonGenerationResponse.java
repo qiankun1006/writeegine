@@ -75,6 +75,24 @@ public class SkeletonGenerationResponse {
     private Map<String, String> parts;
 
     /**
+     * 骨骼绑定数据 URL（通用格式）
+     *
+     * 包含骨骼结构、层级关系、动画参数等信息的 JSON 文件。
+     * 可用于游戏引擎或动画工具导入。
+     */
+    private String skeletonDataUrl;
+
+    /**
+     * 多种格式的骨骼数据 URL
+     *
+     * 包含不同动画工具格式的骨骼数据文件：
+     * - generic: 通用 JSON 格式
+     * - spine: Spine 动画工具格式
+     * - dragonbones: DragonBones 动画工具格式
+     */
+    private Map<String, String> skeletonDataUrls;
+
+    /**
      * 错误信息
      *
      * 仅在 FAILED 状态下存在，描述失败原因。

@@ -9,10 +9,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 阿里云通义千问视觉分割服务
@@ -271,6 +268,228 @@ public class SAMService {
 
         log.info("使用文本解析模式，生成默认分割结果");
         return result;
+    }
+
+    /**
+     * 使用多个点提示进行精确分割
+     * @param imageBase64 输入图像 Base64
+     * @param points 点提示数组
+     * @param mode 分割模式 (precise, fast, accurate)
+     * @return 分割结果
+     */
+    public SAMSegmentationResult segmentWithMultiplePoints(String imageBase64, Point[] points, String mode) {
+        try {
+            log.info("使用多个点提示进行精确分割，模式: {}, 点数量: {}", mode, points != null ? points.length : 0);
+
+            // 将点数组转换为列表
+            List<Point> pointList = points != null ? new ArrayList<>(Arrays.asList(points)) : new ArrayList<>();
+
+            // 根据模式调整参数
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("task", "segmentation");
+            parameters.put("return_masks", true);
+            parameters.put("return_scores", true);
+            parameters.put("multiple_points", true);
+
+            // 根据模式设置不同的参数
+            switch (mode.toLowerCase()) {
+                case "precise":
+                    parameters.put("model_size", "large");
+                    parameters.put("pred_iou_thresh", 0.88);
+                    parameters.put("stability_score_thresh", 0.95);
+                    parameters.put("crop_n_layers", 1);
+                    break;
+                case "accurate":
+                    parameters.put("model_size", "medium");
+                    parameters.put("pred_iou_thresh", 0.85);
+                    parameters.put("stability_score_thresh", 0.90);
+                    parameters.put("crop_n_layers", 0);
+                    break;
+                case "fast":
+                default:
+                    parameters.put("model_size", "small");
+                    parameters.put("pred_iou_thresh", 0.80);
+                    parameters.put("stability_score_thresh", 0.85);
+                    parameters.put("crop_n_layers", 0);
+                    break;
+            }
+
+            return callSAMService(imageBase64, pointList, parameters);
+
+        } catch (Exception e) {
+            log.error("多点精确分割失败", e);
+            return createErrorResult("多点精确分割失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 基于 OpenPose 关键点进行引导分割
+     * @param imageBase64 输入图像 Base64
+     * @param openPoseKeyPoints OpenPose 关键点数据
+     * @param bodyParts 要分割的身体部位
+     * @return 包含各部位分割结果的映射
+     */
+    public Map<String, SAMSegmentationResult> segmentByBodyParts(String imageBase64,
+                                                                 Map<String, List<Point>> openPoseKeyPoints,
+                                                                 List<String> bodyParts) {
+        Map<String, SAMSegmentationResult> results = new HashMap<>();
+
+        try {
+            log.info("基于 OpenPose 关键点进行引导分割，身体部位数量: {}", bodyParts.size());
+
+            for (String bodyPart : bodyParts) {
+                List<Point> keyPoints = openPoseKeyPoints.get(bodyPart);
+                if (keyPoints != null && !keyPoints.isEmpty()) {
+                    log.debug("分割部位: {}, 关键点数量: {}", bodyPart, keyPoints.size());
+
+                    // 转换关键点为 SAM 点数组
+                    Point[] points = keyPoints.toArray(new Point[0]);
+
+                    // 使用精确模式分割
+                    SAMSegmentationResult result = segmentWithMultiplePoints(imageBase64, points, "precise");
+                    results.put(bodyPart, result);
+                } else {
+                    log.warn("部位 {} 无关键点数据，跳过分割", bodyPart);
+                    results.put(bodyPart, createErrorResult("无关键点数据"));
+                }
+            }
+
+            log.info("OpenPose 引导分割完成，成功分割部位: {}", results.size());
+            return results;
+
+        } catch (Exception e) {
+            log.error("OpenPose 引导分割失败", e);
+            // 返回错误结果
+            for (String bodyPart : bodyParts) {
+                results.put(bodyPart, createErrorResult("OpenPose 引导分割失败: " + e.getMessage()));
+            }
+            return results;
+        }
+    }
+
+    /**
+     * 进行高质量分割，支持人体肢体精确分割
+     * @param imageBase64 输入图像 Base64
+     * @param keyPoints 关键点列表
+     * @param partName 部位名称
+     * @return 分割结果
+     */
+    public SAMSegmentationResult segmentHumanPart(String imageBase64, List<Point> keyPoints, String partName) {
+        try {
+            log.info("分割人体部位: {}, 关键点数量: {}", partName, keyPoints.size());
+
+            // 构建针对特定部位的提示
+            String partPrompt = buildHumanPartPrompt(partName);
+
+            // 构建请求参数
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("task", "segmentation");
+            parameters.put("return_masks", true);
+            parameters.put("return_scores", true);
+            parameters.put("prompt", partPrompt);
+            parameters.put("model_size", "large"); // 使用大模型提高精度
+            parameters.put("pred_iou_thresh", 0.90);
+            parameters.put("stability_score_thresh", 0.95);
+            parameters.put("crop_n_layers", 1);
+
+            return callSAMService(imageBase64, keyPoints, parameters);
+
+        } catch (Exception e) {
+            log.error("人体部位分割失败: {}", partName, e);
+            return createErrorResult("人体部位分割失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 构建人体部位分割提示
+     */
+    private String buildHumanPartPrompt(String partName) {
+        Map<String, String> partPrompts = new HashMap<>();
+        partPrompts.put("head", "请精确分割人体头部区域，包括面部、头发和颈部");
+        partPrompts.put("torso", "请精确分割人体躯干区域，包括胸部、腹部和背部");
+        partPrompts.put("leftArm", "请精确分割左臂区域，包括肩膀、上臂、前臂和手掌");
+        partPrompts.put("rightArm", "请精确分割右臂区域，包括肩膀、上臂、前臂和手掌");
+        partPrompts.put("leftLeg", "请精确分割左腿区域，包括大腿、小腿和脚");
+        partPrompts.put("rightLeg", "请精确分割右腿区域，包括大腿、小腿和脚");
+        partPrompts.put("leftHand", "请精确分割左手区域，包括手指和手掌");
+        partPrompts.put("rightHand", "请精确分割右手区域，包括手指和手掌");
+        partPrompts.put("leftFoot", "请精确分割左脚区域，包括脚趾和脚掌");
+        partPrompts.put("rightFoot", "请精确分割右脚区域，包括脚趾和脚掌");
+
+        return partPrompts.getOrDefault(partName, "请分割指定的人体部位，提供精确的掩码数据");
+    }
+
+    /**
+     * 调用 SAM 服务的通用方法
+     */
+    private SAMSegmentationResult callSAMService(String imageBase64, List<Point> points, Map<String, Object> additionalParams) {
+        try {
+            // 构建阿里云通义千问请求
+            Map<String, Object> requestBody = new HashMap<>();
+
+            // 构建消息内容
+            List<Map<String, Object>> messages = new ArrayList<>();
+            Map<String, Object> message = new HashMap<>();
+            message.put("role", "user");
+
+            List<Map<String, Object>> content = new ArrayList<>();
+
+            // 添加图像内容
+            Map<String, Object> imageContent = new HashMap<>();
+            imageContent.put("type", "image_url");
+            imageContent.put("image_url", "data:image/jpeg;base64," + imageBase64);
+            content.add(imageContent);
+
+            // 添加文本提示
+            Map<String, Object> textContent = new HashMap<>();
+            textContent.put("type", "text");
+
+            String prompt = buildSegmentationPrompt(points);
+            if (additionalParams.containsKey("prompt")) {
+                prompt = prompt + " " + additionalParams.get("prompt");
+            }
+
+            textContent.put("text", prompt);
+            content.add(textContent);
+
+            message.put("content", content);
+            messages.add(message);
+
+            requestBody.put("model", aliyunModel);
+            requestBody.put("messages", messages);
+
+            // 合并分割参数
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("task", "segmentation");
+            parameters.put("return_masks", true);
+            parameters.put("return_scores", true);
+
+            if (additionalParams != null) {
+                parameters.putAll(additionalParams);
+            }
+            requestBody.put("parameters", parameters);
+
+            // 发送请求到阿里云通义千问服务
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            if (aliyunApiKey != null && !aliyunApiKey.isEmpty()) {
+                headers.set("Authorization", "Bearer " + aliyunApiKey);
+            }
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(aliyunApiUrl, request, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return parseAliyunSegmentationResult(response.getBody());
+            } else {
+                log.error("阿里云通义千问 API 调用失败: {}", response.getStatusCode());
+                return createErrorResult("阿里云通义千问 API 调用失败: " + response.getStatusCode());
+            }
+
+        } catch (Exception e) {
+            log.error("阿里云通义千问分割失败", e);
+            return createErrorResult("图像分割失败: " + e.getMessage());
+        }
     }
 
     /**

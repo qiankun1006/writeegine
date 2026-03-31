@@ -17,18 +17,35 @@
       </el-select>
     </div>
 
-    <!-- 骨骼模板选择 -->
+    <!-- OpenPose骨骼模板选择 -->
     <div class="param-section">
       <label class="section-label">
-        骨骼模板
-        <el-tooltip content="人体标准骨骼：符合真实人体比例；动画骨骼：适合动画制作的比例">
+        OpenPose骨骼模板
+        <el-tooltip content="选择骨骼关键点模板：18点适合基础动画，25点适合高级动画（包含足部细节）">
           <el-icon class="help-icon"><QuestionFilled /></el-icon>
         </el-tooltip>
       </label>
-      <el-radio-group v-model="skeletonTemplate" size="default">
-        <el-radio label="standard">人体标准骨骼</el-radio>
-        <el-radio label="animation">动画骨骼</el-radio>
+      <el-radio-group v-model="openPoseTemplate" size="default" @change="onTemplateChange">
+        <el-radio-button label="openpose_18">OpenPose 18点</el-radio-button>
+        <el-radio-button label="openpose_25">OpenPose 25点</el-radio-button>
       </el-radio-group>
+
+      <!-- 骨骼预览 -->
+      <div class="skeleton-preview" v-if="skeletonPreviewUrl">
+        <img :src="skeletonPreviewUrl" alt="骨骼预览" class="preview-image" />
+        <div class="preview-label">T-Pose骨骼预览</div>
+      </div>
+
+      <div class="template-info" v-if="selectedTemplateInfo">
+        <div class="info-item">
+          <span class="info-label">描述：</span>
+          <span class="info-value">{{ selectedTemplateInfo.description }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">适用场景：</span>
+          <span class="info-value">{{ selectedTemplateInfo.useCases?.join('、') }}</span>
+        </div>
+      </div>
     </div>
 
     <!-- 姿态选择 -->
@@ -47,6 +64,30 @@
         <el-option label="施法" value="casting" />
         <el-option label="待机" value="idle" />
       </el-select>
+    </div>
+
+    <!-- 生成模式选择 -->
+    <div class="param-section">
+      <label class="section-label">
+        生成模式
+        <el-tooltip content="选择骨骼素材生成模式：基础模式使用简单算法，增强模式使用完整8步AI流水线">
+          <el-icon class="help-icon"><QuestionFilled /></el-icon>
+        </el-tooltip>
+      </label>
+      <el-radio-group v-model="generationMode" size="default" @change="onModeChange">
+        <el-radio-button label="basic">基础模式</el-radio-button>
+        <el-radio-button label="enhanced">增强模式</el-radio-button>
+      </el-radio-group>
+
+      <div class="mode-description" v-if="generationMode === 'enhanced'">
+        <el-alert
+          type="info"
+          :closable="false"
+          show-icon
+          title="增强模式使用完整8步AI流水线"
+          description="OpenPose → ControlNet → IP-Adapter → Flux.1-dev → 背景去除 → SAM 2 → 骨骼绑定"
+        />
+      </div>
     </div>
 
     <!-- 参考图上传 -->
@@ -103,9 +144,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
-import { Upload, QuestionFilled } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import {ref, watch} from 'vue'
+import {QuestionFilled, Upload} from '@element-plus/icons-vue'
+import {ElMessage} from 'element-plus'
 
 // Props
 interface Props {
@@ -130,6 +171,7 @@ const emit = defineEmits<{
 export interface SkeletonParams {
   style: 'anime' | 'realistic' | 'chibi' | 'cartoon' | 'pixel'
   template: 'standard' | 'animation'
+  openPoseTemplate: 'openpose_18' | 'openpose_25'
   pose: string
   referenceImageBase64: string
   referenceImagePreview?: string
@@ -142,10 +184,21 @@ const selectedStyle = ref<'anime' | 'realistic' | 'chibi' | 'cartoon' | 'pixel'>
 const skeletonTemplate = ref<'standard' | 'animation'>(
   (props.modelValue.template as any) || 'animation'
 )
+const openPoseTemplate = ref<'openpose_18' | 'openpose_25'>(
+  (props.modelValue.openPoseTemplate as any) || 'openpose_18'
+)
 const selectedPose = ref(props.modelValue.pose || 'standing')
 const referenceImageBase64 = ref(props.modelValue.referenceImageBase64 || '')
 const referenceImagePreview = ref(props.modelValue.referenceImagePreview || '')
 const fileInput = ref<HTMLInputElement | null>(null)
+
+  // OpenPose模板相关状态
+  const skeletonPreviewUrl = ref('')
+  const selectedTemplateInfo = ref(null)
+  const isLoadingPreview = ref(false)
+
+  // 生成模式状态
+  const generationMode = ref<'basic' | 'enhanced'>('basic')
 
 // 输出部件列表
 const outputParts = [
@@ -159,11 +212,12 @@ const outputParts = [
 
 // 监听本地状态变化，通知父组件
 watch(
-  [selectedStyle, skeletonTemplate, selectedPose, referenceImageBase64],
+  [selectedStyle, skeletonTemplate, openPoseTemplate, selectedPose, referenceImageBase64],
   () => {
     emit('update:modelValue', {
       style: selectedStyle.value,
       template: skeletonTemplate.value,
+      openPoseTemplate: openPoseTemplate.value,
       pose: selectedPose.value,
       referenceImageBase64: referenceImageBase64.value,
       referenceImagePreview: referenceImagePreview.value,
@@ -231,6 +285,64 @@ const removeReferenceImage = () => {
   }
 }
 
+  // OpenPose模板相关方法
+  const onTemplateChange = async () => {
+    await loadTemplatePreview()
+    await loadTemplateInfo()
+  }
+
+  // 生成模式切换
+  const onModeChange = () => {
+    if (generationMode.value === 'enhanced') {
+      ElMessage.info('已切换到增强模式，将使用完整8步AI流水线生成骨骼素材')
+      store.setGenerationMode('enhanced')
+    } else {
+      ElMessage.info('已切换到基础模式，将使用简化算法生成骨骼素材')
+      store.setGenerationMode('basic')
+    }
+  }
+
+// 加载骨骼预览
+const loadTemplatePreview = async () => {
+  if (!openPoseTemplate.value) return
+
+  isLoadingPreview.value = true
+  try {
+    const response = await fetch(`/api/ai/skeleton/template/preview?type=${openPoseTemplate.value}`)
+    const data = await response.json()
+
+    if (data.success) {
+      skeletonPreviewUrl.value = data.previewUrl
+    } else {
+      console.error('加载骨骼预览失败:', data.error)
+      ElMessage.error('加载骨骼预览失败: ' + data.error)
+    }
+  } catch (error) {
+    console.error('加载骨骼预览失败:', error)
+    ElMessage.error('加载骨骼预览失败，请稍后重试')
+  } finally {
+    isLoadingPreview.value = false
+  }
+}
+
+// 加载模板信息
+const loadTemplateInfo = async () => {
+  if (!openPoseTemplate.value) return
+
+  try {
+    const response = await fetch(`/api/ai/skeleton/template/info?type=${openPoseTemplate.value}`)
+    const data = await response.json()
+
+    if (data.success) {
+      selectedTemplateInfo.value = data.templateInfo
+    } else {
+      console.error('加载模板信息失败:', data.error)
+    }
+  } catch (error) {
+    console.error('加载模板信息失败:', error)
+  }
+}
+
 // 导出获取参数的方法
 const getSkeletonParams = (): SkeletonParams => ({
   style: selectedStyle.value,
@@ -240,10 +352,19 @@ const getSkeletonParams = (): SkeletonParams => ({
   referenceImagePreview: referenceImagePreview.value,
 })
 
+// 初始化加载
+const initializeComponent = async () => {
+  await loadTemplatePreview()
+  await loadTemplateInfo()
+}
+
 // 暴露方法给父组件
 defineExpose({
   getSkeletonParams,
 })
+
+// 组件挂载时初始化
+initializeComponent()
 </script>
 
 <style scoped lang="scss">
@@ -353,6 +474,59 @@ defineExpose({
 
   &.has-image:hover .image-overlay {
     opacity: 1;
+  }
+}
+
+// 骨骼预览
+.skeleton-preview {
+  margin-top: 12px;
+  text-align: center;
+
+  .preview-image {
+    max-width: 100%;
+    height: 120px;
+    object-fit: contain;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    background: #fafafa;
+  }
+
+  .preview-label {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #909399;
+    font-weight: 500;
+  }
+}
+
+// 模板信息
+template-info {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+
+  .info-item {
+    display: flex;
+    margin-bottom: 6px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #606266;
+      min-width: 60px;
+    }
+
+    .info-value {
+      font-size: 12px;
+      color: #303133;
+      flex: 1;
+    }
   }
 }
 

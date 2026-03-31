@@ -124,5 +124,34 @@ public class AliyunTongYiService implements ImageGenerationService {
             throw new RuntimeException("生成图片失败: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * 从参考图像中提取 IP-Adapter 特征
+     */
+    @Override
+    public String extractIPAdapterFeatures(String referenceImageBase64) {
+        log.info("阿里云暂不支持 IP-Adapter 特征提取");
+        return null;
+    }
+
+    /**
+     * 使用 Flux 模型生成图片
+     */
+    @Override
+    public String generateImageWithFlux(String prompt, String negativePrompt, String referenceImageBase64,
+                                        java.util.Map<String, Object> fluxParams, Integer width, Integer height, String style) {
+        log.info("阿里云暂不支持 Flux 模型");
+        return "";
+    }
+
+    /**
+     * 使用 ControlNet 生成图片
+     */
+    @Override
+    public String generateImageWithControlNet(String prompt, String negativePrompt, String referenceImageBase64,
+                                              java.util.Map<String, Object> controlNetParams, Integer width, Integer height, String style) {
+        log.info("阿里云暂不支持 ControlNet");
+        return "";
+    }
 }
 

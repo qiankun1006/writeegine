@@ -1,6 +1,7 @@
 package com.example.writemyself.service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 图像生成服务接口
@@ -51,5 +52,40 @@ public interface ImageGenerationService {
      */
     String generateImageBase64(String prompt, String negativePrompt, String referenceImageBase64,
                                Integer width, Integer height, String style);
+
+    /**
+     * 使用 ControlNet 约束生成图片
+     * @param prompt 提示词
+     * @param negativePrompt 负面提示词
+     * @param controlImageBase64 ControlNet 控制图片 Base64
+     * @param controlNetParams ControlNet 参数（control_weight, control_mode 等）
+     * @param width 图片宽度
+     * @param height 图片高度
+     * @param style 风格预设
+     * @return 生成的图片 Base64 编码
+     */
+    String generateImageWithControlNet(String prompt, String negativePrompt, String controlImageBase64,
+                                      Map<String, Object> controlNetParams, Integer width, Integer height, String style);
+
+    /**
+     * 使用 Flux.1-dev 模型生成高清图片
+     * @param prompt 提示词
+     * @param negativePrompt 负面提示词
+     * @param referenceImageBase64 参考图片 Base64（可选）
+     * @param fluxParams Flux 模型参数
+     * @param width 图片宽度
+     * @param height 图片高度
+     * @param style 风格预设
+     * @return 生成的图片 Base64 编码
+     */
+    String generateImageWithFlux(String prompt, String negativePrompt, String referenceImageBase64,
+                                 Map<String, Object> fluxParams, Integer width, Integer height, String style);
+
+    /**
+     * 提取 IP-Adapter 特征
+     * @param referenceImageBase64 参考图片 Base64
+     * @return 特征标识或特征数据
+     */
+    String extractIPAdapterFeatures(String referenceImageBase64);
 }
 

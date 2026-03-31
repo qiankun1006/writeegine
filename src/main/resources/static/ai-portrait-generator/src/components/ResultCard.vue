@@ -55,6 +55,26 @@
       </el-button>
     </div>
 
+    <!-- 骨骼数据下载（仅骨骼素材模式显示） -->
+    <div v-if="isSkeletonResult" class="skeleton-data-section">
+      <div class="section-header">
+        <span class="section-title">🦴 骨骼数据</span>
+      </div>
+      <div class="skeleton-formats">
+        <el-button
+          v-for="(url, format) in skeletonDataUrls"
+          :key="format"
+          size="small"
+          type="info"
+          plain
+          class="format-btn"
+          @click="downloadSkeletonData(format, url)"
+        >
+          {{ getFormatDisplayName(format) }}
+        </el-button>
+      </div>
+    </div>
+
     <!-- 信息 -->
     <div class="card-info">
       <p class="info-time">{{ formatTime(result.generatedAt) }}</p>
@@ -64,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import {ElMessage} from 'element-plus'
 import {DocumentCopy, Download, Share} from '@element-plus/icons-vue'
 import type {GenerationResult} from '@/stores/portraitStore'
@@ -77,6 +97,16 @@ interface Props {
 const props = defineProps<Props>()
 
 const isCopied = ref(false)
+
+// 检查是否为骨骼素材结果
+const isSkeletonResult = computed(() => {
+  return props.result.skeletonDataUrls && Object.keys(props.result.skeletonDataUrls).length > 0
+})
+
+// 获取骨骼数据URLs
+const skeletonDataUrls = computed(() => {
+  return props.result.skeletonDataUrls || {}
+})
 
 const downloadImage = () => {
   const link = document.createElement('a')
@@ -121,6 +151,32 @@ const regenerate = () => {
 const saveToProject = () => {
   ElMessage.success('已保存到项目资源库')
   // TODO: 保存到项目逻辑
+}
+
+const downloadSkeletonData = (format: string, url: string) => {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `skeleton-data-${props.result.id}.${getFormatExtension(format)}.json`
+  link.click()
+  ElMessage.success(`${getFormatDisplayName(format)} 骨骼数据下载中...`)
+}
+
+const getFormatDisplayName = (format: string) => {
+  switch (format) {
+    case 'generic': return '通用格式'
+    case 'spine': return 'Spine'
+    case 'dragonbones': return 'DragonBones'
+    default: return format.toUpperCase()
+  }
+}
+
+const getFormatExtension = (format: string) => {
+  switch (format) {
+    case 'generic': return 'generic'
+    case 'spine': return 'spine'
+    case 'dragonbones': return 'dragonbones'
+    default: return 'json'
+  }
 }
 
 const formatTime = (dateString: string) => {
@@ -234,5 +290,35 @@ const formatTime = (dateString: string) => {
   color: $gray-400;
   margin: 0;
 }
-</style>
+
+// ========== 骨骼数据下载区域 ==========
+.skeleton-data-section {
+  padding: $spacing-sm;
+  background-color: $gray-50;
+  border-top: 1px solid $gray-200;
+}
+
+.section-header {
+  margin-bottom: $spacing-sm;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: $gray-600;
+}
+
+.skeleton-formats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.format-btn {
+  font-size: 11px;
+  padding: 4px 8px;
+  height: auto;
+  min-width: 0;
+  flex-shrink: 0;
+}</style>
 
