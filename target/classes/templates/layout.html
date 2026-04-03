@@ -22,8 +22,19 @@
         </div>
     </main>
 
-    <footer>
-        <p>&copy; 2025 WriteMyself. All rights reserved.</p>
+    <!-- 全局页脚 -->
+    <footer class="global-footer">
+        <div class="footer-copyright">
+            &copy; 2026 WriteMyself. All rights reserved.
+        </div>
+        <div class="footer-links">
+            <a href="/help" title="帮助中心">帮助中心</a>
+            <span class="link-separator">|</span>
+            <a href="/terms" title="用户协议">用户协议</a>
+            <span class="link-separator">|</span>
+            <a href="/privacy" title="隐私政策">隐私政策</a>
+        </div>
+        <button class="theme-switcher" id="themeToggle" title="切换主题">🌙 切换主题</button>
     </footer>
 
     <script th:src="@{/static/js/main.js}"></script>

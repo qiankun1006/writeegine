@@ -65,6 +65,7 @@
 html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
 }
 
 body {
@@ -75,6 +76,20 @@ body {
     font-size: 14px;
     line-height: 1.6;
     min-height: 100vh;
+    /* 使用 flexbox 布局，让页脚始终在底部 */
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+footer {
+    margin-top: auto;
 }
 
 /* 标题样式 */
@@ -179,7 +194,7 @@ select:focus {
 }
 
 /* 页面过渡动画 */
-main {
+main > * {
     animation: fadeIn var(--transition-normal);
 }
 

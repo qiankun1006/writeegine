@@ -55,47 +55,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 显示当前年份（用于页脚）
-    const currentYear = new Date().getFullYear();
-    const yearElements = document.querySelectorAll('.current-year');
-    yearElements.forEach(el => {
-        el.textContent = currentYear;
-    });
+    // 处理全局页脚中的主题切换按钮
+    const themeToggleButton = document.getElementById('themeToggle');
+    if (themeToggleButton) {
+        themeToggleButton.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                themeToggleButton.textContent = '☀️ 切换主题';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggleButton.textContent = '🌙 切换主题';
+            }
+        });
 
-    // 如果没有元素，在页脚添加年份
-    const footer = document.querySelector('footer p');
-    if (footer && !footer.innerHTML.includes(currentYear)) {
-        footer.innerHTML = footer.innerHTML.replace('2025', currentYear);
-    }
-
-    // 添加简单的主题切换按钮（可选功能）
-    const themeToggle = document.createElement('button');
-    themeToggle.textContent = '切换主题';
-    themeToggle.style.position = 'fixed';
-    themeToggle.style.bottom = '20px';
-    themeToggle.style.right = '20px';
-    themeToggle.style.padding = '0.5rem 1rem';
-    themeToggle.style.backgroundColor = '#007bff';
-    themeToggle.style.color = 'white';
-    themeToggle.style.border = 'none';
-    themeToggle.style.borderRadius = '4px';
-    themeToggle.style.cursor = 'pointer';
-    themeToggle.style.zIndex = '1000';
-
-    themeToggle.addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-        if (document.body.classList.contains('dark-mode')) {
-            document.body.style.backgroundColor = '#343a40';
-            document.body.style.color = '#f8f9fa';
-            themeToggle.textContent = '切换亮色';
-        } else {
-            document.body.style.backgroundColor = '';
-            document.body.style.color = '';
-            themeToggle.textContent = '切换暗色';
+        // 恢复之前保存的主题偏好
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggleButton.textContent = '☀️ 切换主题';
         }
-    });
-
-    document.body.appendChild(themeToggle);
+    }
 
     console.log('JavaScript初始化完成');
 });
