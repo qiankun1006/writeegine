@@ -5,7 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  * 骨骼素材生成请求 DTO
@@ -25,12 +28,27 @@ public class SkeletonGenerationRequest {
     // ============ 核心参数 ============
 
     /**
-     * 正面提示词 - 必填
+     * 流水线模式 - 可选（默认 FROM_SCRATCH）
      *
-     * 用户输入的用于描述生成角色的关键词和描述。
+     * 决定走哪条骨骼生成路径：
+     * - FROM_REFERENCE: 参考图转骨骼 —— 输入已有设计稿，先做图层分解（see-through），
+     *                   再每层去背 + 骨骼绑定。不重新生成图片，保留原稿所有细节。
+     *                   必须提供 referenceImageBase64。
+     * - FROM_SCRATCH:   从零生成骨骼 —— 根据 prompt 用 Flux.1-dev 全新生成角色图，
+     *                   再做图层分解 + 骨骼绑定。
+     *
+     * 默认为 FROM_SCRATCH，与原有行为兼容。
+     */
+    @Pattern(regexp = "^(FROM_REFERENCE|FROM_SCRATCH)$",
+            message = "mode 只支持: FROM_REFERENCE, FROM_SCRATCH")
+    private String mode = "FROM_SCRATCH";
+
+    /**
+     * 正面提示词
+     *
+     * FROM_SCRATCH 模式必填；FROM_REFERENCE 模式可选（用于图层分解时的语义引导）。
      * 例如：一个年轻的女性角色，穿着古装，五官精致，皮肤光滑
      */
-    @NotBlank(message = "正面提示词不能为空")
     @Size(min = 1, max = 500, message = "正面提示词长度需要在 1-500 字之间")
     private String prompt;
 
@@ -44,14 +62,32 @@ public class SkeletonGenerationRequest {
     private String negativePrompt;
 
     /**
-     * 参考图片 Base64 编码 - 可选
+     * 参考图片 Base64 编码 - 可选（兼容旧调用方）
      *
      * 用户上传的参考图片，用于保持人物一致性。
      * 格式：data:image/png;base64,iVBORw0KGgo...
+     *
+     * 推荐使用 referenceImageUrl 替代此字段：
+     * 前端先调用 POST /api/upload/image 上传图片，拿到 URL 后填入 referenceImageUrl。
+     * 两个字段均存在时，referenceImageUrl 优先。
      */
     @Pattern(regexp = "^(data:image/(png|jpeg|jpg|webp);base64,)?[A-Za-z0-9+/=]*$",
             message = "参考图片格式不正确，需要为 Base64 编码")
     private String referenceImageBase64;
+
+    /**
+     * 参考图片 HTTP URL - 可选（推荐方式）
+     *
+     * 前端先调用 POST /api/upload/image 上传图片，获取返回的 url 字段值后填入此处。
+     * 例如：/uploads/2026/04/15/a3f1c2d4_reference.png
+     *
+     * 待接入正式对象存储桶后，此处填入桶 URL（如 https://xxx.oss.com/...）即可，
+     * 无需修改 DTO 结构。
+     *
+     * 两个字段均存在时，referenceImageUrl 优先于 referenceImageBase64。
+     */
+    @Size(max = 1024, message = "参考图片 URL 长度不能超过 1024 字符")
+    private String referenceImageUrl;
 
     // ============ 骨骼素材专用参数 ============
 
@@ -80,6 +116,17 @@ public class SkeletonGenerationRequest {
     @Pattern(regexp = "^(standard|animation)$",
             message = "骨骼模板只支持: standard, animation")
     private String template;
+
+    /**
+     * OpenPose 关键点模板类型 - 可选（默认 openpose_18）
+     *
+     * 决定骨骼关键点的数量和精度：
+     * - openpose_18: 18点标准模板，适合基础动画
+     * - openpose_25: 25点扩展模板，包含足部细节，适合高级动画
+     */
+    @Pattern(regexp = "^(openpose_18|openpose_25)$",
+            message = "OpenPose模板只支持: openpose_18, openpose_25")
+    private String openPoseTemplate = "openpose_18";
 
     /**
      * 角色姿态 - 必填

@@ -341,22 +341,33 @@ const handleGenerate = async () => {
 const handleSkeletonGeneration = async (userId: string) => {
   // 标记开始生成
   store.startGeneration()
-  ElMessage.loading('正在提交骨骼素材生成任务...')
+  ElMessage.info('正在提交骨骼素材生成任务...')
+
+  // 根据参考图是否存在自动推导 mode：
+  //   有参考图 → FROM_REFERENCE（直接对设计稿做图层分解，不重新生成图片）
+  //   无参考图 → FROM_SCRATCH（根据 prompt 全新生成）
+  const hasReferenceImage = !!(store.skeletonParams.referenceImageBase64)
+  const inferredMode = hasReferenceImage ? 'FROM_REFERENCE' : 'FROM_SCRATCH'
 
   // 构建骨骼素材生成请求参数
+  // referenceImageUrl 优先（已上传到服务器的 HTTP URL）；
+  // 无 URL 时兼容旧的 referenceImageBase64 字段。
   const skeletonRequest = {
+    mode: inferredMode,
     prompt: store.params.prompt,
     negativePrompt: store.params.negativePrompt,
+    referenceImageUrl: store.skeletonParams.referenceImageUrl || '',
     referenceImageBase64: store.skeletonParams.referenceImageBase64 || '',
     style: store.skeletonParams.style,
     template: store.skeletonParams.template,
+    openPoseTemplate: store.skeletonParams.openPoseTemplate || 'openpose_18',
     pose: store.skeletonParams.pose,
     width: store.params.width,
     height: store.params.height
   }
 
   console.log('🦴 发送骨骼素材生成请求:', skeletonRequest)
-  console.log('🔧 当前生成模式:', store.currentGenerationMode)
+  console.log('🔧 当前生成模式:', store.currentGenerationMode, '| 推导 mode:', inferredMode, '| 有参考图:', hasReferenceImage)
 
   // 根据生成模式选择不同的API端点
   const apiEndpoint = store.currentGenerationMode === 'enhanced'
@@ -394,6 +405,11 @@ const handleSkeletonGeneration = async (userId: string) => {
     // 启动骨骼素材进度轮询
     store.startSkeletonGeneration(data.taskId)
 
+    // 增强模式：让 EnhancedGenerationProgress 组件接管轮询
+    if (store.currentGenerationMode === 'enhanced' && enhancedProgressRef.value) {
+      enhancedProgressRef.value.trackTask(data.taskId)
+    }
+
     const modeText = store.currentGenerationMode === 'enhanced' ? '增强模式' : '基础模式'
     ElMessage.success(`${modeText}骨骼素材生成任务已提交，正在处理中...`)
 
@@ -408,7 +424,7 @@ const handleSkeletonGeneration = async (userId: string) => {
 const handlePortraitGeneration = async (userId: string) => {
   // 标记开始生成
   store.startGeneration()
-  ElMessage.loading('正在提交生成任务...')
+  ElMessage.info('正在提交生成任务...')
 
   // 步骤2：构建请求参数
   // 前端 store 参数映射到后端 DTO
@@ -520,7 +536,7 @@ const clearResults = () => {
   display: flex;
   flex-direction: column;
   gap: 0;
-  overflow: hidden;
+  overflow-y: auto;
   padding: 16px;
   min-height: 0;
   border-bottom: 1px solid #f0f0f0;

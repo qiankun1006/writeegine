@@ -37,7 +37,11 @@ export interface GenerationResult {
 export interface SkeletonParams {
   style: 'anime' | 'realistic' | 'chibi' | 'cartoon' | 'pixel'
   template: 'standard' | 'animation'
+  openPoseTemplate: 'openpose_18' | 'openpose_25'
   pose: string
+  /** 图片上传后的 HTTP URL（推荐，优先于 referenceImageBase64） */
+  referenceImageUrl: string
+  /** @deprecated 兼容旧版，新代码请使用 referenceImageUrl */
   referenceImageBase64: string
 }
 
@@ -103,7 +107,9 @@ export const usePortraitStore = defineStore('portrait', () => {
   const skeletonParams = reactive<SkeletonParams>({
     style: 'anime',
     template: 'animation',
+    openPoseTemplate: 'openpose_18',
     pose: 'standing',
+    referenceImageUrl: '',
     referenceImageBase64: '',
   })
 
@@ -358,7 +364,9 @@ export const usePortraitStore = defineStore('portrait', () => {
   const resetSkeletonParams = () => {
     skeletonParams.style = 'anime'
     skeletonParams.template = 'animation'
+    skeletonParams.openPoseTemplate = 'openpose_18'
     skeletonParams.pose = 'standing'
+    skeletonParams.referenceImageUrl = ''
     skeletonParams.referenceImageBase64 = ''
   }
 

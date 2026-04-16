@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.writemyself.mapper.SkeletonRagIndexMapper">
+
+    <resultMap id="skeletonRagIndexResultMap" type="com.example.writemyself.entity.SkeletonRagIndex">
+        <id     property="id"              column="id"/>
+        <result property="sourceTaskId"    column="source_task_id"/>
+        <result property="style"           column="style"/>
+        <result property="pose"            column="pose"/>
+        <result property="templateType"    column="template_type"/>
+        <result property="openposeTmpl"    column="openpose_tmpl"/>
+        <result property="promptSummary"   column="prompt_summary"/>
+        <result property="keypointsJsonUrl" column="keypoints_json_url"/>
+        <result property="bindingDataUrl"  column="binding_data_url"/>
+        <result property="layerDecompUrl"  column="layer_decomp_url"/>
+        <result property="userRating"      column="user_rating"/>
+        <result property="hitCount"        column="hit_count"/>
+        <result property="lastHitAt"       column="last_hit_at"/>
+        <result property="createdAt"       column="created_at"/>
+        <result property="updatedAt"       column="updated_at"/>
+    </resultMap>
+
+    <!-- 插入或更新（ON DUPLICATE KEY UPDATE，基于 uk_source_task） -->
+    <insert id="insertOrUpdate" parameterType="com.example.writemyself.entity.SkeletonRagIndex"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO skeleton_rag_index (
+            source_task_id, style, pose, template_type, openpose_tmpl,
+            prompt_summary, keypoints_json_url, binding_data_url, layer_decomp_url,
+            user_rating, hit_count, created_at, updated_at
+        ) VALUES (
+            #{sourceTaskId}, #{style}, #{pose}, #{templateType}, #{openposeTmpl},
+            #{promptSummary}, #{keypointsJsonUrl}, #{bindingDataUrl}, #{layerDecompUrl},
+            #{userRating}, 0, NOW(), NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            keypoints_json_url = VALUES(keypoints_json_url),
+            binding_data_url   = VALUES(binding_data_url),
+            layer_decomp_url   = VALUES(layer_decomp_url),
+            user_rating        = VALUES(user_rating),
+            prompt_summary     = VALUES(prompt_summary),
+            updated_at         = NOW()
+    </insert>
+
+    <!-- 第一阶段：精确过滤候选集（走联合索引 idx_style_pose_tmpl） -->
+    <select id="findCandidates" resultMap="skeletonRagIndexResultMap">
+        SELECT * FROM skeleton_rag_index
+        WHERE style         = #{style}
+          AND pose          = #{pose}
+          AND template_type = #{templateType}
+          AND keypoints_json_url IS NOT NULL
+          AND binding_data_url   IS NOT NULL
+        ORDER BY user_rating DESC, hit_count DESC
+        LIMIT #{maxResults}
+    </select>
+
+    <!-- 第二阶段：FULLTEXT 全文检索 prompt 相似度（BOOLEAN MODE，无需精确相关性） -->
+    <select id="findByPromptSimilarity" resultMap="skeletonRagIndexResultMap">
+        SELECT *, MATCH(prompt_summary) AGAINST (#{promptKeywords} IN BOOLEAN MODE) AS relevance
+        FROM skeleton_rag_index
+        WHERE style         = #{style}
+          AND pose          = #{pose}
+          AND template_type = #{templateType}
+          AND keypoints_json_url IS NOT NULL
+          AND binding_data_url   IS NOT NULL
+          AND MATCH(prompt_summary) AGAINST (#{promptKeywords} IN BOOLEAN MODE) > 0
+        ORDER BY relevance DESC, user_rating DESC, hit_count DESC
+        LIMIT #{maxResults}
+    </select>
+
+    <!-- 更新命中热度 -->
+    <update id="incrementHitCount">
+        UPDATE skeleton_rag_index
+        SET hit_count  = hit_count + 1,
+            last_hit_at = NOW(),
+            updated_at  = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据 sourceTaskId 查询（去重用） -->
+    <select id="selectBySourceTaskId" parameterType="string" resultMap="skeletonRagIndexResultMap">
+        SELECT * FROM skeleton_rag_index WHERE source_task_id = #{sourceTaskId}
+    </select>
+
+</mapper>
+

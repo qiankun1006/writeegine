@@ -12,6 +12,7 @@ com/example/writemyself/model/Game.class
 com/example/writemyself/model/SkeletonBindingData$DefaultPose.class
 com/example/writemyself/service/AssetService.class
 com/example/writemyself/util/JsonTypeHandler$3.class
+com/example/writemyself/controller/SkeletonAssetController$20.class
 com/example/writemyself/controller/GameMapController.class
 com/example/writemyself/service/UnityService$14.class
 com/example/writemyself/model/FluxImageResponse$FluxImageResponseBuilder.class
@@ -19,8 +20,11 @@ com/example/writemyself/controller/UnityController$2.class
 com/example/writemyself/model/FluxImageResponse$PerformanceInfo$PerformanceInfoBuilder.class
 com/example/writemyself/service/UnityService$4.class
 com/example/writemyself/repository/AIPortraitGenerationRepositoryImpl.class
+com/example/writemyself/controller/SkeletonAssetController$17.class
 com/example/writemyself/entity/AIPortraitTask$AIPortraitTaskBuilder.class
 com/example/writemyself/controller/SkeletonAssetController$4.class
+com/example/writemyself/entity/SkeletonRagIndex$SkeletonRagIndexBuilder.class
+com/example/writemyself/mapper/SkeletonRagIndexMapper.class
 com/example/writemyself/repository/GameRepositoryImpl.class
 com/example/writemyself/controller/DatabaseHealthController.class
 com/example/writemyself/dto/GameMapResultDTO.class
@@ -96,6 +100,7 @@ com/example/writemyself/model/SAMSegmentationResult.class
 com/example/writemyself/util/MapperGeneratorUtil$1.class
 com/example/writemyself/model/AIPortraitGeneration$Status.class
 com/example/writemyself/model/SkeletonBindingData$AnimationParams.class
+com/example/writemyself/controller/SkeletonAssetController$18.class
 com/example/writemyself/model/SAMSegmentationResult$BoundingBox.class
 com/example/writemyself/service/UnityService$15.class
 com/example/writemyself/service/BackgroundRemovalService.class
@@ -161,6 +166,7 @@ com/example/writemyself/entity/AIPortraitUserPreset$AIPortraitUserPresetBuilder.
 com/example/writemyself/controller/UnityController$4$1.class
 com/example/writemyself/controller/TilemapEditorController.class
 com/example/writemyself/entity/AIPortraitResourceLibrary.class
+com/example/writemyself/entity/SkeletonRagIndex.class
 com/example/writemyself/controller/SkeletonAssetController.class
 com/example/writemyself/repository/AIPortraitModelConfigRepositoryImpl.class
 com/example/writemyself/controller/OpenPoseTemplateController$TemplateGenerationRequest.class
@@ -181,6 +187,7 @@ com/example/writemyself/entity/AIPortraitTaskEntity.class
 com/example/writemyself/controller/OpenPoseTemplateController.class
 com/example/writemyself/util/JsonTypeHandler$1.class
 com/example/writemyself/dto/GeneratePortraitResponse.class
+com/example/writemyself/controller/SkeletonAssetController$19.class
 com/example/writemyself/WriteMyselfApplication.class
 com/example/writemyself/controller/SkeletonAssetController$8.class
 com/example/writemyself/service/MeituanQwenService.class

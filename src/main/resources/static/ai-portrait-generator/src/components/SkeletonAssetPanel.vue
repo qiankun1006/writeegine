@@ -111,11 +111,16 @@
           style="display: none"
           @change="onFileSelect"
         />
-        <template v-if="referenceImagePreview">
+        <template v-if="isUploading">
+          <el-icon class="upload-icon is-loading"><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M512 64a32 32 0 0 1 32 32v192a32 32 0 0 1-64 0V96a32 32 0 0 1 32-32zm0 640a32 32 0 0 1 32 32v192a32 32 0 0 1-64 0V736a32 32 0 0 1 32-32zm448-192a32 32 0 0 1-32 32H736a32 32 0 0 1 0-64h192a32 32 0 0 1 32 32zm-640 0a32 32 0 0 1-32 32H96a32 32 0 0 1 0-64h192a32 32 0 0 1 32 32z"/></svg></el-icon>
+          <p class="upload-text">正在上传...</p>
+        </template>
+        <template v-else-if="referenceImagePreview">
           <img :src="referenceImagePreview" alt="参考图" class="preview-image" />
           <div class="image-overlay">
             <el-button size="small" @click.stop="removeReferenceImage">移除</el-button>
           </div>
+          <div v-if="referenceImageUrl" class="upload-url-hint">✓ 已上传到服务器</div>
         </template>
         <template v-else>
           <el-icon class="upload-icon"><Upload /></el-icon>
@@ -147,6 +152,9 @@
 import {ref, watch} from 'vue'
 import {QuestionFilled, Upload} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
+import {usePortraitStore} from '@/stores/portraitStore'
+
+const store = usePortraitStore()
 
 // Props
 interface Props {
@@ -173,6 +181,9 @@ export interface SkeletonParams {
   template: 'standard' | 'animation'
   openPoseTemplate: 'openpose_18' | 'openpose_25'
   pose: string
+  /** 图片上传后的 HTTP URL（推荐，优先于 referenceImageBase64） */
+  referenceImageUrl: string
+  /** @deprecated 兼容旧版，新代码请使用 referenceImageUrl */
   referenceImageBase64: string
   referenceImagePreview?: string
 }
@@ -189,8 +200,10 @@ const openPoseTemplate = ref<'openpose_18' | 'openpose_25'>(
 )
 const selectedPose = ref(props.modelValue.pose || 'standing')
 const referenceImageBase64 = ref(props.modelValue.referenceImageBase64 || '')
+const referenceImageUrl = ref(props.modelValue.referenceImageUrl || '')
 const referenceImagePreview = ref(props.modelValue.referenceImagePreview || '')
 const fileInput = ref<HTMLInputElement | null>(null)
+const isUploading = ref(false)
 
   // OpenPose模板相关状态
   const skeletonPreviewUrl = ref('')
@@ -212,13 +225,14 @@ const outputParts = [
 
 // 监听本地状态变化，通知父组件
 watch(
-  [selectedStyle, skeletonTemplate, openPoseTemplate, selectedPose, referenceImageBase64],
+  [selectedStyle, skeletonTemplate, openPoseTemplate, selectedPose, referenceImageBase64, referenceImageUrl],
   () => {
     emit('update:modelValue', {
       style: selectedStyle.value,
       template: skeletonTemplate.value,
       openPoseTemplate: openPoseTemplate.value,
       pose: selectedPose.value,
+      referenceImageUrl: referenceImageUrl.value,
       referenceImageBase64: referenceImageBase64.value,
       referenceImagePreview: referenceImagePreview.value,
     })
@@ -253,9 +267,9 @@ const onFileSelect = (e: Event) => {
   }
 }
 
-const handleFileSelect = (file: File) => {
+const handleFileSelect = async (file: File) => {
   // 验证文件格式
-  const validTypes = ['image/png', 'image/jpeg', 'image/webp']
+  const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
   if (!validTypes.includes(file.type)) {
     ElMessage.error('文件格式错误，请上传 PNG、JPG 或 WEBP 格式图片')
     return
@@ -267,18 +281,54 @@ const handleFileSelect = (file: File) => {
     return
   }
 
-  // 读取文件为 Base64
+  // 先用 FileReader 生成本地预览（不等待上传，即时显示）
   const reader = new FileReader()
   reader.onload = (e) => {
-    const result = e.target?.result as string
-    referenceImagePreview.value = result
-    referenceImageBase64.value = result
+    referenceImagePreview.value = e.target?.result as string
   }
   reader.readAsDataURL(file)
+
+  // 上传图片到服务器，获取 HTTP URL
+  isUploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('/api/upload/image', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      throw new Error(err.error || `上传失败 (${response.status})`)
+    }
+
+    const data = await response.json()
+    referenceImageUrl.value = data.url
+    // 清空旧的 Base64（URL 优先，节省内存）
+    referenceImageBase64.value = ''
+
+    ElMessage.success('参考图上传成功')
+    console.log('📤 参考图已上传，URL:', data.url)
+
+  } catch (error) {
+    console.error('上传参考图失败:', error)
+    ElMessage.error('上传参考图失败: ' + (error instanceof Error ? error.message : '未知错误'))
+    // 上传失败时退回 Base64 兜底（不清空预览）
+    const fallbackReader = new FileReader()
+    fallbackReader.onload = (e) => {
+      referenceImageBase64.value = e.target?.result as string
+    }
+    fallbackReader.readAsDataURL(file)
+  } finally {
+    isUploading.value = false
+  }
 }
 
 const removeReferenceImage = () => {
   referenceImageBase64.value = ''
+  referenceImageUrl.value = ''
   referenceImagePreview.value = ''
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -474,6 +524,19 @@ initializeComponent()
 
   &.has-image:hover .image-overlay {
     opacity: 1;
+  }
+
+  .upload-url-hint {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #52c41a;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 1px 6px;
+    border-radius: 3px;
   }
 }
 

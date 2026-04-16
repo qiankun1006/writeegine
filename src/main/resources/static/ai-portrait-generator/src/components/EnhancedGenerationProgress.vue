@@ -1,130 +1,76 @@
 <template>
   <div class="enhanced-generation-progress">
-    <!-- 步骤进度条 -->
-    <div class="progress-steps">
+
+    <!-- 整体进度条 -->
+    <div class="overall-progress-bar">
+      <div class="bar-track">
+        <div class="bar-fill" :style="{ width: overallProgress + '%' }"></div>
+      </div>
+      <span class="bar-label">{{ overallProgress }}%</span>
+    </div>
+
+    <!-- 8步流水线状态列表 -->
+    <div class="pipeline-steps">
       <div
-        v-for="(step, index) in enhancedSteps"
-        :key="step.id"
+        v-for="step in displaySteps"
+        :key="step.stepNo"
         class="step-item"
-        :class="{
-          'active': stepIndex > index,
-          'current': stepIndex === index,
-          'pending': stepIndex < index
-        }"
-        @click="jumpToStep(index)"
+        :class="'step-' + step.status.toLowerCase()"
+        @click="toggleExpand(step.stepNo)"
       >
-        <div class="step-icon">
-          <div class="icon-circle">
-            <el-icon v-if="stepIndex > index"><Check /></el-icon>
-            <span v-else>{{ index + 1 }}</span>
-          </div>
+        <!-- 左侧：状态图标 -->
+        <div class="step-icon" :title="statusLabel(step.status)">
+          <span v-if="step.status === 'SUCCESS'"    class="icon icon-success">✓</span>
+          <span v-else-if="step.status === 'PROCESSING'" class="icon icon-spinning">⟳</span>
+          <span v-else-if="step.status === 'FAILED'"     class="icon icon-failed">✗</span>
+          <span v-else                                    class="icon icon-pending">○</span>
         </div>
+
+        <!-- 中间：步骤信息 -->
         <div class="step-info">
-          <div class="step-title">{{ step.title }}</div>
-          <div class="step-description">{{ step.description }}</div>
-          <div class="step-duration" v-if="stepIndex > index && step.duration">
-            <el-icon><Timer /></el-icon>
-            <span>{{ formatDuration(step.duration) }}</span>
+          <div class="step-header">
+            <span class="step-number">步骤{{ step.stepNo }}</span>
+            <span class="step-name">{{ step.stepName }}</span>
+            <span v-if="step.durationMs" class="step-duration">{{ formatDuration(step.durationMs) }}</span>
+          </div>
+          <div v-if="step.status === 'FAILED' && step.errorMessage" class="step-error">
+            {{ step.errorMessage }}
+          </div>
+          <!-- 展开：中间结果缩略图 -->
+          <div v-if="expandedStep === step.stepNo && step.outputImageUrl" class="step-preview">
+            <img :src="step.outputImageUrl" :alt="step.stepName + ' 中间结果'" />
           </div>
         </div>
-        <div class="step-progress" v-if="stepIndex === index">
-          <el-progress
-            :percentage="stepProgress"
-            :stroke-width="6"
-            :color="stepProgressColor"
-            :show-text="false"
-          />
+
+        <!-- 右侧：可展开指示（有中间结果图时才显示） -->
+        <div v-if="step.outputImageUrl" class="step-expand-hint"
+             :title="expandedStep === step.stepNo ? '收起' : '查看中间结果'">
+          {{ expandedStep === step.stepNo ? '▲' : '▼' }}
         </div>
       </div>
     </div>
 
-    <!-- 进度详情 -->
-    <div class="progress-details">
-      <!-- 当前步骤详情 -->
-      <div class="current-step-section" v-if="currentStep">
-        <div class="section-header">
-          <h3>当前步骤：{{ currentStep.title }}</h3>
-          <div class="step-progress-info">
-            <el-tag :type="stepProgressColorType">{{ stepProgress }}%</el-tag>
-            <span class="estimated-time" v-if="estimatedTime > 0">
-              预计剩余时间：{{ formatTime(estimatedTime) }}
-            </span>
-          </div>
-        </div>
-        <div class="step-description-box">
-          <p>{{ currentStep.detailedDescription }}</p>
-        </div>
-        <div class="step-technologies">
-          <span class="tech-tag" v-for="tech in currentStep.technologies" :key="tech">
-            <el-tag size="small">{{ tech }}</el-tag>
-          </span>
+    <!-- 生成日志 -->
+    <div class="logs-section" v-if="logs.length > 0">
+      <div class="logs-header">
+        <span>生成日志</span>
+        <div class="logs-controls">
+          <button class="ctrl-btn" @click="clearLogs">清空</button>
+          <button class="ctrl-btn" @click="autoScroll = !autoScroll">
+            {{ autoScroll ? '暂停滚动' : '自动滚动' }}
+          </button>
         </div>
       </div>
-
-      <!-- 资源使用情况 -->
-      <div class="resource-section">
-        <div class="section-header">
-          <h3>资源使用情况</h3>
-          <span class="resource-status">{{ resourceStatus }}</span>
-        </div>
-        <div class="resource-metrics">
-          <div class="metric-item">
-            <div class="metric-label">CPU 使用率</div>
-            <el-progress
-              :percentage="cpuUsage"
-              :stroke-width="12"
-              :color="getProgressColor(cpuUsage)"
-            />
-            <div class="metric-value">{{ cpuUsage }}%</div>
-          </div>
-          <div class="metric-item">
-            <div class="metric-label">GPU 使用率</div>
-            <el-progress
-              :percentage="gpuUsage"
-              :stroke-width="12"
-              :color="getProgressColor(gpuUsage)"
-            />
-            <div class="metric-value">{{ gpuUsage }}%</div>
-          </div>
-          <div class="metric-item">
-            <div class="metric-label">内存使用</div>
-            <el-progress
-              :percentage="memoryUsage"
-              :stroke-width="12"
-              :color="getProgressColor(memoryUsage)"
-            />
-            <div class="metric-value">{{ memoryUsage }}%</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 生成日志 -->
-      <div class="logs-section" v-if="logs.length > 0">
-        <div class="section-header">
-          <h3>生成日志</h3>
-          <div class="logs-controls">
-            <el-button size="small" @click="clearLogs">清空</el-button>
-            <el-button size="small" @click="toggleAutoScroll">
-              {{ autoScroll ? '暂停滚动' : '自动滚动' }}
-            </el-button>
-          </div>
-        </div>
-        <div class="logs-container" ref="logsContainer">
-          <div
-            v-for="(log, index) in logs"
-            :key="index"
-            class="log-item"
-            :class="log.type"
-          >
-            <span class="log-time">{{ formatTime(log.timestamp) }}</span>
-            <el-tag size="small" :type="getLogTypeColor(log.type)">
-              {{ getLogTypeText(log.type) }}
-            </el-tag>
-            <span class="log-message">{{ log.message }}</span>
-            <span class="log-duration" v-if="log.duration">
-              ({{ formatDuration(log.duration) }})
-            </span>
-          </div>
+      <div class="logs-container" ref="logsContainer">
+        <div
+          v-for="(logItem, index) in logs"
+          :key="index"
+          class="log-item"
+          :class="'log-' + logItem.type"
+        >
+          <span class="log-time">{{ formatLogTime(logItem.timestamp) }}</span>
+          <span class="log-tag">{{ logTypeText(logItem.type) }}</span>
+          <span class="log-message">{{ logItem.message }}</span>
         </div>
       </div>
     </div>
@@ -133,660 +79,657 @@
 
 <script setup lang="ts">
 import {computed, nextTick, onUnmounted, ref} from 'vue'
-import {Check, Timer} from '@element-plus/icons-vue'
+import axios from 'axios'
 
-interface Step {
-  id: string
-  title: string
-  description: string
-  detailedDescription: string
-  technologies: string[]
-  estimatedDuration: number // 秒
-  duration?: number // 实际耗时（秒）
+// ======================================================
+// 类型定义
+// ======================================================
+
+interface StepStatus {
+  stepNo: number
+  stepName: string
+  stepKey: string
+  status: 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'FAILED'
+  progress: number
+  outputImageUrl?: string
+  startedAt?: string
+  completedAt?: string
+  durationMs?: number
+  errorMessage?: string
 }
 
 interface Log {
   timestamp: number
   type: 'info' | 'success' | 'warning' | 'error' | 'processing'
   message: string
-  duration?: number
 }
 
-// 8步增强流水线步骤
-const enhancedSteps = ref<Step[]>([
-  {
-    id: 'openpose',
-    title: '生成OpenPose骨骼模板',
-    description: '创建标准T-pose骨骼线图',
-    detailedDescription: '正在根据选择的OpenPose模板生成标准T-pose骨骼线图，作为AI生成的姿势约束基准。',
-    technologies: ['OpenPose', 'T-Pose', '骨骼关键点'],
-    estimatedDuration: 5
-  },
-  {
-    id: 'controlnet',
-    title: '应用ControlNet约束',
-    description: '使用姿势约束指导AI生成',
-    detailedDescription: '正在应用ControlNet OpenPose约束，确保生成的图像遵循正确的骨骼结构。',
-    technologies: ['ControlNet', 'OpenPose', '姿势约束'],
-    estimatedDuration: 15
-  },
-  {
-    id: 'ip-adapter',
-    title: '提取IP-Adapter特征',
-    description: '从参考图提取风格特征',
-    detailedDescription: '正在使用IP-Adapter从参考图像中提取风格特征，以保持角色一致性。',
-    technologies: ['IP-Adapter', '特征提取', '风格迁移'],
-    estimatedDuration: 10
-  },
-  {
-    id: 'flux-generation',
-    title: 'Flux.1-dev高清生成',
-    description: '生成高质量人物图像',
-    detailedDescription: '正在使用Flux.1-dev模型生成2048x2048高清人物图像，结合ControlNet约束和IP-Adapter特征。',
-    technologies: ['Flux.1-dev', '高清生成', 'AI绘画'],
-    estimatedDuration: 30
-  },
-  {
-    id: 'background-removal',
-    title: '背景去除',
-    description: '移除图像背景',
-    detailedDescription: '正在使用RMBG-2.0模型去除背景，生成透明背景的PNG图像。',
-    technologies: ['RMBG-2.0', '背景去除', '透明背景'],
-    estimatedDuration: 10
-  },
-  {
-    id: 'sam-segmentation',
-    title: 'SAM 2精确分割',
-    description: '分割人体肢体部件',
-    detailedDescription: '正在使用SAM 2模型基于OpenPose关键点进行精确的肢体部件分割。',
-    technologies: ['SAM 2', '语义分割', '部件提取'],
-    estimatedDuration: 20
-  },
-  {
-    id: 'skeleton-binding',
-    title: '生成骨骼绑定数据',
-    description: '创建Spine兼容数据',
-    detailedDescription: '正在生成Spine/DragonBones兼容的骨骼绑定数据，包括骨骼结构和动画参数。',
-    technologies: ['骨骼绑定', 'Spine', 'DragonBones'],
-    estimatedDuration: 15
-  },
-  {
-    id: 'export-packaging',
-    title: '打包导出',
-    description: '打包为游戏可用资源',
-    detailedDescription: '正在将所有部件和骨骼数据打包为ZIP文件，包含多种格式的游戏引擎资源。',
-    technologies: ['ZIP打包', '资源导出', '多格式支持'],
-    estimatedDuration: 5
-  }
-])
+// ======================================================
+// Props / Emits
+// ======================================================
 
-// 进度相关状态
-const stepIndex = ref(0)
-const stepProgress = ref(0)
+const props = defineProps<{
+  taskId?: string
+}>()
+
+const emit = defineEmits<{
+  (e: 'complete', taskId: string): void
+  (e: 'failed', taskId: string, error: string): void
+}>()
+
+// ======================================================
+// 状态
+// ======================================================
+
+/** 从后端返回的步骤列表（真实数据） */
+const serverSteps = ref<StepStatus[]>([])
+
+/** 整体进度 0-100 */
+const overallProgress = ref(0)
+
+/** 当前展开显示中间结果的步骤序号 */
+const expandedStep = ref<number | null>(null)
+
+/** 日志列表 */
 const logs = ref<Log[]>([])
 const autoScroll = ref(true)
+const logsContainer = ref<HTMLElement | null>(null)
 
-// 资源监控状态
-const cpuUsage = ref(0)
-const gpuUsage = ref(0)
-const memoryUsage = ref(0)
-const resourceUpdateInterval = ref<NodeJS.Timeout | null>(null)
+/** SSE 连接实例 */
+let sseSource: EventSource | null = null
 
-// 当前步骤信息
-const currentStep = computed(() => {
-  return enhancedSteps.value[stepIndex.value]
+/**
+ * 轮询降级定时器
+ * 仅当 SSE 连接失败或浏览器不支持时启用
+ */
+let pollingTimer: ReturnType<typeof setInterval> | null = null
+
+/** SSE 重连次数，超过阈值后降级到轮询 */
+let sseRetryCount = 0
+const SSE_MAX_RETRY = 3
+
+// ======================================================
+// 计算属性
+// ======================================================
+
+/**
+ * 若后端还未返回步骤数据，则展示默认的8步占位（均为 PENDING）
+ */
+const displaySteps = computed<StepStatus[]>(() => {
+  if (serverSteps.value.length > 0) {
+    return serverSteps.value
+  }
+  // 默认占位
+  const defaultNames = [
+    '生成T-pose骨骼线图',
+    '应用ControlNet姿势约束',
+    '提取IP-Adapter特征',
+    'Flux.1-dev高清生成',
+    '背景去除',
+    'SAM 2肢体分割',
+    '骨骼绑定数据生成',
+    '保存最终结果'
+  ]
+  const defaultKeys = [
+    'skeleton_line', 'controlnet', 'ip_adapter', 'flux_generate',
+    'bg_remove', 'sam_segment', 'binding_data', 'save_result'
+  ]
+  return defaultNames.map((name, i) => ({
+    stepNo:   i + 1,
+    stepName: name,
+    stepKey:  defaultKeys[i],
+    status:   'PENDING' as const,
+    progress: 0
+  }))
 })
 
-// 进度条颜色
-const stepProgressColor = computed(() => {
-  if (stepProgress.value < 50) return '#409eff'
-  if (stepProgress.value < 80) return '#e6a23c'
-  return '#67c23a'
-})
+// ======================================================
+// SSE 主逻辑
+// ======================================================
 
-const stepProgressColorType = computed(() => {
-  if (stepProgress.value < 50) return 'primary'
-  if (stepProgress.value < 80) return 'warning'
-  return 'success'
-})
+/**
+ * 启动 SSE 订阅。
+ * 若浏览器不支持 EventSource 或 SSE 连接反复失败，自动降级到轮询。
+ */
+function startSse(taskId: string) {
+  if (typeof EventSource === 'undefined') {
+    addLog('warning', 'SSE 不支持，降级轮询')
+    startPolling(taskId)
+    return
+  }
 
-// 预计剩余时间
-const estimatedTime = computed(() => {
-  const totalEstimated = enhancedSteps.value
-    .slice(stepIndex.value)
-    .reduce((sum, step) => sum + step.estimatedDuration, 0)
-  return Math.max(0, totalEstimated - stepIndex.value * 5) // 减去已完成步骤的预估时间
-})
+  addLog('processing', `SSE 订阅任务进度: ${taskId}`)
+  closeSse()
+  sseRetryCount = 0
 
-// 资源状态
-const resourceStatus = computed(() => {
-  const maxUsage = Math.max(cpuUsage.value, gpuUsage.value, memoryUsage.value)
-  if (maxUsage > 80) return '资源紧张'
-  if (maxUsage > 60) return '正常'
-  return '空闲'
-})
+  const url = `/api/ai/portrait/skeleton/enhanced-stream/${taskId}`
+  sseSource = new EventSource(url)
 
-// 格式化时间
-const formatTime = (seconds: number) => {
-  if (seconds < 60) return `${seconds}秒`
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}分${remainingSeconds}秒`
-}
+  sseSource.onmessage = (event) => {
+    handleSseData(event.data, taskId)
+  }
 
-const formatDuration = (seconds: number) => {
-  return formatTime(seconds)
-}
-
-// 格式化日志时间
-const formatLogTime = (timestamp: number) => {
-  const date = new Date(timestamp)
-  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`
-}
-
-// 获取日志类型颜色
-const getLogTypeColor = (type: Log['type']) => {
-  switch (type) {
-    case 'info': return ''
-    case 'success': return 'success'
-    case 'warning': return 'warning'
-    case 'error': return 'danger'
-    case 'processing': return 'primary'
-    default: return ''
+  sseSource.onerror = () => {
+    sseRetryCount++
+    addLog('warning', `SSE 连接中断（第 ${sseRetryCount} 次），${sseRetryCount >= SSE_MAX_RETRY ? '降级到轮询' : '等待重连…'}`)
+    if (sseRetryCount >= SSE_MAX_RETRY) {
+      closeSse()
+      // SSE 多次失败，降级到轮询
+      startPolling(taskId)
+    }
+    // 未超限时 EventSource 会自动重连，无需手动处理
   }
 }
 
-// 获取日志类型文本
-const getLogTypeText = (type: Log['type']) => {
+/** 解析并处理 SSE 数据帧 */
+function handleSseData(raw: string, taskId: string) {
+  try {
+    const data = JSON.parse(raw)
+
+    // 握手确认帧，忽略
+    if (data.event === 'connected') {
+      addLog('info', 'SSE 连接已建立')
+      return
+    }
+
+    // 进度帧
+    if (data.progress !== undefined) {
+      overallProgress.value = data.progress
+    }
+    if (Array.isArray(data.steps) && data.steps.length > 0) {
+      serverSteps.value = data.steps
+    }
+    if (data.progressMessage) {
+      addLog('info', data.progressMessage)
+    }
+
+    // 终态处理
+    if (data.status === 'SUCCESS') {
+      closeSse()
+      clearPolling()
+      addLog('success', '骨骼素材生成完成！')
+      emit('complete', taskId)
+    } else if (data.status === 'FAILED') {
+      closeSse()
+      clearPolling()
+      addLog('error', '生成失败: ' + (data.errorMessage || '未知错误'))
+      emit('failed', taskId, data.errorMessage || '未知错误')
+    }
+  } catch (e) {
+    addLog('warning', 'SSE 数据解析失败: ' + raw)
+  }
+}
+
+/** 关闭 SSE 连接 */
+function closeSse() {
+  if (sseSource) {
+    sseSource.close()
+    sseSource = null
+  }
+}
+
+// ======================================================
+// 轮询降级逻辑（SSE 不可用时启用）
+// ======================================================
+
+function startPolling(taskId: string) {
+  addLog('processing', `开始轮询任务状态: ${taskId}`)
+  fetchStatus(taskId)
+  pollingTimer = setInterval(() => fetchStatus(taskId), 2000)
+}
+
+async function fetchStatus(taskId: string) {
+  try {
+    const res = await axios.get(`/api/ai/portrait/skeleton/enhanced-status/${taskId}`)
+    const data = res.data
+
+    overallProgress.value = data.progress ?? 0
+
+    if (Array.isArray(data.steps) && data.steps.length > 0) {
+      serverSteps.value = data.steps
+    }
+    if (data.progressMessage) {
+      addLog('info', data.progressMessage)
+    }
+
+    if (data.status === 'SUCCESS') {
+      clearPolling()
+      addLog('success', '骨骼素材生成完成！')
+      emit('complete', taskId)
+    } else if (data.status === 'FAILED') {
+      clearPolling()
+      addLog('error', '生成失败: ' + (data.errorMessage || '未知错误'))
+      emit('failed', taskId, data.errorMessage || '未知错误')
+    }
+  } catch (err: any) {
+    addLog('warning', '轮询请求失败: ' + (err?.message || err))
+  }
+}
+
+function clearPolling() {
+  if (pollingTimer !== null) {
+    clearInterval(pollingTimer)
+    pollingTimer = null
+  }
+}
+
+// ======================================================
+// 公开方法（父组件调用）
+// ======================================================
+
+/**
+ * 开始追踪指定任务 ID 的进度（优先 SSE，降级轮询）
+ */
+function trackTask(taskId: string) {
+  resetProgress()
+  startSse(taskId)
+}
+
+/**
+ * 重置进度（开始新任务前调用）
+ */
+function resetProgress() {
+  closeSse()
+  clearPolling()
+  serverSteps.value = []
+  overallProgress.value = 0
+  expandedStep.value = null
+  logs.value = []
+}
+
+defineExpose({ trackTask, resetProgress })
+
+// ======================================================
+// 如果父组件在 mount 时就传入了 taskId，自动订阅
+// ======================================================
+if (props.taskId) {
+  trackTask(props.taskId)
+}
+
+// ======================================================
+// 交互
+// ======================================================
+
+function toggleExpand(stepNo: number) {
+  expandedStep.value = expandedStep.value === stepNo ? null : stepNo
+}
+
+// ======================================================
+// 格式化
+// ======================================================
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`
+  const s = Math.round(ms / 1000)
+  if (s < 60) return `${s}s`
+  return `${Math.floor(s / 60)}m${s % 60}s`
+}
+
+function formatLogTime(ts: number): string {
+  const d = new Date(ts)
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
+function pad(n: number): string {
+  return n.toString().padStart(2, '0')
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'SUCCESS':    return '已完成'
+    case 'PROCESSING': return '进行中'
+    case 'PENDING':    return '等待中'
+    case 'FAILED':     return '失败'
+    default:           return status
+  }
+}
+
+function logTypeText(type: string): string {
   switch (type) {
-    case 'info': return '信息'
-    case 'success': return '成功'
-    case 'warning': return '警告'
-    case 'error': return '错误'
+    case 'info':       return '信息'
+    case 'success':    return '成功'
+    case 'warning':    return '警告'
+    case 'error':      return '错误'
     case 'processing': return '处理中'
-    default: return type
+    default:           return type
   }
 }
 
-// 获取进度条颜色
-const getProgressColor = (percentage: number) => {
-  if (percentage < 50) return '#409eff'
-  if (percentage < 80) return '#e6a23c'
-  return '#67c23a'
-}
+// ======================================================
+// 日志
+// ======================================================
 
-// 跳转到指定步骤
-const jumpToStep = (index: number) => {
-  if (index <= stepIndex.value) {
-    stepIndex.value = index
-    stepProgress.value = 0
-    addLog('processing', `跳转到步骤: ${enhancedSteps.value[index].title}`)
-  }
-}
-
-// 添加日志
-const addLog = (type: Log['type'], message: string, duration?: number) => {
-  logs.value.push({
-    timestamp: Date.now(),
-    type,
-    message,
-    duration
-  })
-
+function addLog(type: Log['type'], message: string) {
+  logs.value.push({ timestamp: Date.now(), type, message })
   if (autoScroll.value) {
     nextTick(() => {
-      const container = document.querySelector('.logs-container')
-      if (container) {
-        container.scrollTop = container.scrollHeight
+      if (logsContainer.value) {
+        logsContainer.value.scrollTop = logsContainer.value.scrollHeight
       }
     })
   }
 }
 
-// 清空日志
-const clearLogs = () => {
+function clearLogs() {
   logs.value = []
 }
 
-// 切换自动滚动
-const toggleAutoScroll = () => {
-  autoScroll.value = !autoScroll.value
-}
+// ======================================================
+// 生命周期
+// ======================================================
 
-// 模拟资源监控
-const startResourceMonitoring = () => {
-  resourceUpdateInterval.value = setInterval(() => {
-    // 模拟资源使用情况
-    cpuUsage.value = Math.min(100, Math.max(20, Math.random() * 100))
-    gpuUsage.value = Math.min(100, Math.max(30, Math.random() * 100))
-    memoryUsage.value = Math.min(100, Math.max(40, Math.random() * 100))
-  }, 2000)
-}
-
-// 模拟进度更新（实际使用时应该从后端接收WebSocket更新）
-const simulateProgress = () => {
-  const totalSteps = enhancedSteps.value.length
-
-  // 重置进度
-  stepIndex.value = 0
-  stepProgress.value = 0
-  logs.value = []
-
-  // 开始模拟
-  const stepInterval = setInterval(() => {
-    // 更新当前步骤进度
-    if (stepProgress.value < 100) {
-      stepProgress.value += 5
-
-      // 模拟日志
-      if (stepProgress.value % 20 === 0) {
-        addLog('info', `${currentStep.value.title} 进度 ${stepProgress.value}%`)
-      }
-    } else {
-      // 记录当前步骤耗时
-      const stepDuration = currentStep.value.estimatedDuration
-      enhancedSteps.value[stepIndex.value].duration = stepDuration
-      addLog('success', `${currentStep.value.title} 完成 (${formatDuration(stepDuration)})`, stepDuration)
-
-      // 移动到下一步骤
-      stepIndex.value++
-      stepProgress.value = 0
-
-      // 如果所有步骤完成
-      if (stepIndex.value >= totalSteps) {
-        clearInterval(stepInterval)
-        addLog('success', '8步AI骨骼生成流水线完成！')
-        return
-      }
-
-      // 开始新步骤
-      addLog('info', `开始: ${currentStep.value.title}`)
-    }
-  }, 500) // 500ms 更新一次进度
-}
-
-// 开始模拟生成（实际使用时应该由父组件调用）
-const startSimulation = () => {
-  simulateProgress()
-  startResourceMonitoring()
-}
-
-// 组件销毁时清理
 onUnmounted(() => {
-  if (resourceUpdateInterval.value) {
-    clearInterval(resourceUpdateInterval.value)
-  }
+  closeSse()
+  clearPolling()
 })
-
-// 暴露方法给父组件
-defineExpose({
-  startSimulation,
-  updateProgress: (step: number, progress: number, message?: string) => {
-    stepIndex.value = step
-    stepProgress.value = progress
-    if (message) {
-      addLog('info', message)
-    }
-  },
-  addLog,
-  resetProgress: () => {
-    stepIndex.value = 0
-    stepProgress.value = 0
-    enhancedSteps.value.forEach(step => {
-      delete step.duration
-    })
-    logs.value = []
-  }
-})
-
-// 初始化日志
-addLog('info', '8步AI骨骼生成流水线就绪')
-addLog('processing', '等待开始生成...')
 </script>
 
 <style scoped lang="scss">
+/* ===================== 整体容器 ===================== */
 .enhanced-generation-progress {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   padding: 20px;
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e4e7ed;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-.progress-steps {
+/* ===================== 整体进度条 ===================== */
+.overall-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .bar-track {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #409eff, #1677ff);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  .bar-label {
+    min-width: 40px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1677ff;
+  }
+}
+
+/* ===================== 步骤列表 ===================== */
+.pipeline-steps {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .step-item {
-  position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid #e4e7ed;
-  background: #f8f9fa;
+  background: #f9fafb;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  user-select: none;
 
   &:hover {
     background: #f0f7ff;
-    border-color: #c0e0ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.1);
+    border-color: #c0d8ff;
+    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.08);
   }
 
-  &.active {
-    background: #e6f7ff;
-    border-color: #91d5ff;
-    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
-
-    .icon-circle {
-      background: #409eff;
-      color: white;
-    }
+  /* PENDING：置灰弱化 */
+  &.step-pending {
+    opacity: 0.5;
   }
 
-  &.current {
-    background: linear-gradient(135deg, #f0f7ff 0%, #e6f7ff 100%);
-    border-color: #409eff;
-    border-width: 2px;
-    box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.1);
-
-    .icon-circle {
-      background: #1677ff;
-      color: white;
-      box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
-    }
-
-    .step-title {
-      color: #1677ff;
-      font-weight: 600;
-    }
+  /* PROCESSING：蓝色高亮，动画旋转 */
+  &.step-processing {
+    background: rgba(59, 130, 246, 0.06);
+    border-color: #91caff;
+    box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.08);
   }
 
-  &.pending {
-    opacity: 0.7;
+  /* SUCCESS：淡绿色 */
+  &.step-success {
+    background: rgba(34, 197, 94, 0.06);
+    border-color: #b7eb8f;
+    opacity: 1;
+  }
 
-    &:hover {
-      opacity: 1;
-    }
+  /* FAILED：淡红色 */
+  &.step-failed {
+    background: rgba(239, 68, 68, 0.06);
+    border-color: #ffa39e;
   }
 }
 
+/* ===================== 状态图标 ===================== */
 .step-icon {
   flex-shrink: 0;
-}
-
-.icon-circle {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
   border-radius: 50%;
-  background: #d9d9d9;
-  color: #8c8c8c;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-
-  .el-icon {
-    font-size: 18px;
-  }
 }
 
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.icon-success {
+  background: #52c41a;
+  color: #fff;
+}
+
+.icon-spinning {
+  background: #1677ff;
+  color: #fff;
+  animation: spin 1s linear infinite;
+}
+
+.icon-failed {
+  background: #f5222d;
+  color: #fff;
+}
+
+.icon-pending {
+  background: transparent;
+  color: #bfbfbf;
+  border: 2px solid #bfbfbf;
+  font-size: 10px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ===================== 步骤信息 ===================== */
 .step-info {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  min-width: 0;
 }
 
-.step-title {
-  font-size: 15px;
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.step-number {
+  font-size: 12px;
+  color: #8c8c8c;
+  background: #f0f0f0;
+  padding: 1px 6px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.step-name {
+  font-size: 14px;
   font-weight: 500;
   color: #303133;
 }
 
-.step-description {
-  font-size: 13px;
-  color: #606266;
+.step-duration {
+  font-size: 12px;
+  color: #52c41a;
+  background: rgba(82, 196, 26, 0.1);
+  padding: 1px 6px;
+  border-radius: 10px;
 }
 
-.step-duration {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.step-error {
+  margin-top: 4px;
   font-size: 12px;
-  color: #909399;
+  color: #f5222d;
+  background: rgba(245, 34, 45, 0.06);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
 
-  .el-icon {
-    font-size: 12px;
+/* ===================== 中间结果预览 ===================== */
+.step-preview {
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e4e7ed;
+
+  img {
+    display: block;
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    background: #f5f5f5;
   }
 }
 
-.step-progress {
-  width: 150px;
+/* ===================== 展开箭头 ===================== */
+.step-expand-hint {
   flex-shrink: 0;
+  font-size: 10px;
+  color: #8c8c8c;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+  align-self: center;
+
+  &:hover {
+    color: #1677ff;
+  }
 }
 
-.progress-details {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+/* ===================== 日志区域 ===================== */
+.logs-section {
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  overflow: hidden;
 }
 
-.section-header {
+.logs-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-
-  h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #303133;
-  }
-}
-
-.current-step-section {
-  padding: 16px;
-  background: linear-gradient(135deg, #f0f7ff 0%, #e6f7ff 100%);
-  border-radius: 10px;
-  border: 1px solid #91d5ff;
-
-  .step-progress-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .estimated-time {
-      font-size: 13px;
-      color: #606266;
-    }
-  }
-
-  .step-description-box {
-    padding: 12px;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-    margin: 12px 0;
-
-    p {
-      margin: 0;
-      font-size: 14px;
-      line-height: 1.5;
-      color: #303133;
-    }
-  }
-
-  .step-technologies {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-
-    .tech-tag {
-      :deep(.el-tag) {
-        font-size: 11px;
-        padding: 4px 8px;
-      }
-    }
-  }
-}
-
-.resource-section {
-  padding: 16px;
+  padding: 10px 14px;
   background: #f8f9fa;
-  border-radius: 10px;
-  border: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 13px;
+  font-weight: 600;
+  color: #606266;
+}
 
-  .resource-status {
-    font-size: 13px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    background: #e6f7ff;
-    color: #409eff;
-    font-weight: 500;
-  }
+.logs-controls {
+  display: flex;
+  gap: 6px;
+}
 
-  .resource-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+.ctrl-btn {
+  font-size: 12px;
+  padding: 3px 8px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #606266;
 
-    .metric-item {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-
-      .metric-label {
-        font-size: 13px;
-        font-weight: 500;
-        color: #606266;
-      }
-
-      :deep(.el-progress) {
-        .el-progress-bar {
-          .el-progress-bar__outer {
-            border-radius: 4px;
-          }
-
-          .el-progress-bar__inner {
-            border-radius: 4px;
-            transition: width 0.5s ease;
-          }
-        }
-      }
-
-      .metric-value {
-        font-size: 14px;
-        font-weight: 600;
-        color: #303133;
-        text-align: right;
-      }
-    }
+  &:hover {
+    border-color: #1677ff;
+    color: #1677ff;
   }
 }
 
-.logs-section {
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  border: 1px solid #e9ecef;
+.logs-container {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 8px 12px;
+  background: #fff;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
 
-  .logs-controls {
-    display: flex;
-    gap: 8px;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: #f5f5f5; border-radius: 2px; }
+  &::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 2px; }
+}
+
+.log-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child { border-bottom: none; }
+
+  .log-time {
+    color: #8c8c8c;
+    min-width: 56px;
+    flex-shrink: 0;
   }
 
-  .logs-container {
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 12px;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-    font-size: 12px;
-
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: #f5f5f5;
-      border-radius: 3px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 3px;
-
-      &:hover {
-        background: #a8a8a8;
-      }
-    }
+  .log-tag {
+    min-width: 42px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+    text-align: center;
+    flex-shrink: 0;
   }
 
-  .log-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px solid #f0f0f0;
+  .log-message { flex: 1; color: #303133; }
 
-    &:last-child {
-      border-bottom: none;
-    }
-
-    &.success {
-      background: #f6ffed;
-    }
-
-    &.warning {
-      background: #fff7e6;
-    }
-
-    &.error {
-      background: #fff2f0;
-    }
-
-    &.processing {
-      background: #f0f7ff;
-    }
-
-    .log-time {
-      color: #8c8c8c;
-      min-width: 60px;
-    }
-
-    .log-message {
-      flex: 1;
-      color: #303133;
-    }
-
-    .log-duration {
-      color: #909399;
-      font-style: italic;
-    }
-
-    :deep(.el-tag) {
-      height: 20px;
-      line-height: 20px;
-      font-size: 11px;
-      min-width: 50px;
-      text-align: center;
-    }
-  }
+  &.log-success  { .log-tag { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; } }
+  &.log-error    { .log-tag { background: #fff2f0; color: #f5222d; border: 1px solid #ffa39e; } }
+  &.log-warning  { .log-tag { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; } }
+  &.log-processing { .log-tag { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; } }
+  &.log-info     { .log-tag { background: #f5f5f5; color: #8c8c8c; border: 1px solid #d9d9d9; } }
 }
 </style>
 

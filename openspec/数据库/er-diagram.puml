@@ -1,0 +1,330 @@
+@startuml writeengine-er-diagram
+' ============================================================
+' WriteEngine 数据库 E-R 图
+' 生成时间：2026-04-15
+' 说明：项目未使用显式外键约束，关联关系为应用层隐式关联
+' ============================================================
+
+!define TABLE(name,desc) entity name as "desc" << (T,#AADDFF) >>
+!define PK(x) <u>x</u>
+!define FK(x) <i>x</i>
+
+skinparam entity {
+  BackgroundColor #F8FBFF
+  BorderColor     #4A90D9
+  FontColor       #1A1A2E
+  FontSize        13
+}
+skinparam arrow {
+  Color           #4A90D9
+  FontColor       #555
+  FontSize        11
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor     #F0C040
+}
+
+' ============================================================
+' 用户域
+' ============================================================
+
+entity user {
+  + PK(id) : VARCHAR(64)
+  --
+  username     : VARCHAR(100) <<UK>>
+  email        : VARCHAR(255) <<UK>>
+  avatar_url   : VARCHAR(500)
+  last_login_at: TIMESTAMP
+  created_at   : TIMESTAMP
+  updated_at   : TIMESTAMP
+}
+
+' ============================================================
+' AI 肖像生成域
+' ============================================================
+
+entity ai_portrait_generation {
+  + PK(id) : BIGINT <<AI>>
+  --
+  FK(task_id)          : VARCHAR(64)  <<UK>>
+  FK(user_id)          : VARCHAR(64)
+  prompt               : TEXT
+  negative_prompt      : TEXT
+  reference_image_url  : VARCHAR(500)
+  image_strength       : DECIMAL(5,2)
+  width                : INT
+  height               : INT
+  provider             : VARCHAR(50)
+  model_name           : VARCHAR(100)
+  model_version        : VARCHAR(50)
+  model_weight         : DECIMAL(5,2)
+  style_preset         : VARCHAR(100)
+  inference_steps      : INT
+  sampler_name         : VARCHAR(50)
+  seed                 : BIGINT
+  generation_count     : INT
+  face_enhance         : BOOLEAN
+  output_format        : VARCHAR(20)
+  generated_image_urls : TEXT
+  status               : VARCHAR(20)
+  error_message        : TEXT
+  generation_time      : INT
+  queue_wait_time      : INT
+  metadata             : JSON
+  completed_at         : TIMESTAMP
+  created_at           : TIMESTAMP
+  updated_at           : TIMESTAMP
+}
+
+entity ai_portrait_task {
+  + PK(id) : BIGINT <<AI>>
+  --
+  task_id      : VARCHAR(64) <<UK>>
+  FK(generation_id) : BIGINT
+  status       : VARCHAR(20)
+  progress     : INT
+  retry_count  : INT
+  max_retries  : INT
+  last_error   : TEXT
+  metadata     : JSON
+  started_at   : TIMESTAMP
+  completed_at : TIMESTAMP
+  created_at   : TIMESTAMP
+  updated_at   : TIMESTAMP
+}
+
+entity ai_portrait_model_config {
+  + PK(id) : BIGINT <<AI>>
+  --
+  model_name      : VARCHAR(100) <<UK>>
+  display_name    : VARCHAR(100)
+  provider        : VARCHAR(50)
+  endpoint_url    : VARCHAR(500)
+  is_active       : BOOLEAN
+  description     : TEXT
+  supported_styles: JSON
+  max_width       : INT
+  max_height      : INT
+  metadata        : JSON
+  created_at      : TIMESTAMP
+  updated_at      : TIMESTAMP
+}
+
+entity ai_portrait_resource_library {
+  + PK(id) : BIGINT <<AI>>
+  --
+  FK(user_id)       : BIGINT
+  FK(generation_id) : BIGINT
+  name              : VARCHAR(255)
+  image_url         : VARCHAR(255)
+  category          : VARCHAR(50)
+  tags              : VARCHAR(500)
+  description       : TEXT
+  image_width       : INT
+  image_height      : INT
+  image_size        : BIGINT
+  image_format      : VARCHAR(10)
+  generation_params : TEXT
+  rating            : DECIMAL(2,1)
+  usage_count       : INT
+  is_public         : BIT(1)
+  is_archived       : BIT(1)
+  created_at        : DATETIME(6)
+  updated_at        : DATETIME(6)
+}
+
+entity ai_portrait_user_preset {
+  + PK(id) : BIGINT <<AI>>
+  --
+  FK(user_id)        : BIGINT
+  preset_name        : VARCHAR(100)
+  prompt_template    : TEXT
+  negative_prompt    : TEXT
+  preferred_provider : VARCHAR(50)
+  preferred_model    : VARCHAR(100)
+  style_preset       : VARCHAR(50)
+  width              : INT
+  height             : INT
+  inference_steps    : INT
+  sampler_name       : VARCHAR(50)
+  seed               : BIGINT
+  is_favorite        : BIT(1)
+  usage_count        : INT
+  created_at         : DATETIME(6)
+  updated_at         : DATETIME(6)
+}
+
+' ============================================================
+' 骨骼生成流水线域
+' ============================================================
+
+entity skeleton_pipeline_task {
+  + PK(id) : BIGINT <<AI>>
+  --
+  task_id                  : VARCHAR(64) <<UK>>
+  FK(user_id)              : VARCHAR(64)
+  style                    : VARCHAR(50)
+  template_type            : VARCHAR(50)
+  pose                     : VARCHAR(50)
+  prompt                   : TEXT
+  negative_prompt          : TEXT
+  width                    : INT
+  height                   : INT
+  ref_image_url            : VARCHAR(500)
+  status                   : VARCHAR(20)
+  progress                 : INT
+  error_message            : TEXT
+  full_image_url           : VARCHAR(500)
+  skeleton_json_url        : VARCHAR(500)
+  skeleton_spine_url       : VARCHAR(500)
+  skeleton_dragonbones_url : VARCHAR(500)
+  parts_json               : JSON
+  started_at               : TIMESTAMP
+  completed_at             : TIMESTAMP
+  created_at               : TIMESTAMP
+  updated_at               : TIMESTAMP
+}
+
+entity skeleton_pipeline_step {
+  + PK(id) : BIGINT <<AI>>
+  --
+  FK(task_id)      : VARCHAR(64)
+  step_no          : INT
+  step_name        : VARCHAR(100)
+  step_key         : VARCHAR(50)
+  status           : VARCHAR(20)
+  progress         : INT
+  error_message    : TEXT
+  output_image_url : VARCHAR(500)
+  output_data_json : TEXT
+  output_file_url  : VARCHAR(500)
+  duration_ms      : BIGINT
+  started_at       : TIMESTAMP
+  completed_at     : TIMESTAMP
+  created_at       : TIMESTAMP
+  updated_at       : TIMESTAMP
+}
+
+note right of skeleton_pipeline_step
+  UNIQUE KEY (task_id, step_no)
+  FROM_REFERENCE 路径: 6 步
+  FROM_SCRATCH 路径:   7 步
+end note
+
+' ============================================================
+' 通用基础域
+' ============================================================
+
+entity game {
+  + PK(id) : VARCHAR(64)
+  --
+  FK(user_id)   : VARCHAR(64)
+  name          : VARCHAR(255)
+  type          : VARCHAR(50)
+  description   : TEXT
+  thumbnail_url : VARCHAR(500)
+  config        : JSON
+  created_at    : TIMESTAMP
+  updated_at    : TIMESTAMP
+}
+
+entity file_storage {
+  + PK(id) : VARCHAR(64)
+  --
+  FK(user_id)        : VARCHAR(64)
+  filename           : VARCHAR(255)
+  original_filename  : VARCHAR(255)
+  file_type          : VARCHAR(100)
+  file_size          : BIGINT
+  storage_path       : VARCHAR(500)
+  storage_type       : VARCHAR(50)
+  url                : VARCHAR(500)
+  created_at         : TIMESTAMP
+  updated_at         : TIMESTAMP
+}
+
+entity operation_log {
+  + PK(id) : BIGINT <<AI>>
+  --
+  FK(user_id)        : VARCHAR(64)
+  operation_type     : VARCHAR(50)
+  operation_target   : VARCHAR(100)
+  operation_detail   : TEXT
+  ip_address         : VARCHAR(45)
+  user_agent         : TEXT
+  status             : VARCHAR(20)
+  error_message      : TEXT
+  created_at         : TIMESTAMP
+}
+
+entity system_config {
+  + PK(id) : BIGINT <<AI>>
+  --
+  config_key   : VARCHAR(100) <<UK>>
+  config_value : TEXT
+  config_type  : VARCHAR(50)
+  description  : VARCHAR(500)
+  created_at   : TIMESTAMP
+  updated_at   : TIMESTAMP
+}
+
+entity database_version {
+  + PK(id) : BIGINT <<AI>>
+  --
+  version          : INT
+  description      : VARCHAR(500)
+  script_name      : VARCHAR(255)
+  status           : VARCHAR(20)
+  error_message    : TEXT
+  execution_time_ms: BIGINT
+  executed_at      : TIMESTAMP
+}
+
+' ============================================================
+' 关联关系
+' ============================================================
+
+' --- 用户域关联 ---
+user                       ||--o{ ai_portrait_generation       : "user_id (VARCHAR)\n隐式关联"
+user                       ||--o{ game                         : "user_id"
+user                       ||--o{ file_storage                 : "user_id"
+user                       ||--o{ operation_log                : "user_id"
+user                       ||--o{ skeleton_pipeline_task       : "user_id (VARCHAR)\n隐式关联"
+
+' --- AI 肖像域内部关联 ---
+ai_portrait_generation     ||--o{ ai_portrait_task             : "generation_id\n(1:N 支持重试)"
+ai_portrait_generation     ||--o{ ai_portrait_resource_library : "generation_id\n(收藏到资源库)"
+
+note on link
+  ai_portrait_task.generation_id BIGINT
+  → ai_portrait_generation.id BIGINT
+  支持一次生成对应多次重试任务
+end note
+
+' --- 骨骼流水线域内部关联 ---
+skeleton_pipeline_task     ||--|{ skeleton_pipeline_step       : "task_id\n(1:N 步骤明细)"
+
+' --- 用户预设与模型配置（查询引用，无显式关联） ---
+ai_portrait_user_preset    }o--|| ai_portrait_model_config     : "preferred_model\n(软引用)"
+
+note bottom of ai_portrait_model_config
+  被 ai_portrait_generation 通过
+  model_name / provider 软引用
+end note
+
+' ============================================================
+' 视图
+' ============================================================
+
+note as views
+  <b>统计视图</b>
+  v_ai_task_statistics
+    = ai_portrait_task GROUP BY date, status
+
+  v_game_statistics
+    = game GROUP BY type
+end note
+
+@enduml
+

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.writemyself.mapper.SkeletonPipelineTaskMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="skeletonPipelineTaskResultMap" type="com.example.writemyself.entity.SkeletonPipelineTask">
+        <id     property="id"                    column="id"/>
+        <result property="taskId"                column="task_id"/>
+        <result property="userId"                column="user_id"/>
+        <result property="style"                 column="style"/>
+        <result property="templateType"          column="template_type"/>
+        <result property="pose"                  column="pose"/>
+        <result property="prompt"                column="prompt"/>
+        <result property="negativePrompt"        column="negative_prompt"/>
+        <result property="width"                 column="width"/>
+        <result property="height"                column="height"/>
+        <result property="refImageUrl"           column="ref_image_url"/>
+        <result property="status"                column="status"/>
+        <result property="progress"              column="progress"/>
+        <result property="errorMessage"          column="error_message"/>
+        <result property="fullImageUrl"          column="full_image_url"/>
+        <result property="skeletonJsonUrl"       column="skeleton_json_url"/>
+        <result property="skeletonSpineUrl"      column="skeleton_spine_url"/>
+        <result property="skeletonDragonbonesUrl" column="skeleton_dragonbones_url"/>
+        <result property="partsJson"             column="parts_json"/>
+        <result property="startedAt"             column="started_at"/>
+        <result property="completedAt"           column="completed_at"/>
+        <result property="createdAt"             column="created_at"/>
+        <result property="updatedAt"             column="updated_at"/>
+        <!-- V4 新增字段 -->
+        <result property="userRating"            column="user_rating"/>
+        <result property="userFeedback"          column="user_feedback"/>
+        <result property="isTrainingSample"      column="is_training_sample"/>
+        <result property="generationSeed"        column="generation_seed"/>
+        <result property="totalDurationMs"       column="total_duration_ms"/>
+        <result property="modelVersions"         column="model_versions"/>
+    </resultMap>
+
+    <!-- 插入主任务 -->
+    <insert id="insert" parameterType="com.example.writemyself.entity.SkeletonPipelineTask"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO skeleton_pipeline_task (
+            task_id, user_id, style, template_type, pose, prompt, negative_prompt,
+            width, height, ref_image_url, status, progress, created_at, updated_at
+        ) VALUES (
+            #{taskId}, #{userId}, #{style}, #{templateType}, #{pose}, #{prompt}, #{negativePrompt},
+            #{width}, #{height}, #{refImageUrl}, #{status}, #{progress}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 根据 taskId 查询主任务 -->
+    <select id="selectByTaskId" parameterType="string" resultMap="skeletonPipelineTaskResultMap">
+        SELECT * FROM skeleton_pipeline_task WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 更新为 PROCESSING 状态，记录开始时间 -->
+    <update id="updateStatusToProcessing">
+        UPDATE skeleton_pipeline_task
+        SET status = 'PROCESSING',
+            started_at = #{startedAt},
+            updated_at = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 更新为 SUCCESS 状态，填充最终产物 -->
+    <update id="updateStatusToSuccess">
+        UPDATE skeleton_pipeline_task
+        SET status      = 'SUCCESS',
+            progress    = 100,
+            full_image_url           = #{fullImageUrl},
+            skeleton_json_url        = #{skeletonJsonUrl},
+            skeleton_spine_url       = #{skeletonSpineUrl},
+            skeleton_dragonbones_url = #{skeletonDragonbonesUrl},
+            parts_json               = #{partsJson},
+            completed_at = #{completedAt},
+            updated_at   = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 更新为 FAILED 状态 -->
+    <update id="updateStatusToFailed">
+        UPDATE skeleton_pipeline_task
+        SET status        = 'FAILED',
+            error_message = #{errorMessage},
+            completed_at  = NOW(),
+            updated_at    = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 更新进度 -->
+    <update id="updateProgress">
+        UPDATE skeleton_pipeline_task
+        SET progress   = #{progress},
+            updated_at = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 更新用户评分和反馈（训练数据飞轮入口） -->
+    <update id="updateFeedback">
+        UPDATE skeleton_pipeline_task
+        SET user_rating   = #{userRating},
+            user_feedback = #{userFeedback},
+            updated_at    = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 标记为训练集（评分 >= 4 的高质量样本） -->
+    <update id="markAsTrainingSample">
+        UPDATE skeleton_pipeline_task
+        SET is_training_sample = 1,
+            updated_at         = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 更新全流水线总耗时 -->
+    <update id="updateTotalDuration">
+        UPDATE skeleton_pipeline_task
+        SET total_duration_ms = #{totalDurationMs},
+            updated_at        = NOW()
+        WHERE task_id = #{taskId}
+    </update>
+
+</mapper>
+

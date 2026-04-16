@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.writemyself.mapper.SkeletonPipelineStepMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="skeletonPipelineStepResultMap" type="com.example.writemyself.entity.SkeletonPipelineStep">
+        <id     property="id"             column="id"/>
+        <result property="taskId"         column="task_id"/>
+        <result property="stepNo"         column="step_no"/>
+        <result property="stepName"       column="step_name"/>
+        <result property="stepKey"        column="step_key"/>
+        <result property="status"         column="status"/>
+        <result property="progress"       column="progress"/>
+        <result property="errorMessage"   column="error_message"/>
+        <result property="outputImageUrl" column="output_image_url"/>
+        <result property="outputDataJson" column="output_data_json"/>
+        <result property="outputFileUrl"  column="output_file_url"/>
+        <result property="startedAt"      column="started_at"/>
+        <result property="completedAt"    column="completed_at"/>
+        <result property="durationMs"     column="duration_ms"/>
+        <result property="createdAt"      column="created_at"/>
+        <result property="updatedAt"      column="updated_at"/>
+        <!-- V4 新增字段 -->
+        <result property="inputTokens"    column="input_tokens"/>
+        <result property="outputTokens"   column="output_tokens"/>
+        <result property="modelName"      column="model_name"/>
+    </resultMap>
+
+    <!-- 批量插入8条步骤记录（均为PENDING） -->
+    <insert id="batchInsert" parameterType="list">
+        INSERT INTO skeleton_pipeline_step (
+            task_id, step_no, step_name, step_key, status, progress, created_at, updated_at
+        ) VALUES
+        <foreach collection="list" item="step" separator=",">
+            (#{step.taskId}, #{step.stepNo}, #{step.stepName}, #{step.stepKey},
+             #{step.status}, #{step.progress}, NOW(), NOW())
+        </foreach>
+    </insert>
+
+    <!-- 根据 taskId 查询所有步骤（按序号升序） -->
+    <select id="selectByTaskId" parameterType="string" resultMap="skeletonPipelineStepResultMap">
+        SELECT * FROM skeleton_pipeline_step
+        WHERE task_id = #{taskId}
+        ORDER BY step_no ASC
+    </select>
+
+    <!-- 更新步骤状态为 PROCESSING -->
+    <update id="updateStatusToProcessing">
+        UPDATE skeleton_pipeline_step
+        SET status     = 'PROCESSING',
+            started_at = #{startedAt},
+            updated_at = NOW()
+        WHERE task_id = #{taskId}
+          AND step_no = #{stepNo}
+    </update>
+
+    <!-- 更新步骤状态为 SUCCESS，填充产物 -->
+    <update id="updateStatusToSuccess">
+        UPDATE skeleton_pipeline_step
+        SET status           = 'SUCCESS',
+            progress         = 100,
+            output_image_url = #{outputImageUrl},
+            output_data_json = #{outputDataJson},
+            output_file_url  = #{outputFileUrl},
+            completed_at     = #{completedAt},
+            duration_ms      = #{durationMs},
+            updated_at       = NOW()
+        WHERE task_id = #{taskId}
+          AND step_no = #{stepNo}
+    </update>
+
+    <!-- 更新步骤状态为 FAILED -->
+    <update id="updateStatusToFailed">
+        UPDATE skeleton_pipeline_step
+        SET status        = 'FAILED',
+            error_message = #{errorMessage},
+            completed_at  = NOW(),
+            updated_at    = NOW()
+        WHERE task_id = #{taskId}
+          AND step_no = #{stepNo}
+    </update>
+
+    <!-- 根据 taskId 查询所有步骤，不含中间产物（轻量版，供轮询） -->
+    <select id="selectLightByTaskId" parameterType="string" resultMap="skeletonPipelineStepResultMap">
+        SELECT id, task_id, step_no, step_name, step_key,
+               status, progress, error_message,
+               output_image_url,
+               started_at, completed_at, duration_ms,
+               input_tokens, output_tokens, model_name,
+               created_at, updated_at
+        FROM skeleton_pipeline_step
+        WHERE task_id = #{taskId}
+        ORDER BY step_no ASC
+    </select>
+
+    <!-- 根据 taskId + stepNo 查询单步骤（断点续跑判断用） -->
+    <select id="selectByTaskIdAndStepNo" resultMap="skeletonPipelineStepResultMap">
+        SELECT * FROM skeleton_pipeline_step
+        WHERE task_id = #{taskId}
+          AND step_no  = #{stepNo}
+    </select>
+
+    <!-- 更新步骤的 Token 计量数据 -->
+    <update id="updateTokenUsage">
+        UPDATE skeleton_pipeline_step
+        SET input_tokens  = #{inputTokens},
+            output_tokens = #{outputTokens},
+            model_name    = #{modelName},
+            updated_at    = NOW()
+        WHERE task_id = #{taskId}
+          AND step_no  = #{stepNo}
+    </update>
+
+</mapper>
+

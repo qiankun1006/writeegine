@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -105,5 +106,59 @@ public class SkeletonGenerationResponse {
      * ISO 8601 格式的时间戳。
      */
     private String generatedAt;
+
+    /**
+     * 流水线步骤状态列表
+     *
+     * 仅增强骨骼生成任务（enhanced-*）返回此字段。
+     * 共8步，每步包含状态（PENDING/PROCESSING/SUCCESS/FAILED）、耗时、中间产物 URL 等信息。
+     */
+    private List<StepStatus> steps;
+
+    /**
+     * 单个流水线步骤的状态 DTO
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StepStatus {
+
+        /** 步骤序号 1-8 */
+        private Integer stepNo;
+
+        /** 步骤名称 */
+        private String stepName;
+
+        /**
+         * 步骤唯一键
+         * skeleton_line / controlnet / ip_adapter / flux_generate /
+         * bg_remove / sam_segment / binding_data / save_result
+         */
+        private String stepKey;
+
+        /**
+         * 步骤状态：PENDING / PROCESSING / SUCCESS / FAILED
+         */
+        private String status;
+
+        /** 步骤内进度 0-100 */
+        private Integer progress;
+
+        /** 该步骤输出的图片URL（步骤1/2/4/5适用） */
+        private String outputImageUrl;
+
+        /** 步骤开始时间（ISO 8601） */
+        private String startedAt;
+
+        /** 步骤完成时间（ISO 8601） */
+        private String completedAt;
+
+        /** 步骤耗时（毫秒） */
+        private Long durationMs;
+
+        /** 步骤错误信息（FAILED 时存在） */
+        private String errorMessage;
+    }
 }
 

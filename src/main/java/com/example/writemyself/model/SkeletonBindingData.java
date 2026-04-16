@@ -1,7 +1,10 @@
 package com.example.writemyself.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +16,33 @@ import java.util.Map;
  * 可直接或经简单转换后导入Spine、DragonBones等动画工具。
  */
 @Data
+@Slf4j
 public class SkeletonBindingData {
+
+    /** 用于 fromJson 反序列化的共享 ObjectMapper（忽略未知字段，兼容旧版数据） */
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    /**
+     * 从 JSON 字符串反序列化为 SkeletonBindingData 对象
+     *
+     * 用于 RAG 索引命中时，从文件系统加载历史绑定数据直接复用，
+     * 避免重新进行耗时的骨骼绑定计算。
+     *
+     * @param json JSON 字符串（由 {@link #toJson()} 或 Jackson 序列化产生）
+     * @return 反序列化的 SkeletonBindingData，解析失败时返回 null
+     */
+    public static SkeletonBindingData fromJson(String json) {
+        if (json == null || json.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return JSON_MAPPER.readValue(json, SkeletonBindingData.class);
+        } catch (Exception e) {
+            log.warn("SkeletonBindingData JSON 反序列化失败，将降级重新生成: err={}", e.getMessage());
+            return null;
+        }
+    }
 
     /**
      * 骨骼模板类型

@@ -158,7 +158,7 @@ import GenerationProgress from './GenerationProgress.vue'
 // 导入结果展示组件
 import SkeletonResultPanel from './SkeletonResultPanel.vue'
 // 导入计算属性
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 
 // ========== 初始化存储 ==========
 // 创建肖像生成器的 Pinia 存储实例，用来管理全局的参数状态
@@ -176,9 +176,16 @@ const isSkeletonMode = computed(() => store.currentAssetType === 'character-skel
 const skeletonParams = ref<SkeletonParams>({
   style: 'anime',
   template: 'animation',
+  openPoseTemplate: 'openpose_18',
   pose: 'standing',
+  referenceImageUrl: '',
   referenceImageBase64: '',
 })
+
+// 监听骨骼参数变化，同步到 store（包含 openPoseTemplate）
+watch(skeletonParams, (val) => {
+  store.updateSkeletonParams(val)
+}, { deep: true })
 
 // ========== 事件处理函数 ==========
 /**

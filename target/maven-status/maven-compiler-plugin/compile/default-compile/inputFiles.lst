@@ -1,6 +1,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/AIPortraitController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/SaveResultRequest.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/config/MyBatisConfig.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/SkeletonPipelineStep.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitTaskEntity.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/mapper/AIPortraitModelConfigMapper.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/UnityScene.java
@@ -24,6 +25,8 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitGenerationRepository.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitGenerationEntity.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/util/MapperGeneratorUtil.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/SkeletonRagIndex.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/mapper/SkeletonRagIndexMapper.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/OpenPoseTemplateController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitModelConfigRepositoryImpl.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/mapper/GameMapper.java
@@ -42,6 +45,9 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/SkeletonAssetController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/UnityObject.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/GameRepository.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/config/WebMvcConfig.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/UploadController.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/mapper/SkeletonPipelineTaskMapper.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/VolcengineService.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitGeneration.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/AliyunTongYiService.java
@@ -51,6 +57,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/AIPortraitGeneration.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/repository/AIPortraitTaskRepositoryImpl.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/AIPortraitModelConfig.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/entity/SkeletonPipelineTask.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/AsyncTaskService.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/ImageEditorController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/SkeletonBindingData.java
@@ -70,6 +77,7 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/ImageGenerationService.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/AssetController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/UnityMaterial.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/SeeThroughLayerService.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/SkeletonGenerationResponse.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/GameMapController.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/EnhancedSkeletonAssetService.java
@@ -82,4 +90,5 @@
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/dto/GeneratePortraitRequest.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/model/FluxImageRequest.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/service/BackgroundRemovalService.java
+/Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/mapper/SkeletonPipelineStepMapper.java
 /Users/qiankun96/Desktop/历史项目/writeengine/src/main/java/com/example/writemyself/controller/GlobalExceptionHandler.java
